@@ -1,0 +1,345 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * ChemLab Design System
+ * Pastel mát: mint, xanh baby, lavender — sách giáo khoa hiện đại
+ * All colors in oklch.
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+
+  /* Brand semantic colors */
+  --color-mint: var(--mint);
+  --color-mint-soft: var(--mint-soft);
+  --color-mint-foreground: var(--mint-foreground);
+  --color-baby: var(--baby);
+  --color-baby-soft: var(--baby-soft);
+  --color-lavender: var(--lavender);
+  --color-lavender-soft: var(--lavender-soft);
+  --color-navy: var(--navy);
+  --color-navy-soft: var(--navy-soft);
+
+  /* Chemical category colors */
+  --color-cat-acid: var(--cat-acid);
+  --color-cat-base: var(--cat-base);
+  --color-cat-salt: var(--cat-salt);
+  --color-cat-metal: var(--cat-metal);
+  --color-cat-nonmetal: var(--cat-nonmetal);
+  --color-cat-organic: var(--cat-organic);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Shadows — soft layered for 2.5D feel */
+  --shadow-soft: 0 1px 2px oklch(0.3 0.05 250 / 0.04), 0 2px 8px oklch(0.3 0.05 250 / 0.04);
+  --shadow-card: 0 2px 4px oklch(0.3 0.05 250 / 0.04), 0 8px 24px oklch(0.3 0.05 250 / 0.06);
+  --shadow-lift: 0 4px 8px oklch(0.3 0.05 250 / 0.06), 0 12px 32px oklch(0.3 0.05 250 / 0.1);
+  --shadow-drag: 0 12px 24px oklch(0.3 0.05 250 / 0.18), 0 24px 48px oklch(0.3 0.05 250 / 0.12);
+  --shadow-inset-board: inset 0 2px 8px oklch(0.3 0.05 250 / 0.05);
+}
+
+:root {
+  --radius: 0.75rem;
+
+  /* Base — pastel mát, nền trắng kem */
+  --background: oklch(0.99 0.003 240);
+  --foreground: oklch(0.28 0.05 260);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.28 0.05 260);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.28 0.05 260);
+
+  /* Primary = mint accent */
+  --primary: oklch(0.84 0.09 175);
+  --primary-foreground: oklch(0.28 0.05 260);
+
+  --secondary: oklch(0.97 0.015 240);
+  --secondary-foreground: oklch(0.28 0.05 260);
+
+  --muted: oklch(0.97 0.01 250);
+  --muted-foreground: oklch(0.55 0.03 265);
+
+  --accent: oklch(0.93 0.04 280);
+  --accent-foreground: oklch(0.28 0.05 260);
+
+  --destructive: oklch(0.7 0.18 25);
+  --destructive-foreground: oklch(0.99 0.003 240);
+
+  --border: oklch(0.93 0.012 250);
+  --input: oklch(0.93 0.012 250);
+  --ring: oklch(0.84 0.09 175);
+
+  /* Brand palette */
+  --mint: oklch(0.86 0.1 175);
+  --mint-soft: oklch(0.95 0.04 175);
+  --mint-foreground: oklch(0.28 0.05 260);
+  --baby: oklch(0.87 0.08 240);
+  --baby-soft: oklch(0.96 0.03 240);
+  --lavender: oklch(0.84 0.08 295);
+  --lavender-soft: oklch(0.96 0.025 295);
+  --navy: oklch(0.28 0.05 260);
+  --navy-soft: oklch(0.55 0.04 265);
+
+  /* Category accents (pastel) */
+  --cat-acid: oklch(0.88 0.1 60);     /* warm yellow */
+  --cat-base: oklch(0.86 0.1 175);    /* mint */
+  --cat-salt: oklch(0.87 0.08 240);   /* baby blue */
+  --cat-metal: oklch(0.85 0.025 270); /* silvery lavender */
+  --cat-nonmetal: oklch(0.84 0.08 295); /* lavender */
+  --cat-organic: oklch(0.86 0.09 145); /* fresh green */
+
+  --chart-1: oklch(0.86 0.1 175);
+  --chart-2: oklch(0.87 0.08 240);
+  --chart-3: oklch(0.84 0.08 295);
+  --chart-4: oklch(0.88 0.1 60);
+  --chart-5: oklch(0.86 0.09 145);
+
+  --sidebar: oklch(0.99 0.003 240);
+  --sidebar-foreground: oklch(0.28 0.05 260);
+  --sidebar-primary: oklch(0.86 0.1 175);
+  --sidebar-primary-foreground: oklch(0.28 0.05 260);
+  --sidebar-accent: oklch(0.96 0.025 295);
+  --sidebar-accent-foreground: oklch(0.28 0.05 260);
+  --sidebar-border: oklch(0.93 0.012 250);
+  --sidebar-ring: oklch(0.84 0.09 175);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+}
+
+/* Board scene — 2.5D phòng thí nghiệm với kệ + bàn */
+.lab-scene {
+  position: relative;
+  background:
+    /* ánh sáng đèn từ trên xuống */
+    radial-gradient(
+      ellipse 70% 50% at 50% 0%,
+      oklch(1 0.02 90 / 0.55) 0%,
+      transparent 70%
+    ),
+    /* tường gradient mint→baby */
+    linear-gradient(
+      180deg,
+      oklch(0.96 0.035 200) 0%,
+      oklch(0.94 0.04 220) 55%,
+      oklch(0.92 0.045 240) 100%
+    );
+  box-shadow: var(--shadow-inset-board);
+}
+
+/* Tường sau — perspective với grid gạch nhẹ */
+.lab-wall {
+  position: absolute;
+  inset: 0 0 38% 0;
+  background-image:
+    linear-gradient(oklch(0.28 0.05 260 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.28 0.05 260 / 0.05) 1px, transparent 1px);
+  background-size: 56px 56px, 56px 56px;
+  mask-image: linear-gradient(180deg, oklch(0 0 0 / 0.6) 0%, oklch(0 0 0 / 0.9) 70%, transparent 100%);
+}
+
+/* Sàn bàn — perspective gỗ-lab pastel */
+.lab-floor {
+  position: absolute;
+  inset: 62% 0 0 0;
+  background:
+    linear-gradient(
+      180deg,
+      oklch(0.92 0.025 80) 0%,
+      oklch(0.88 0.035 75) 45%,
+      oklch(0.83 0.04 70) 100%
+    );
+  transform-origin: top center;
+  box-shadow:
+    inset 0 8px 16px oklch(0.3 0.05 250 / 0.08),
+    inset 0 -16px 32px oklch(0.3 0.05 250 / 0.12);
+}
+
+/* Đường vân gỗ trên sàn bàn — perspective lines */
+.lab-floor::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0,
+    transparent 80px,
+    oklch(0.5 0.06 60 / 0.08) 80px,
+    oklch(0.5 0.06 60 / 0.08) 81px
+  );
+  mask-image: linear-gradient(180deg, transparent 0%, oklch(0 0 0 / 0.6) 30%, oklch(0 0 0 / 0.9) 100%);
+}
+
+/* Mép bàn phía trước — tạo lip 3D */
+.lab-floor::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 14px;
+  background: linear-gradient(
+    180deg,
+    oklch(0.78 0.045 65) 0%,
+    oklch(0.68 0.05 60) 100%
+  );
+  box-shadow: 0 -2px 6px oklch(0.3 0.05 250 / 0.15);
+}
+
+/* Vùng làm việc trên bàn — vùng sáng spotlight */
+.lab-worktop {
+  position: absolute;
+  inset: 38% 8% 14% 8%;
+  border-radius: 32px 32px 18px 18px / 60px 60px 18px 18px;
+  background: radial-gradient(
+    ellipse 70% 80% at 50% 35%,
+    oklch(0.99 0.01 90 / 0.85) 0%,
+    oklch(0.96 0.025 120 / 0.55) 55%,
+    transparent 100%
+  );
+  box-shadow:
+    inset 0 2px 4px oklch(1 0 0 / 0.6),
+    0 12px 28px oklch(0.3 0.05 250 / 0.08);
+}
+
+/* Dot-grid mờ chỉ trong vùng worktop */
+.lab-worktop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: radial-gradient(circle at 1px 1px, oklch(0.28 0.05 260 / 0.1) 1px, transparent 0);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(ellipse 60% 70% at 50% 40%, oklch(0 0 0 / 0.9) 0%, transparent 100%);
+}
+
+/* Vignette 4 góc */
+.lab-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 100% 100% at 50% 50%,
+    transparent 50%,
+    oklch(0.28 0.05 260 / 0.12) 100%
+  );
+}
+
+/* Kệ trên tường */
+.lab-shelf {
+  position: absolute;
+  height: 68px;
+  background: linear-gradient(
+    180deg,
+    oklch(0.94 0.02 200) 0%,
+    oklch(0.9 0.025 210) 100%
+  );
+  border-radius: 8px;
+  box-shadow:
+    0 2px 0 oklch(0.78 0.03 220),
+    0 6px 12px oklch(0.3 0.05 250 / 0.12),
+    inset 0 1px 0 oklch(1 0 0 / 0.7);
+}
+
+.lab-shelf::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -8px;
+  height: 8px;
+  background: linear-gradient(180deg, oklch(0.78 0.03 220) 0%, transparent 100%);
+  border-radius: 0 0 6px 6px;
+  opacity: 0.5;
+}
+
+/* Subtle scrollbar */
+.thin-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.thin-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: oklch(0.85 0.02 260 / 0.5);
+  border-radius: 999px;
+}
+.thin-scroll::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.75 0.03 260 / 0.7);
+}
