@@ -49,6 +49,8 @@ public class ReactionPredictionService {
 
         // Step 1 – Cache lookup
         var cached = cacheService.getReaction(reactionKey);
+        // TẠM THỜI TẮT CACHE ĐỂ TEST PROMPT MỚI
+        /*
         if (cached.isPresent()) {
             log.info("[reaction-predict] Cache HIT for key: {}", reactionKey);
             cacheService.touchReactionCache(cached.get());
@@ -58,6 +60,7 @@ public class ReactionPredictionService {
             if (dto == null) dto = fallbackDto();
             return new PredictResult(dto, true, cached.get().getSource());
         }
+        */
 
         log.info("[reaction-predict] Cache MISS – calling AI/mock for: {}", formulae);
 
@@ -115,9 +118,9 @@ public class ReactionPredictionService {
                 .hasReaction(false)
                 .effectType("NONE")
                 .confidence(0.0)
-                .messageVi("Hệ thống chưa đủ dữ liệu tin cậy để mô phỏng phản ứng này.")
-                .explanationVi("Cặp chất này có thể cần điều kiện phản ứng cụ thể hoặc không có hiện tượng rõ trong phạm vi mô phỏng.")
-                .safetyNoteVi("Đây là mô phỏng giáo dục.")
+                .messageVi("Hai chất này không phản ứng với nhau trong điều kiện hiện tại.")
+                .explanationVi("Điều kiện phản ứng không phù hợp hoặc cặp chất này không xảy ra phản ứng trong phạm vi mô phỏng.")
+                .safetyNoteVi(null)
                 .build();
     }
 

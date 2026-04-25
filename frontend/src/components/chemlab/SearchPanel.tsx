@@ -5,17 +5,66 @@ import {
   Search,
   SlidersHorizontal,
   ChevronDown,
-  FlaskConical,
   GripVertical,
+  Loader2,
+  Database
 } from "lucide-react";
 import { useDraggable } from "@dnd-kit/core";
 import {
   CATEGORY_GROUPS,
+  getBottleColor,
+  getChemicalColor,
   type Chemical,
   type CategoryGroup,
 } from "@/constants/chemicals";
 import { Formula } from "./Formula";
 import { cn } from "@/utils/cn";
+
+/* ─── Realistic Chemical Bottle SVG ───────────────────────────────── */
+
+function ChemicalBottleSVG({
+  liquidColor,
+  size = 40,
+}: {
+  liquidColor: string;
+  size?: number;
+}) {
+  const w = size;
+  const h = size;
+  return (
+    <svg width={w} height={h} viewBox="0 0 40 40" fill="none">
+      {/* Bottle cap */}
+      <rect x="14" y="2" width="12" height="5" rx="2" fill="#78909C" />
+      <rect x="15" y="1" width="10" height="3" rx="1.5" fill="#90A4AE" />
+      {/* Bottle neck */}
+      <rect x="16" y="7" width="8" height="6" rx="1" fill="rgba(200,220,240,0.4)" stroke="rgba(120,160,200,0.3)" strokeWidth="0.5" />
+      {/* Bottle body */}
+      <path
+        d="M16 13 L12 18 Q10 20 10 23 L10 34 Q10 37 13 37 L27 37 Q30 37 30 34 L30 23 Q30 20 28 18 L24 13 Z"
+        fill="rgba(200,220,240,0.25)"
+        stroke="rgba(120,160,200,0.35)"
+        strokeWidth="0.7"
+      />
+      {/* Liquid inside */}
+      <path
+        d="M11 22 L11 34 Q11 36 13 36 L27 36 Q29 36 29 34 L29 22 Z"
+        fill={liquidColor}
+      />
+      {/* Glass shine */}
+      <path
+        d="M13 18 L13 34 Q13 35 14 35"
+        stroke="rgba(255,255,255,0.5)"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        fill="none"
+      />
+      {/* Label area */}
+      <rect x="14" y="25" width="12" height="7" rx="1" fill="rgba(255,255,255,0.7)" />
+    </svg>
+  );
+}
+
+/* ─── Draggable Chemical Card ─────────────────────────────────────── */
 
 function DraggableChemicalCard({
   chemical,
@@ -33,6 +82,7 @@ function DraggableChemicalCard({
         name: chemical.name,
         formula: chemical.formula,
         category: chemical.category,
+        color: chemical.color,
       },
     });
 
@@ -42,6 +92,8 @@ function DraggableChemicalCard({
         zIndex: 100,
       }
     : undefined;
+
+  const bottleColor = getBottleColor(chemical.id, chemical.formula);
 
   return (
     <div
@@ -57,11 +109,8 @@ function DraggableChemicalCard({
         isDragging && "opacity-50 shadow-lg",
       )}
     >
-      <div
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg shadow-[var(--shadow-soft)]"
-        style={{ backgroundColor: `var(${group.colorVar})` }}
-      >
-        <FlaskConical className="h-5 w-5 text-navy" strokeWidth={1.8} />
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center">
+        <ChemicalBottleSVG liquidColor={bottleColor} size={40} />
       </div>
       <div className="min-w-0 flex-1">
         <div className="truncate text-xs font-semibold text-navy">
@@ -85,6 +134,8 @@ function CategorySection({
   defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(!!defaultOpen);
+  if (group.chemicals.length === 0) return null;
+
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card/40">
       <button
@@ -125,6 +176,44 @@ function CategorySection({
 
 export function SearchPanel() {
   const [query, setQuery] = useState("");
+  const [dynamicChemicals, setDynamicChemicals] = useState<Chemical[]>([]);
+  const [isSearchingApi, setIsSearchingApi] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+
+  const searchAPI = async () => {
+    if (!query.trim()) return;
+    setIsSearchingApi(true);
+    setApiError(null);
+    try {
+      const res = await fetch(`http://localhost:8080/api/chemicals/resolve?query=${encodeURIComponent(query)}`);
+      if (!res.ok) throw new Error("API Error");
+      const data = await res.json();
+      
+      if (data.status === "success" && data.data && data.data.source !== "FALLBACK") {
+        const info = data.data;
+        const newChem: Chemical = {
+          id: `api_${info.canonicalFormula.toLowerCase()}_${Date.now()}`,
+          name: info.canonicalName, // Capitalize or use as is
+          formula: info.canonicalFormula,
+          category: "api",
+          color: getChemicalColor("dynamic", info.canonicalFormula),
+        };
+
+        setDynamicChemicals(prev => {
+          // Avoid exact formula duplicates in dynamic list
+          if (prev.some(c => c.formula.toUpperCase() === newChem.formula.toUpperCase())) return prev;
+          return [newChem, ...prev];
+        });
+        setQuery(""); // Clear query on success
+      } else {
+        setApiError("Không tìm thấy chất này trên hệ thống.");
+      }
+    } catch (e) {
+      setApiError("Lỗi kết nối máy chủ API.");
+    } finally {
+      setIsSearchingApi(false);
+    }
+  };
 
   const filtered = CATEGORY_GROUPS.map((g) => ({
     ...g,
@@ -135,6 +224,23 @@ export function SearchPanel() {
     ),
   }));
 
+  // Append dynamic chemicals category
+  if (dynamicChemicals.length > 0) {
+    filtered.push({
+      key: "api",
+      label: "Từ cơ sở dữ liệu",
+      emoji: "🌐",
+      colorVar: "--cat-api",
+      chemicals: dynamicChemicals.filter(
+        (c) =>
+          c.name.toLowerCase().includes(query.toLowerCase()) ||
+          c.formula.toLowerCase().includes(query.toLowerCase()),
+      )
+    });
+  }
+
+  const totalFilteredCount = filtered.reduce((s, g) => s + g.chemicals.length, 0);
+
   return (
     <aside className="flex h-full w-full flex-col overflow-hidden rounded-2xl border border-white/20 bg-card/60 shadow-[0_8px_32px_rgba(0,0,0,0.1)] backdrop-blur-xl">
       {/* Header + search */}
@@ -144,7 +250,7 @@ export function SearchPanel() {
             Thư viện hoá chất
           </h2>
           <span className="text-[11px] text-navy-soft">
-            {CATEGORY_GROUPS.reduce((s, g) => s + g.chemicals.length, 0)} chất
+            {CATEGORY_GROUPS.reduce((s, g) => s + g.chemicals.length, 0) + dynamicChemicals.length} chất
           </span>
         </div>
         <div className="relative">
@@ -152,6 +258,9 @@ export function SearchPanel() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") searchAPI();
+            }}
             placeholder="Tìm hoá chất, công thức…"
             className={cn(
               "h-10 w-full rounded-xl border border-border bg-card pl-9 pr-10 text-sm text-navy",
@@ -164,12 +273,38 @@ export function SearchPanel() {
             <SlidersHorizontal className="h-4 w-4" />
           </button>
         </div>
+
+        {/* Dynamic API Search Trigger */}
+        {query.trim().length > 0 && (
+          <div className="mt-3 overflow-hidden rounded-xl bg-blue-50/50 p-2 border border-blue-100/50">
+            <button
+              onClick={searchAPI}
+              disabled={isSearchingApi}
+              className="group flex w-full items-center justify-center gap-2 rounded-lg bg-white py-2 text-[13px] font-semibold text-blue-600 shadow-sm transition-all hover:bg-blue-600 hover:text-white disabled:opacity-50"
+            >
+              {isSearchingApi ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Database className="h-4 w-4 transition-transform group-hover:scale-110" />
+              )}
+              {isSearchingApi ? "Đang tra cứu..." : `Tìm "${query}" trên CSDL`}
+            </button>
+            {apiError && <p className="mt-2 text-center text-xs text-red-500 font-medium">{apiError}</p>}
+          </div>
+        )}
       </div>
 
       {/* Categories */}
       <div className="thin-scroll flex-1 space-y-2 overflow-y-auto p-3">
+        {totalFilteredCount === 0 && !isSearchingApi && (
+          <div className="flex h-32 flex-col items-center justify-center text-center">
+            <p className="text-sm text-navy-soft mb-2">Không có trong danh sách gốc.</p>
+            <p className="text-xs text-navy-soft/70 max-w-[200px]">Hãy thử nhấn "Tìm trên CSDL" để tải về từ cơ sở dữ liệu lớn.</p>
+          </div>
+        )}
+        
         {filtered.map((g, i) => (
-          <CategorySection key={g.key} group={g} defaultOpen={i < 2} />
+          <CategorySection key={g.key} group={g} defaultOpen={i < 2 || g.key === "api"} />
         ))}
       </div>
     </aside>

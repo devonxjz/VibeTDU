@@ -10,7 +10,6 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { useState, useCallback } from "react";
-import { FlaskConical } from "lucide-react";
 import { Toolbar } from "@/components/chemlab/Toolbar";
 import { PropertiesPanel } from "@/components/chemlab/PropertiesPanel";
 import { SearchPanel } from "@/components/chemlab/SearchPanel";
@@ -18,11 +17,67 @@ import { Board } from "@/components/chemlab/Board";
 import { useLabStore } from "@/stores/lab-store";
 import { chemLabCollisionDetection } from "@/utils/collision";
 import { PouringAnimation } from "@/components/chemlab/PouringAnimation";
+import { getBottleColor } from "@/constants/chemicals";
+import { Formula } from "@/components/chemlab/Formula";
 
 interface DraggedChemical {
   name: string;
   formula: string;
+  category: string;
+  chemicalId: string;
+  color?: string;
 }
+
+/* ─── Drag Overlay Bottle ─────────────────────────────────────────── */
+
+function DragOverlayBottle({
+  chemical,
+}: {
+  chemical: DraggedChemical;
+}) {
+  const bottleColor = getBottleColor(chemical.chemicalId);
+
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-mint/30 bg-card/95 p-2.5 shadow-[var(--shadow-drag)] scale-105 backdrop-blur-sm">
+      {/* Bottle SVG */}
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <rect x="14" y="2" width="12" height="5" rx="2" fill="#78909C" />
+          <rect x="15" y="1" width="10" height="3" rx="1.5" fill="#90A4AE" />
+          <rect x="16" y="7" width="8" height="6" rx="1" fill="rgba(200,220,240,0.4)" stroke="rgba(120,160,200,0.3)" strokeWidth="0.5" />
+          <path
+            d="M16 13 L12 18 Q10 20 10 23 L10 34 Q10 37 13 37 L27 37 Q30 37 30 34 L30 23 Q30 20 28 18 L24 13 Z"
+            fill="rgba(200,220,240,0.25)"
+            stroke="rgba(120,160,200,0.35)"
+            strokeWidth="0.7"
+          />
+          <path
+            d="M11 22 L11 34 Q11 36 13 36 L27 36 Q29 36 29 34 L29 22 Z"
+            fill={bottleColor}
+          />
+          <path
+            d="M13 18 L13 34 Q13 35 14 35"
+            stroke="rgba(255,255,255,0.5)"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+            fill="none"
+          />
+        </svg>
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-xs font-semibold text-navy">
+          {chemical.name}
+        </div>
+        <Formula
+          formula={chemical.formula}
+          className="font-display text-[11px] font-medium text-navy-soft"
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ─── ChemLabShell ────────────────────────────────────────────────── */
 
 export function ChemLabShell() {
   const addVessel = useLabStore((s) => s.addVessel);
@@ -50,6 +105,8 @@ export function ChemLabShell() {
         name: data.name as string,
         formula: data.formula as string,
         category: data.category as string,
+        chemicalId: data.chemicalId as string,
+        color: data.color as string | undefined,
       });
     }
   }, []);
@@ -69,6 +126,7 @@ export function ChemLabShell() {
             name: activeData.name as string,
             formula: activeData.formula as string,
             category: activeData.category as string,
+            chemicalId: activeData.chemicalId as string,
           },
           {
             x: translated ? translated.left : window.innerWidth / 2 - 40,
@@ -87,6 +145,8 @@ export function ChemLabShell() {
             name: activeData.name as string,
             formula: activeData.formula as string,
             category: activeData.category as string,
+            chemicalId: activeData.chemicalId as string,
+            color: activeData.color as string | undefined,
           },
           targetVesselId,
         });
@@ -136,6 +196,7 @@ export function ChemLabShell() {
 
   return (
     <DndContext
+      id="chemlab-dnd"
       sensors={sensors}
       collisionDetection={chemLabCollisionDetection}
       onDragStart={handleDragStart}
@@ -161,19 +222,9 @@ export function ChemLabShell() {
         </div>
       </div>
 
-      <DragOverlay>
+      <DragOverlay dropAnimation={null}>
         {draggedChemical && (
-          <div className="flex items-center gap-2 rounded-xl border border-mint bg-card px-3 py-2 shadow-lg backdrop-blur-sm">
-            <FlaskConical className="h-5 w-5 text-mint" strokeWidth={1.8} />
-            <div>
-              <div className="text-xs font-semibold text-navy">
-                {draggedChemical.name}
-              </div>
-              <div className="text-[11px] text-navy-soft">
-                {draggedChemical.formula}
-              </div>
-            </div>
-          </div>
+          <DragOverlayBottle chemical={draggedChemical} />
         )}
       </DragOverlay>
 
@@ -181,6 +232,8 @@ export function ChemLabShell() {
         <PouringAnimation
           chemicalName={pouringChemical.chemical.name}
           chemicalCategory={pouringChemical.chemical.category}
+          chemicalId={pouringChemical.chemical.chemicalId}
+          targetVesselId={pouringChemical.targetVesselId}
           onComplete={handlePourAnimationComplete}
         />
       )}

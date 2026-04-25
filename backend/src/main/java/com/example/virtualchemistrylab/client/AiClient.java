@@ -227,7 +227,7 @@ public class AiClient {
 
     private String buildReactionPrompt(List<String> reactants) {
         return """
-                Bạn là hệ thống mô phỏng phản ứng hóa học giáo dục.
+                Bạn là chuyên gia hóa học và hệ thống mô phỏng giáo dục.
                 Các chất phản ứng: %s
 
                 Hãy dự đoán kết quả phản ứng và trả về JSON theo đúng schema sau (KHÔNG kèm markdown, KHÔNG giải thích ngoài JSON):
@@ -247,10 +247,13 @@ public class AiClient {
                 }
 
                 Quy tắc bắt buộc:
-                - effectType phải thuộc đúng các giá trị enum trên
-                - messageVi, explanationVi, safetyNoteVi phải bằng tiếng Việt
-                - Nếu không chắc → hasReaction=false hoặc confidence thấp
-                - Trả về DUY NHẤT JSON thuần, không markdown
+                - hasReaction=true NẾU CÓ PHẢN ỨNG XẢY RA, ngay cả khi không có hiện tượng trực quan rõ rệt (ví dụ: phản ứng trung hòa axit-bazơ như H2SO4 + NaOH).
+                - effectType phải thuộc đúng các giá trị enum trên. Đối với trung hòa axit-bazơ, có thể chọn "COLOR_CHANGE" hoặc "PRECIPITATE" nếu cần hiển thị màu.
+                - BẮT BUỘC có `productFormula` (chứa các chất sản phẩm, ví dụ: "Na2SO4 + H2O"). Không được để null nếu có phản ứng.
+                - messageVi, explanationVi, safetyNoteVi phải bằng tiếng Việt.
+                - BẮT BUỘC trong phần explanationVi: Bạn phải MÔ TẢ CHI TIẾT TRẠNG THÁI VÀ MÀU SẮC của cả chất tham gia lẫn sản phẩm tạo thành. (LƯU Ý ĐẶC BIỆT: Trong mô phỏng này, đối với phản ứng H2SO4 + NaOH, hãy quy định Na2SO4 có màu trắng, effectColor/precipitateColor="#FFFFFF").
+                - Nếu không chắc → hasReaction=false hoặc confidence thấp.
+                - Trả về DUY NHẤT JSON thuần, không markdown.
                 """.formatted(String.join(" + ", reactants));
     }
 
@@ -311,6 +314,6 @@ public class AiClient {
         }
         // Unknown pair
         return """
-                {"hasReaction":false,"equation":null,"productFormula":null,"effectType":"NONE","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Hệ thống chưa đủ dữ liệu tin cậy để mô phỏng phản ứng này.","explanationVi":"Cặp chất này có thể cần điều kiện phản ứng cụ thể hoặc không có hiện tượng rõ trong phạm vi mô phỏng.","safetyNoteVi":"Đây là mô phỏng giáo dục.","confidence":0.1}""";
+                {"hasReaction":false,"equation":null,"productFormula":null,"effectType":"NONE","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Hai chất này không phản ứng với nhau trong điều kiện hiện tại.","explanationVi":"Điều kiện phản ứng không phù hợp hoặc cặp chất này không xảy ra phản ứng trong phạm vi mô phỏng.","safetyNoteVi":null,"confidence":1.0}""";
     }
 }

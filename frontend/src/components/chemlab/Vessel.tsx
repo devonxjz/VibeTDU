@@ -2,7 +2,7 @@
 
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { motion } from "framer-motion";
-import { FlaskConical, X } from "lucide-react";
+import { X } from "lucide-react";
 import { cn } from "@/utils/cn";
 import type { Vessel as VesselType } from "@/types/lab";
 import { useLabStore } from "@/stores/lab-store";
@@ -13,7 +13,7 @@ interface VesselProps {
 }
 
 /**
- * Interactive vessel on the board.
+ * Interactive vessel (beaker) on the board.
  * - Draggable (to reposition or pour into another vessel)
  * - Droppable (to receive another vessel poured into it)
  * - Clickable to select and show details in PropertiesPanel
@@ -45,14 +45,18 @@ export function VesselComponent({ vessel }: VesselProps) {
     : undefined;
 
   const totalAmount = vessel.contents.reduce((sum, c) => sum + (c.amountMl || 10), 0);
-  const fillRatio = Math.min(0.9, Math.max(0.1, totalAmount / 50)); // Max 50ml for visual full
+  const fillRatio = Math.min(0.85, Math.max(0.15, totalAmount / 50));
 
   const isLoading = useLabStore((s) => s.isLoading);
   const centerBeakerId = useLabStore((s) => s.centerBeakerId);
   const isReacting = isLoading && vessel.id === centerBeakerId;
 
+  // Determine a good display color - use vessel's displayColor
+  const liquidColor = vessel.displayColor;
+
   return (
     <motion.div
+      id={vessel.id}
       ref={(node) => {
         setDragRef(node);
         setDropRef(node);
@@ -93,53 +97,101 @@ export function VesselComponent({ vessel }: VesselProps) {
         <X className="h-3 w-3" />
       </button>
 
-      {/* Vessel SVG */}
+      {/* Beaker SVG */}
       <div
         className={cn(
-          "relative flex h-20 w-14 flex-col items-center rounded-b-xl rounded-t-md border-2 transition-all duration-200",
-          isSelected
-            ? "border-mint shadow-[0_0_12px_oklch(0.85_0.15_170/0.4)]"
-            : "border-white/60 shadow-[var(--shadow-card)]",
-          isOver && "border-mint ring-2 ring-mint/40",
+          "relative transition-all duration-200",
+          isSelected && "drop-shadow-[0_0_12px_oklch(0.85_0.15_170/0.4)]",
+          isOver && "drop-shadow-[0_0_8px_oklch(0.85_0.15_170/0.3)]",
         )}
-        style={{
-          background: `linear-gradient(180deg, oklch(1 0 0 / 0.1) 0%, oklch(1 0 0 / 0.05) 30%, ${vessel.displayColor}60 30%, ${vessel.displayColor} 100%)`,
-          backdropFilter: "blur(4px)",
-        }}
       >
-        {/* Glass neck */}
-        <div className="h-2 w-6 rounded-t-sm border-x-2 border-t-2 border-white/50 bg-white/10" />
-
-        {/* Liquid fill */}
-        <motion.div
-          className="absolute bottom-0 left-0 right-0 rounded-b-xl"
-          style={{
-            height: "100%",
-            transformOrigin: "bottom",
-            background: `linear-gradient(180deg, ${vessel.displayColor}80, ${vessel.displayColor})`,
-          }}
-          initial={{ scaleY: 0 }}
-          animate={{ scaleY: fillRatio }}
-          transition={{ type: "spring", stiffness: 100, damping: 20 }}
-        />
-
-        {/* Glass highlight */}
-        <div className="absolute left-1 top-3 h-8 w-1 rounded-full bg-white/40" />
-
-        {/* Flask icon overlay */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <FlaskConical
-            className="h-6 w-6 text-white/30"
-            strokeWidth={1.2}
+        <svg width="64" height="80" viewBox="0 0 64 80" fill="none">
+          {/* Beaker body - glass outline */}
+          <path
+            d="M12 10 L12 62 Q12 70 20 70 L44 70 Q52 70 52 62 L52 10"
+            fill="rgba(200, 220, 240, 0.12)"
+            stroke={isSelected ? "oklch(0.85 0.15 170)" : "rgba(120, 160, 200, 0.45)"}
+            strokeWidth={isSelected ? "2" : "1.5"}
           />
-        </div>
+          
+          {/* Beaker rim */}
+          <path
+            d="M8 10 L56 10"
+            stroke="rgba(120, 160, 200, 0.5)"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          
+          {/* Pour spout left */}
+          <path
+            d="M8 10 L12 10 L10 6"
+            stroke="rgba(120, 160, 200, 0.4)"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
+
+          {/* Measurement lines */}
+          {[25, 35, 45, 55].map((y, i) => (
+            <g key={i}>
+              <line x1="14" y1={y} x2="22" y2={y} stroke="rgba(120, 160, 200, 0.25)" strokeWidth="0.8" />
+              <text x="24" y={y + 3} fontSize="5" fill="rgba(120, 160, 200, 0.35)">
+                {(4 - i) * 25}
+              </text>
+            </g>
+          ))}
+
+          {/* Liquid fill - animated */}
+          <defs>
+            <clipPath id={`liquid-clip-${vessel.id}`}>
+              <rect x="13" y={70 - 58 * fillRatio} width="38" height={58 * fillRatio} rx="4" />
+            </clipPath>
+          </defs>
+          
+          <g clipPath={`url(#liquid-clip-${vessel.id})`}>
+            {/* Main liquid body */}
+            <rect x="13" y="12" width="38" height="57" rx="4" fill={liquidColor} opacity="0.85" />
+            
+            {/* Liquid surface wave */}
+            <motion.path
+              d={`M13 ${70 - 58 * fillRatio} Q22 ${68 - 58 * fillRatio} 32 ${70 - 58 * fillRatio} Q42 ${72 - 58 * fillRatio} 51 ${70 - 58 * fillRatio} L51 70 L13 70 Z`}
+              fill={liquidColor}
+              opacity="0.6"
+              animate={{
+                d: [
+                  `M13 ${70 - 58 * fillRatio} Q22 ${68 - 58 * fillRatio} 32 ${70 - 58 * fillRatio} Q42 ${72 - 58 * fillRatio} 51 ${70 - 58 * fillRatio} L51 70 L13 70 Z`,
+                  `M13 ${70 - 58 * fillRatio} Q22 ${72 - 58 * fillRatio} 32 ${70 - 58 * fillRatio} Q42 ${68 - 58 * fillRatio} 51 ${70 - 58 * fillRatio} L51 70 L13 70 Z`,
+                ],
+              }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            />
+          </g>
+
+          {/* Glass highlights */}
+          <line x1="16" y1="15" x2="16" y2="60" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeLinecap="round" />
+          <line x1="19" y1="20" x2="19" y2="55" stroke="rgba(255,255,255,0.2)" strokeWidth="0.8" strokeLinecap="round" />
+        </svg>
+
+        {/* Glow when receiving drop */}
+        {isOver && (
+          <motion.div
+            className="absolute inset-0 rounded-xl"
+            style={{
+              background: "radial-gradient(ellipse at center, oklch(0.85 0.15 170 / 0.2), transparent 70%)",
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2 }}
+          />
+        )}
       </div>
 
       {/* Label */}
       <div
         className={cn(
-          "mt-1.5 rounded-md px-2 py-0.5 text-center transition-colors",
-          isSelected ? "bg-mint/20" : "bg-card/80",
+          "mt-1 rounded-md px-2 py-0.5 text-center transition-colors",
+          isSelected ? "bg-mint/20 shadow-sm" : "bg-card/80",
         )}
       >
         <Formula
@@ -148,7 +200,7 @@ export function VesselComponent({ vessel }: VesselProps) {
         />
         {vessel.contents.length > 0 && (
           <div className="text-[9px] text-navy-soft">
-            {vessel.contents[0].amountMl ?? 10} mL
+            {vessel.contents.reduce((sum, c) => sum + (c.amountMl ?? 10), 0)} mL
           </div>
         )}
       </div>

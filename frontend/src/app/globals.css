@@ -176,48 +176,44 @@
   }
 }
 
-/* Board scene — 2.5D phòng thí nghiệm với kệ + bàn */
 .lab-scene {
   position: relative;
-  background:
-    radial-gradient(
-      ellipse 70% 50% at 50% 0%,
-      oklch(1 0.02 90 / 0.55) 0%,
-      transparent 70%
-    ),
-    linear-gradient(
-      180deg,
-      oklch(0.96 0.035 200) 0%,
-      oklch(0.94 0.04 220) 55%,
-      oklch(0.92 0.045 240) 100%
-    );
-  box-shadow: var(--shadow-inset-board);
+  background: #1a1e1b;
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.9);
 }
 
 .lab-wall {
   position: absolute;
   inset: 0 0 38% 0;
-  background-image:
-    linear-gradient(oklch(0.28 0.05 260 / 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, oklch(0.28 0.05 260 / 0.05) 1px, transparent 1px);
-  background-size: 56px 56px, 56px 56px;
-  mask-image: linear-gradient(180deg, oklch(0 0 0 / 0.6) 0%, oklch(0 0 0 / 0.9) 70%, transparent 100%);
+  background-color: #2c3531; /* Blackboard green-grey */
+  background-image: 
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 60%),
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 100% 100%, 56px 56px, 56px 56px;
+  box-shadow: inset 0 0 60px rgba(0,0,0,0.8);
+  border-bottom: 8px solid #3e2723; /* Wooden chalk ledge */
+}
+
+.lab-wall::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: #5d4037;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
 .lab-floor {
   position: absolute;
   inset: 62% 0 0 0;
-  background:
-    linear-gradient(
-      180deg,
-      oklch(0.92 0.025 80) 0%,
-      oklch(0.88 0.035 75) 45%,
-      oklch(0.83 0.04 70) 100%
-    );
+  background: linear-gradient(180deg, #111111 0%, #0a0a0a 45%, #050505 100%);
   transform-origin: top center;
   box-shadow:
-    inset 0 8px 16px oklch(0.3 0.05 250 / 0.08),
-    inset 0 -16px 32px oklch(0.3 0.05 250 / 0.12);
+    inset 0 12px 24px rgba(0,0,0,0.6),
+    inset 0 -16px 32px rgba(0,0,0,0.8);
 }
 
 .lab-floor::before {
@@ -228,10 +224,10 @@
     90deg,
     transparent 0,
     transparent 80px,
-    oklch(0.5 0.06 60 / 0.08) 80px,
-    oklch(0.5 0.06 60 / 0.08) 81px
+    rgba(255,255,255,0.03) 80px,
+    rgba(255,255,255,0.03) 82px
   );
-  mask-image: linear-gradient(180deg, transparent 0%, oklch(0 0 0 / 0.6) 30%, oklch(0 0 0 / 0.9) 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.5) 30%, rgba(0,0,0,0.9) 100%);
 }
 
 .lab-floor::after {
@@ -241,12 +237,8 @@
   right: 0;
   bottom: 0;
   height: 14px;
-  background: linear-gradient(
-    180deg,
-    oklch(0.78 0.045 65) 0%,
-    oklch(0.68 0.05 60) 100%
-  );
-  box-shadow: 0 -2px 6px oklch(0.3 0.05 250 / 0.15);
+  background: linear-gradient(180deg, #1a1a1a 0%, #000000 100%);
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.8);
 }
 
 .lab-worktop {
@@ -255,13 +247,14 @@
   border-radius: 32px 32px 18px 18px / 60px 60px 18px 18px;
   background: radial-gradient(
     ellipse 70% 80% at 50% 35%,
-    oklch(0.99 0.01 90 / 0.85) 0%,
-    oklch(0.96 0.025 120 / 0.55) 55%,
-    transparent 100%
+    #2c2c2c 0%,
+    #151515 55%,
+    #050505 100%
   );
+  border-top: 1px solid rgba(255,255,255,0.15);
   box-shadow:
-    inset 0 2px 4px oklch(1 0 0 / 0.6),
-    0 12px 28px oklch(0.3 0.05 250 / 0.08);
+    inset 0 2px 4px rgba(255,255,255,0.05),
+    0 16px 32px rgba(0,0,0,0.8);
 }
 
 .lab-worktop::before {
@@ -269,9 +262,9 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background-image: radial-gradient(circle at 1px 1px, oklch(0.28 0.05 260 / 0.1) 1px, transparent 0);
-  background-size: 22px 22px;
-  mask-image: radial-gradient(ellipse 60% 70% at 50% 40%, oklch(0 0 0 / 0.9) 0%, transparent 100%);
+  background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0);
+  background-size: 24px 24px;
+  mask-image: radial-gradient(ellipse 60% 70% at 50% 40%, rgba(0,0,0,0.9) 0%, transparent 100%);
 }
 
 .lab-vignette {
@@ -281,23 +274,19 @@
   background: radial-gradient(
     ellipse 100% 100% at 50% 50%,
     transparent 50%,
-    oklch(0.28 0.05 260 / 0.12) 100%
+    rgba(0,0,0,0.6) 100%
   );
 }
 
 .lab-shelf {
   position: absolute;
   height: 68px;
-  background: linear-gradient(
-    180deg,
-    oklch(0.94 0.02 200) 0%,
-    oklch(0.9 0.025 210) 100%
-  );
+  background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
   border-radius: 8px;
   box-shadow:
-    0 2px 0 oklch(0.78 0.03 220),
-    0 6px 12px oklch(0.3 0.05 250 / 0.12),
-    inset 0 1px 0 oklch(1 0 0 / 0.7);
+    0 2px 0 #000,
+    0 6px 12px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(255,255,255,0.1);
 }
 
 .lab-shelf::after {
@@ -307,7 +296,7 @@
   right: 0;
   bottom: -8px;
   height: 8px;
-  background: linear-gradient(180deg, oklch(0.78 0.03 220) 0%, transparent 100%);
+  background: linear-gradient(180deg, #111 0%, transparent 100%);
   border-radius: 0 0 6px 6px;
   opacity: 0.5;
 }

@@ -47,29 +47,33 @@ public class ReactionPredictionService {
         String reactionKey = ReactionKeyUtil.buildKey(formulae);
         log.info("[reaction-predict] Key: {}", reactionKey);
 
-        // Step 1 – Cache lookup
         var cached = cacheService.getReaction(reactionKey);
-        if (cached.isPresent()) {
-            log.info("[reaction-predict] Cache HIT for key: {}", reactionKey);
-            cacheService.touchReactionCache(cached.get());
+        ReactionApiCache entityToSave = null;
 
-            ReactionResultDTO dto = JsonUtil.fromJson(
-                    cached.get().getNormalizedResult(), ReactionResultDTO.class);
-            if (dto == null) dto = fallbackDto();
-            return new PredictResult(dto, true, cached.get().getSource());
+        if (cached.isPresent()) {
+            log.info("[reaction-predict] Cache HIT for key: {}, but we are forcing refresh.", reactionKey);
+            entityToSave = cached.get();
         }
 
-        log.info("[reaction-predict] Cache MISS – calling AI/mock for: {}", formulae);
+        log.info("[reaction-predict] Calling AI/mock for: {}", formulae);
 
-        // Step 2 – Call AI client
+        // Call AI client
         String rawJson = aiClient.predictReaction(formulae);
 
-        // Step 3 – Validate
+        // Validate
         ReactionResultDTO dto = validateAndParse(rawJson);
 
-        // Step 4 – Save cache
+        // Save cache
         String source = determineMockOrReal();
-        saveCache(reactionKey, formulae, rawJson, dto, source);
+        if (entityToSave != null) {
+            entityToSave.setRawPredictionResponse(rawJson);
+            entityToSave.setNormalizedResult(JsonUtil.toJson(dto));
+            entityToSave.setSource(source);
+            entityToSave.setConfidence(dto.getConfidence());
+            cacheService.saveReaction(entityToSave);
+        } else {
+            saveCache(reactionKey, formulae, rawJson, dto, source);
+        }
 
         return new PredictResult(dto, false, source);
     }
@@ -115,9 +119,9 @@ public class ReactionPredictionService {
                 .hasReaction(false)
                 .effectType("NONE")
                 .confidence(0.0)
-                .messageVi("Hệ thống chưa đủ dữ liệu tin cậy để mô phỏng phản ứng này.")
-                .explanationVi("Cặp chất này có thể cần điều kiện phản ứng cụ thể hoặc không có hiện tượng rõ trong phạm vi mô phỏng.")
-                .safetyNoteVi("Đây là mô phỏng giáo dục.")
+                .messageVi("Hai chất này không phản ứng với nhau trong điều kiện hiện tại.")
+                .explanationVi("Điều kiện phản ứng không phù hợp hoặc cặp chất này không xảy ra phản ứng trong phạm vi mô phỏng.")
+                .safetyNoteVi(null)
                 .build();
     }
 

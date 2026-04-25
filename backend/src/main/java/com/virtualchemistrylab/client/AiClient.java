@@ -248,8 +248,12 @@ public class AiClient {
 
                 Quy tắc bắt buộc:
                 - effectType phải thuộc đúng các giá trị enum trên
+                - BẮT BUỘC NHẬN DIỆN phản ứng trung hòa (Axit + Bazơ -> Muối + Nước).
+                - BẮT BUỘC cung cấp `productFormula` chứa CHỈ các sản phẩm của phản ứng (ví dụ: "Cu(OH)2 + Na2SO4").
+                - Phải trả về TẤT CẢ sản phẩm trong `productFormula`.
+                - BẮT BUỘC có mô tả màu sắc của sản phẩm trong `messageVi` và `explanationVi`. Ví dụ: Na2SO4 có màu trắng, Cu(OH)2 kết tủa xanh.
+                - Đối với các kết tủa, `precipitateColor` phải là mã màu HEX chính xác.
                 - messageVi, explanationVi, safetyNoteVi phải bằng tiếng Việt
-                - Nếu không chắc → hasReaction=false hoặc confidence thấp
                 - Trả về DUY NHẤT JSON thuần, không markdown
                 """.formatted(String.join(" + ", reactants));
     }
@@ -311,6 +315,6 @@ public class AiClient {
         }
         // Unknown pair
         return """
-                {"hasReaction":false,"equation":null,"productFormula":null,"effectType":"NONE","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Hệ thống chưa đủ dữ liệu tin cậy để mô phỏng phản ứng này.","explanationVi":"Cặp chất này có thể cần điều kiện phản ứng cụ thể hoặc không có hiện tượng rõ trong phạm vi mô phỏng.","safetyNoteVi":"Đây là mô phỏng giáo dục.","confidence":0.1}""";
+                {"hasReaction":false,"equation":null,"productFormula":null,"effectType":"NONE","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Hai chất này không phản ứng với nhau trong điều kiện hiện tại.","explanationVi":"Điều kiện phản ứng không phù hợp hoặc cặp chất này không xảy ra phản ứng trong phạm vi mô phỏng.","safetyNoteVi":null,"confidence":1.0}""";
     }
 }

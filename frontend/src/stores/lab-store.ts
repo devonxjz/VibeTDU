@@ -6,6 +6,7 @@ import type { Vessel, ActiveEffect, Position } from "@/types/lab";
 import type { MixResponse, ReactionResult, VesselContent } from "@/types/api";
 import { mixChemicals } from "@/api/client/lab";
 import { resetSession as apiResetSession } from "@/api/client/lab";
+import { CHEMICAL_COLORS, getBottleColor } from "@/constants/chemicals";
 
 // ─── Color map by chemical category ─────────────────────────────────
 
@@ -18,12 +19,58 @@ const CATEGORY_COLORS: Record<string, string> = {
   organic: "oklch(0.78 0.12 140)",   // green
 };
 
-function getDefaultColor(formula: string): string {
-  // Simple heuristic based on common formulas
-  const lower = formula.toLowerCase();
-  if (lower.startsWith("h") && lower.includes("o")) return CATEGORY_COLORS.acid;
-  if (lower.includes("oh")) return CATEGORY_COLORS.base;
+/**
+ * Get a display color for a chemical.
+ * Priority: specific chemical color > category color > fallback
+ */
+function getDisplayColor(chemicalId?: string, formula?: string, category?: string): string {
+  // 1. Try specific chemical color from our database
+  if (chemicalId && CHEMICAL_COLORS[chemicalId]) {
+    return getBottleColor(chemicalId);
+  }
+  
+  // 2. Try to match by formula (lowercase id)
+  if (formula) {
+    const normalizedId = formula.toLowerCase().replace(/[()]/g, "");
+    if (CHEMICAL_COLORS[normalizedId]) {
+      return getBottleColor(normalizedId);
+    }
+  }
+
+  // 3. Fall back to category color
+  if (category && CATEGORY_COLORS[category]) {
+    return CATEGORY_COLORS[category];
+  }
+
+  // 4. Default color
   return "oklch(0.78 0.10 220)";
+}
+
+/**
+ * Common reaction product colors (for known products).
+ */
+const PRODUCT_COLORS: Record<string, string> = {
+  "NaCl": "rgba(245, 245, 250, 0.9)",      // white (salt solution)
+  "H2O": "rgba(200, 225, 250, 0.7)",       // clear/blue tint
+  "NaCl + H2O": "rgba(220, 235, 250, 0.8)", // clear solution
+  "CaCl2 + CO2 + H2O": "rgba(210, 230, 245, 0.8)", // clear + bubbles
+  "Cu(OH)2 + Na2SO4": "#1565C0",            // blue precipitate
+  "AgCl + NaNO3": "rgba(238, 238, 238, 0.95)", // white precipitate
+  "ZnCl2 + H2": "rgba(220, 230, 240, 0.8)",  // clear solution
+  "CaCl2": "rgba(230, 240, 248, 0.85)",     // clear
+  "CO2": "rgba(210, 230, 250, 0.5)",         // colorless gas
+  "Cu(OH)2": "#1565C0",                       // blue solid
+  "AgCl": "rgba(235, 235, 240, 0.95)",       // white solid
+  "Na2SO4": "rgba(245, 245, 250, 0.9)",      // white
+  "NaNO3": "rgba(245, 245, 250, 0.9)",       // white
+};
+
+function getProductColor(productFormula?: string, effectColor?: string): string | null {
+  if (effectColor) return effectColor;
+  if (productFormula && PRODUCT_COLORS[productFormula]) {
+    return PRODUCT_COLORS[productFormula];
+  }
+  return null;
 }
 
 // ─── Store Interface ────────────────────────────────────────────────
@@ -41,7 +88,7 @@ interface LabStore {
 
   // Actions
   setCenterBeaker: (id: string | null) => void;
-  addVessel: (chemical: { name: string; formula: string; category?: string }, position: Position) => string;
+  addVessel: (chemical: { name: string; formula: string; category?: string; chemicalId?: string }, position: Position) => string;
   removeVessel: (id: string) => void;
   selectVessel: (id: string | null) => void;
   moveVessel: (id: string, position: Position) => void;
@@ -78,15 +125,19 @@ export const useLabStore = create<LabStore>((set, get) => ({
 
   addVessel: (chemical, position) => {
     const id = `vessel-${nanoid(8)}`;
+    const displayColor = getDisplayColor(
+      chemical.chemicalId,
+      chemical.formula,
+      chemical.category
+    );
+    
     const vessel: Vessel = {
       id,
       position,
       contents: [
         { inputName: chemical.name, formula: chemical.formula, amountMl: 10 },
       ],
-      displayColor: chemical.category
-        ? (CATEGORY_COLORS[chemical.category] ?? getDefaultColor(chemical.formula))
-        : getDefaultColor(chemical.formula),
+      displayColor,
       label: chemical.formula,
     };
     set((state) => {
@@ -135,7 +186,7 @@ export const useLabStore = create<LabStore>((set, get) => ({
     try {
       const response: MixResponse = await mixChemicals({
         sessionCode: state.sessionCode,
-        sourceVesselId: "temp-source", // mock id
+        sourceVesselId: "temp-source",
         targetVesselId: targetId,
         sourceContents: [chemical],
         targetContents: target.contents,
@@ -144,10 +195,34 @@ export const useLabStore = create<LabStore>((set, get) => ({
       const result = response.result;
       const effectType = result?.effectType ?? "NONE";
 
-      // Update target vessel with new state from API
+      // Determine the display color after the reaction
+      let newColor = target.displayColor;
+      if (response.newTargetVesselState?.displayColor) {
+        newColor = response.newTargetVesselState.displayColor;
+      } else if (result?.effectColor) {
+        newColor = result.effectColor;
+      } else if (result?.precipitateColor) {
+        newColor = result.precipitateColor;
+      } else {
+        const productColor = getProductColor(result?.productFormula, result?.effectColor);
+        if (productColor) newColor = productColor;
+      }
+
+      // Build proper label: show equation result, not just product formula
+      let newLabel = target.label;
+      if (result?.hasReaction && result?.productFormula) {
+        newLabel = result.productFormula;
+      } else {
+        // No reaction: show both chemicals separated by "+"
+        const existingFormulas = target.contents.map(c => c.formula);
+        if (!existingFormulas.includes(chemical.formula)) {
+          newLabel = [...existingFormulas, chemical.formula].join(" + ");
+        }
+      }
+
       const updatedTarget: Vessel = {
         ...target,
-        displayColor: response.newTargetVesselState?.displayColor ?? target.displayColor,
+        displayColor: newColor,
         contents: response.newTargetVesselState?.contents?.map((p) => ({
           inputName: p.formula,
           formula: p.formula,
@@ -155,7 +230,7 @@ export const useLabStore = create<LabStore>((set, get) => ({
           ...target.contents,
           chemical,
         ],
-        label: result?.productFormula ?? target.label,
+        label: newLabel,
       };
 
       set({
@@ -208,10 +283,35 @@ export const useLabStore = create<LabStore>((set, get) => ({
       const result = response.result;
       const effectType = result?.effectType ?? "NONE";
 
-      // Update target vessel with new state from API
+      // Determine the display color after the reaction
+      let newColor = target.displayColor;
+      if (response.newTargetVesselState?.displayColor) {
+        newColor = response.newTargetVesselState.displayColor;
+      } else if (result?.effectColor) {
+        newColor = result.effectColor;
+      } else if (result?.precipitateColor) {
+        newColor = result.precipitateColor;
+      } else {
+        const productColor = getProductColor(result?.productFormula, result?.effectColor);
+        if (productColor) newColor = productColor;
+      }
+
+      // Build proper label
+      let newLabel = target.label;
+      if (result?.hasReaction && result?.productFormula) {
+        newLabel = result.productFormula;
+      } else {
+        // No reaction: combine both vessel labels
+        const allFormulas = [
+          ...target.contents.map(c => c.formula),
+          ...source.contents.map(c => c.formula),
+        ];
+        newLabel = [...new Set(allFormulas)].join(" + ");
+      }
+
       const updatedTarget: Vessel = {
         ...target,
-        displayColor: response.newTargetVesselState?.displayColor ?? target.displayColor,
+        displayColor: newColor,
         contents: response.newTargetVesselState?.contents?.map((p) => ({
           inputName: p.formula,
           formula: p.formula,
@@ -219,7 +319,7 @@ export const useLabStore = create<LabStore>((set, get) => ({
           ...target.contents,
           ...source.contents,
         ],
-        label: result?.productFormula ?? target.label,
+        label: newLabel,
       };
 
       // Remove source vessel (it was "poured" into target)
