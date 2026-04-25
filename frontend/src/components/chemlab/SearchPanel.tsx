@@ -136,9 +136,9 @@ export function SearchPanel() {
   }));
 
   return (
-    <aside className="flex h-full w-80 flex-col border-l border-border bg-sidebar">
+    <aside className="flex h-full w-full flex-col overflow-hidden rounded-2xl border border-white/20 bg-card/60 shadow-[0_8px_32px_rgba(0,0,0,0.1)] backdrop-blur-xl">
       {/* Header + search */}
-      <div className="border-b border-border px-4 py-3.5">
+      <div className="border-b border-white/10 px-4 py-3.5 bg-card/40">
         <div className="mb-2.5 flex items-center justify-between">
           <h2 className="font-display text-sm font-bold text-navy">
             Thư viện hoá chất

@@ -51,6 +51,7 @@ export function ExplosionEffect() {
             background: "oklch(0.9 0.2 50)",
             marginLeft: -s.size / 2,
             marginTop: -s.size / 2,
+            willChange: "transform, opacity",
           }}
           initial={{ x: 0, y: 0, opacity: 1 }}
           animate={{

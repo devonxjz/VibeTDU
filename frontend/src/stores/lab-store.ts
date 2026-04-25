@@ -31,6 +31,7 @@ function getDefaultColor(formula: string): string {
 interface LabStore {
   // State
   vessels: Record<string, Vessel>;
+  centerBeakerId: string | null;
   selectedVesselId: string | null;
   activeEffect: ActiveEffect | null;
   lastReaction: ReactionResult | null;
@@ -39,11 +40,13 @@ interface LabStore {
   error: string | null;
 
   // Actions
+  setCenterBeaker: (id: string | null) => void;
   addVessel: (chemical: { name: string; formula: string; category?: string }, position: Position) => string;
   removeVessel: (id: string) => void;
   selectVessel: (id: string | null) => void;
   moveVessel: (id: string, position: Position) => void;
   mixVessels: (sourceId: string, targetId: string) => Promise<void>;
+  mixChemicalIntoVessel: (chemical: VesselContent, targetId: string) => Promise<void>;
   resetBoard: () => Promise<void>;
   clearEffect: () => void;
   setError: (error: string | null) => void;
@@ -63,12 +66,15 @@ const EFFECT_DURATION: Record<string, number> = {
 export const useLabStore = create<LabStore>((set, get) => ({
   // Initial state
   vessels: {},
+  centerBeakerId: null,
   selectedVesselId: null,
   activeEffect: null,
   lastReaction: null,
   sessionCode: `session-${nanoid(8)}`,
   isLoading: false,
   error: null,
+
+  setCenterBeaker: (id) => set({ centerBeakerId: id }),
 
   addVessel: (chemical, position) => {
     const id = `vessel-${nanoid(8)}`;
@@ -83,9 +89,13 @@ export const useLabStore = create<LabStore>((set, get) => ({
         : getDefaultColor(chemical.formula),
       label: chemical.formula,
     };
-    set((state) => ({
-      vessels: { ...state.vessels, [id]: vessel },
-    }));
+    set((state) => {
+      const isFirst = Object.keys(state.vessels).length === 0;
+      return {
+        vessels: { ...state.vessels, [id]: vessel },
+        centerBeakerId: isFirst ? id : state.centerBeakerId,
+      };
+    });
     return id;
   },
 
@@ -95,6 +105,7 @@ export const useLabStore = create<LabStore>((set, get) => ({
       return {
         vessels: rest,
         selectedVesselId: state.selectedVesselId === id ? null : state.selectedVesselId,
+        centerBeakerId: state.centerBeakerId === id ? null : state.centerBeakerId,
       };
     });
   },
@@ -112,6 +123,69 @@ export const useLabStore = create<LabStore>((set, get) => ({
         },
       };
     });
+  },
+
+  mixChemicalIntoVessel: async (chemical, targetId) => {
+    const state = get();
+    const target = state.vessels[targetId];
+    if (!target) return;
+
+    set({ isLoading: true, error: null });
+
+    try {
+      const response: MixResponse = await mixChemicals({
+        sessionCode: state.sessionCode,
+        sourceVesselId: "temp-source", // mock id
+        targetVesselId: targetId,
+        sourceContents: [chemical],
+        targetContents: target.contents,
+      });
+
+      const result = response.result;
+      const effectType = result?.effectType ?? "NONE";
+
+      // Update target vessel with new state from API
+      const updatedTarget: Vessel = {
+        ...target,
+        displayColor: response.newTargetVesselState?.displayColor ?? target.displayColor,
+        contents: response.newTargetVesselState?.contents?.map((p) => ({
+          inputName: p.formula,
+          formula: p.formula,
+        })) as VesselContent[] ?? [
+          ...target.contents,
+          chemical,
+        ],
+        label: result?.productFormula ?? target.label,
+      };
+
+      set({
+        vessels: { ...state.vessels, [targetId]: updatedTarget },
+        lastReaction: result ?? null,
+        activeEffect:
+          effectType !== "NONE"
+            ? {
+                type: effectType,
+                vesselId: targetId,
+                color: result?.effectColor,
+                precipitateColor: result?.precipitateColor,
+                gasFormula: result?.gasFormula,
+              }
+            : null,
+        isLoading: false,
+      });
+
+      if (effectType !== "NONE") {
+        const duration = EFFECT_DURATION[effectType] ?? 3000;
+        setTimeout(() => {
+          get().clearEffect();
+        }, duration);
+      }
+    } catch (err) {
+      set({
+        isLoading: false,
+        error: err instanceof Error ? err.message : "Lỗi không xác định",
+      });
+    }
   },
 
   mixVessels: async (sourceId, targetId) => {

@@ -166,9 +166,9 @@ export function PropertiesPanel() {
   const error = useLabStore((s) => s.error);
 
   return (
-    <aside className="flex h-full w-72 flex-col border-r border-border bg-sidebar">
+    <aside className="flex h-full w-full flex-col overflow-hidden rounded-2xl border border-white/20 bg-card/60 shadow-[0_8px_32px_rgba(0,0,0,0.1)] backdrop-blur-xl">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-4 py-3.5">
+      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3.5 bg-card/40">
         <div>
           <h2 className="font-display text-sm font-bold text-navy">
             Bảng điều khiển

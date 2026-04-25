@@ -44,6 +44,13 @@ export function VesselComponent({ vessel }: VesselProps) {
       }
     : undefined;
 
+  const totalAmount = vessel.contents.reduce((sum, c) => sum + (c.amountMl || 10), 0);
+  const fillRatio = Math.min(0.9, Math.max(0.1, totalAmount / 50)); // Max 50ml for visual full
+
+  const isLoading = useLabStore((s) => s.isLoading);
+  const centerBeakerId = useLabStore((s) => s.centerBeakerId);
+  const isReacting = isLoading && vessel.id === centerBeakerId;
+
   return (
     <motion.div
       ref={(node) => {
@@ -61,7 +68,11 @@ export function VesselComponent({ vessel }: VesselProps) {
         ...style,
       }}
       initial={{ scale: 0, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
+      animate={
+        isReacting 
+          ? { x: [-3, 3, -3, 3, 0], transition: { repeat: Infinity, duration: 0.4 } } 
+          : { scale: 1, opacity: 1 }
+      }
       exit={{ scale: 0, opacity: 0 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
       onClick={(e) => {
@@ -100,12 +111,16 @@ export function VesselComponent({ vessel }: VesselProps) {
         <div className="h-2 w-6 rounded-t-sm border-x-2 border-t-2 border-white/50 bg-white/10" />
 
         {/* Liquid fill */}
-        <div
-          className="absolute bottom-0 left-0 right-0 rounded-b-xl transition-all duration-500"
+        <motion.div
+          className="absolute bottom-0 left-0 right-0 rounded-b-xl"
           style={{
-            height: "60%",
+            height: "100%",
+            transformOrigin: "bottom",
             background: `linear-gradient(180deg, ${vessel.displayColor}80, ${vessel.displayColor})`,
           }}
+          initial={{ scaleY: 0 }}
+          animate={{ scaleY: fillRatio }}
+          transition={{ type: "spring", stiffness: 100, damping: 20 }}
         />
 
         {/* Glass highlight */}

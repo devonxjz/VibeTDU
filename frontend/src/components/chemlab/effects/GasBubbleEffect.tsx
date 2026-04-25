@@ -29,6 +29,7 @@ export function GasBubbleEffect() {
             background:
               "radial-gradient(circle at 30% 30%, oklch(1 0 0 / 0.7), oklch(0.85 0.08 200 / 0.4))",
             boxShadow: "inset 0 -1px 2px oklch(0.8 0.06 200 / 0.3)",
+            willChange: "transform, opacity",
           }}
           initial={{ y: 0, opacity: 0, scale: 0.3 }}
           animate={{
