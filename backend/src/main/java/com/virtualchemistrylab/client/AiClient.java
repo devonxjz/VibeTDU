@@ -3,18 +3,26 @@ package com.virtualchemistrylab.client;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.virtualchemistrylab.config.AppProperties;
+import com.virtualchemistrylab.dto.ChatMessage;
 import com.virtualchemistrylab.entity.ApiErrorLog;
+import com.virtualchemistrylab.exception.ApiException;
 import com.virtualchemistrylab.repository.ApiErrorLogRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+<<<<<<< HEAD
 import java.util.concurrent.atomic.AtomicInteger;
+=======
+import java.util.Objects;
+>>>>>>> feat/update_chatbotAI
 
 /**
  * AI client hỗ trợ hai provider:
@@ -56,7 +64,7 @@ public class AiClient {
     /**
      * Predict chemical reaction. Returns raw JSON string or null on failure.
      */
-    public String predictReaction(List<String> reactantFormulae) {
+    public String predictReaction(List<String> reactantFormulae, Double temperature, Double pressure, String catalyst) {
         if (appProperties.getAi().isMockMode()) {
             log.info("[AI] Mock mode – returning built-in response for: {}", reactantFormulae);
             return getMockReaction(reactantFormulae);
@@ -68,7 +76,7 @@ public class AiClient {
             return getMockReaction(reactantFormulae);
         }
 
-        String prompt = buildReactionPrompt(reactantFormulae);
+        String prompt = buildReactionPrompt(reactantFormulae, temperature, pressure, catalyst);
 
         String firstKey = apiKeys.get(0).contains("#") ? apiKeys.get(0).split("#")[0].trim() : apiKeys.get(0).trim();
         String result = null;
@@ -117,6 +125,34 @@ public class AiClient {
             return "Xin lỗi, hệ thống AI hiện đang không khả dụng hoặc bị quá tải. Vui lòng thử lại sau.";
         }
         return result;
+    }
+
+    /**
+     * Multi-turn chat (Gemini native contents[] format).
+     * history roles must be "user" | "model".
+     */
+    public String chat(List<ChatMessage> history, String reactionContext) {
+        if (appProperties.getAi().isMockMode()) {
+            return "Đây là phản hồi giả lập (mock mode). "
+                    + "Hãy tắt mock mode và cấu hình AI_API_KEY để dùng Gemini.";
+        }
+
+        String apiKey = appProperties.getAi().getApiKey();
+        if (apiKey == null || apiKey.isBlank()) {
+            return "Hệ thống AI chưa được cấu hình. Vui lòng liên hệ quản trị viên.";
+        }
+
+        List<ChatMessage> cleaned = sanitizeHistory(history);
+
+        String systemText = "Bạn là trợ lý hóa học giáo dục. Trả lời ngắn gọn, chính xác bằng tiếng Việt.\n"
+                + "Nếu câu hỏi liên quan đến phản ứng, hãy dựa trên ngữ cảnh phản ứng bên dưới.\n"
+                + "Ngữ cảnh phản ứng:\n" + (reactionContext == null ? "Không có ngữ cảnh phản ứng." : reactionContext);
+
+        if (isGeminiKey(apiKey) || isGeminiUrl(appProperties.getAi().getApiUrl())) {
+            return callGeminiChat(systemText, cleaned, apiKey);
+        } else {
+            return callOpenAiChat(systemText, cleaned, apiKey);
+        }
     }
 
     // ─── Google Gemini ──────────────────────────────────────────────────────────
@@ -187,6 +223,59 @@ public class AiClient {
         return null;
     }
 
+    private String callGeminiChat(String systemInstruction, List<ChatMessage> history, String apiKey) {
+        String model = appProperties.getAi().getModel();
+        if (model == null || model.isBlank() || model.startsWith("gpt-")) {
+            model = "gemini-2.0-flash";
+        }
+
+        String url = GEMINI_BASE_URL + "/" + model + ":generateContent?key=" + apiKey;
+
+        String requestBody;
+        try {
+            List<Map<String, Object>> contents = history.stream()
+                    .map(m -> Map.<String, Object>of(
+                            "role", m.getRole(),
+                            "parts", List.of(Map.of("text", m.getContent()))
+                    ))
+                    .toList();
+
+            Map<String, Object> body = Map.of(
+                    "systemInstruction", Map.of(
+                            "parts", List.of(Map.of("text", systemInstruction))
+                    ),
+                    "contents", contents,
+                    "generationConfig", Map.of(
+                            "temperature", 0.3,
+                            "maxOutputTokens", 1024
+                    )
+            );
+
+            requestBody = MAPPER.writeValueAsString(body);
+        } catch (Exception e) {
+            log.error("[AI-Gemini] Failed to build chat request: {}", e.getMessage());
+            return null;
+        }
+
+        log.info("[AI-Gemini] Calling Gemini chat model: {}", model);
+
+        try {
+            String response = webClient.post()
+                    .uri(url)
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .timeout(TIMEOUT)
+                    .block();
+
+            return extractGeminiContent(response);
+        } catch (Exception e) {
+            log.error("[AI-Gemini] Chat call failed: {}", e.getMessage());
+            saveErrorLog("AI_GEMINI_CHAT", "(chat)", e.getMessage());
+            return null;
+        }
+    }
+
     /**
      * Extract text content from Gemini response:
      * { "candidates":[{"content":{"parts":[{"text":"..."}]}}] }
@@ -250,6 +339,49 @@ public class AiClient {
         }
     }
 
+    private String callOpenAiChat(String systemInstruction, List<ChatMessage> history, String apiKey) {
+        String requestBody;
+        try {
+            List<Map<String, Object>> messages = new ArrayList<>();
+            messages.add(Map.of("role", "system", "content", systemInstruction));
+
+            for (ChatMessage m : history) {
+                String role = Objects.equals(m.getRole(), "model") ? "assistant" : "user";
+                messages.add(Map.of("role", role, "content", m.getContent()));
+            }
+
+            Map<String, Object> body = Map.of(
+                    "model", appProperties.getAi().getModel(),
+                    "messages", messages,
+                    "temperature", 0.3,
+                    "max_tokens", 800
+            );
+            requestBody = MAPPER.writeValueAsString(body);
+        } catch (Exception e) {
+            log.error("[AI-OpenAI] Failed to build chat request: {}", e.getMessage());
+            return null;
+        }
+
+        log.info("[AI-OpenAI] Calling OpenAI-compatible chat API");
+
+        try {
+            String response = webClient.post()
+                    .uri(appProperties.getAi().getApiUrl())
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .timeout(TIMEOUT)
+                    .block();
+
+            return extractOpenAiContent(response);
+        } catch (Exception e) {
+            log.error("[AI-OpenAI] Chat call failed: {}", e.getMessage());
+            saveErrorLog("AI_OPENAI_CHAT", "(chat)", e.getMessage());
+            return null;
+        }
+    }
+
     private String extractOpenAiContent(String response) {
         if (response == null) return null;
         try {
@@ -265,10 +397,13 @@ public class AiClient {
 
     // ─── Prompt builder ──────────────────────────────────────────────────────────
 
-    private String buildReactionPrompt(List<String> reactants) {
+    private String buildReactionPrompt(List<String> reactants, Double temp, Double pres, String cat) {
+        String envStr = String.format("Nhiệt độ: %s °C, Áp suất: %s atm, Xúc tác: %s", 
+            temp != null ? temp : "25", pres != null ? pres : "1", cat != null ? cat : "Không");
         return """
                 Bạn là hệ thống mô phỏng phản ứng hóa học giáo dục.
                 Các chất phản ứng: %s
+                Điều kiện môi trường: %s
 
                 Hãy dự đoán kết quả phản ứng và trả về JSON theo đúng schema sau (KHÔNG kèm markdown, KHÔNG giải thích ngoài JSON):
                 {
@@ -295,7 +430,7 @@ public class AiClient {
                 - Đối với các kết tủa, `precipitateColor` phải là mã màu HEX chính xác.
                 - messageVi, explanationVi, safetyNoteVi phải bằng tiếng Việt
                 - Trả về DUY NHẤT JSON thuần, không markdown
-                """.formatted(String.join(" + ", reactants));
+                """.formatted(String.join(" + ", reactants), envStr);
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -307,6 +442,55 @@ public class AiClient {
 
     private boolean isGeminiUrl(String url) {
         return url != null && url.contains("generativelanguage.googleapis.com");
+    }
+
+    private List<ChatMessage> sanitizeHistory(List<ChatMessage> history) {
+        if (history == null || history.isEmpty()) {
+            throw new ApiException("AI_CHAT_EMPTY_HISTORY", HttpStatus.BAD_REQUEST);
+        }
+
+        List<ChatMessage> nonBlank = history.stream()
+                .filter(Objects::nonNull)
+                .map(m -> ChatMessage.builder()
+                        .role(m.getRole() == null ? null : m.getRole().trim())
+                        .content(m.getContent() == null ? null : m.getContent().trim())
+                        .build())
+                .filter(m -> m.getRole() != null && !m.getRole().isBlank())
+                .filter(m -> m.getContent() != null && !m.getContent().isBlank())
+                .toList();
+
+        int firstUserIdx = -1;
+        for (int i = 0; i < nonBlank.size(); i++) {
+            if ("user".equals(nonBlank.get(i).getRole())) {
+                firstUserIdx = i;
+                break;
+            }
+        }
+        if (firstUserIdx < 0) {
+            throw new ApiException("AI_CHAT_EMPTY_HISTORY", HttpStatus.BAD_REQUEST);
+        }
+
+        List<ChatMessage> trimmed = nonBlank.subList(firstUserIdx, nonBlank.size());
+        List<ChatMessage> merged = new ArrayList<>();
+
+        for (ChatMessage m : trimmed) {
+            if (merged.isEmpty()) {
+                merged.add(m);
+                continue;
+            }
+            ChatMessage last = merged.get(merged.size() - 1);
+            if (Objects.equals(last.getRole(), m.getRole())) {
+                last.setContent(last.getContent() + "\n\n" + m.getContent());
+            } else {
+                merged.add(m);
+            }
+        }
+
+        if (merged.isEmpty() || !"user".equals(merged.get(0).getRole())) {
+            throw new ApiException("AI_CHAT_EMPTY_HISTORY", HttpStatus.BAD_REQUEST);
+        }
+
+        return merged;
     }
 
     /** Remove ```json ... ``` wrapper that some AI models add despite instructions */

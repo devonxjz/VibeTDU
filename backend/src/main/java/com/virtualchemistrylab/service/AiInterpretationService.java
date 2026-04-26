@@ -1,10 +1,12 @@
 package com.virtualchemistrylab.service;
 
 import com.virtualchemistrylab.client.AiClient;
+import com.virtualchemistrylab.dto.ChatMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,6 +43,22 @@ public class AiInterpretationService {
 
         if (answer == null || answer.isBlank()) {
             log.warn("[ai-interpret] AI returned empty answer");
+            return "Xin lỗi, hệ thống AI không thể trả lời câu hỏi này lúc này. Vui lòng thử lại sau.";
+        }
+
+        return answer;
+    }
+
+    public String chat(List<ChatMessage> messages, Map<String, String> reactionContext) {
+        String contextStr = reactionContext == null ? "Không có ngữ cảnh phản ứng." :
+                reactionContext.entrySet().stream()
+                        .map(e -> e.getKey() + ": " + e.getValue())
+                        .reduce("", (a, b) -> a + "\n" + b);
+
+        String answer = aiClient.chat(messages, contextStr);
+
+        if (answer == null || answer.isBlank()) {
+            log.warn("[ai-interpret] AI returned empty chat answer");
             return "Xin lỗi, hệ thống AI không thể trả lời câu hỏi này lúc này. Vui lòng thử lại sau.";
         }
 

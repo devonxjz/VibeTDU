@@ -35,6 +35,9 @@ export interface MixRequest {
   targetVesselId: string;
   sourceContents: VesselContent[];
   targetContents: VesselContent[];
+  temperature?: number;
+  pressure?: number;
+  catalyst?: string;
 }
 
 export interface ReactionResult {
@@ -104,6 +107,26 @@ export interface AiAskRequest {
 }
 
 export interface AiAskResponse {
+  status: string;
+  answerVi: string;
+}
+
+// ─── AI Chat (multi-turn) ───────────────────────────────────────────
+
+export type ChatRole = "user" | "model";
+
+export interface ChatMessage {
+  role: ChatRole;
+  content: string;
+}
+
+export interface AiChatRequest {
+  sessionCode: string;
+  reactionContext?: Record<string, string>;
+  messages: ChatMessage[];
+}
+
+export interface AiChatResponse {
   status: string;
   answerVi: string;
 }

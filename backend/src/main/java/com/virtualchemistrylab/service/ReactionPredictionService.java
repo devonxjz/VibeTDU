@@ -43,7 +43,7 @@ public class ReactionPredictionService {
     /**
      * Predict and return a reaction result for the given list of canonical formulae.
      */
-    public PredictResult predict(List<String> formulae) {
+    public PredictResult predict(List<String> formulae, Double temperature, Double pressure, String catalyst) {
         String reactionKey = ReactionKeyUtil.buildKey(formulae);
         log.info("[reaction-predict] Key: {}", reactionKey);
 
@@ -58,7 +58,7 @@ public class ReactionPredictionService {
         log.info("[reaction-predict] Calling AI/mock for: {}", formulae);
 
         // Call AI client
-        String rawJson = aiClient.predictReaction(formulae);
+        String rawJson = aiClient.predictReaction(formulae, temperature, pressure, catalyst);
 
         // Validate
         ReactionResultDTO dto = validateAndParse(rawJson);

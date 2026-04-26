@@ -1,5 +1,7 @@
 package com.virtualchemistrylab.controller;
 
+import com.virtualchemistrylab.dto.AiChatRequest;
+import com.virtualchemistrylab.dto.AiChatResponse;
 import com.virtualchemistrylab.dto.AiAskRequest;
 import com.virtualchemistrylab.dto.AiAskResponse;
 import com.virtualchemistrylab.service.AiInterpretationService;
@@ -103,6 +105,22 @@ public class AiController {
                 .build();
 
         experimentLogService.log(request.getSessionCode(), "AI_ASK", request, response);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/chat")
+    public ResponseEntity<AiChatResponse> chat(@Valid @RequestBody AiChatRequest request) {
+        String answer = aiInterpretationService.chat(
+                request.getMessages(),
+                request.getReactionContext());
+
+        AiChatResponse response = AiChatResponse.builder()
+                .status("success")
+                .answerVi(answer)
+                .build();
+
+        experimentLogService.log(request.getSessionCode(), "AI_CHAT", request, response);
 
         return ResponseEntity.ok(response);
     }

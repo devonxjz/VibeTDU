@@ -20,10 +20,12 @@ import {
   Gauge,
   Sparkles,
   ChevronDown,
+  Bot,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/utils/cn";
 import { useLabStore } from "@/stores/lab-store";
+import { useChatbotStore } from "@/stores/chatbot-store";
 
 interface ToolButtonProps {
   icon: React.ComponentType<{ className?: string }>;
@@ -112,15 +114,19 @@ function SliderControl({
 
 export function Toolbar() {
   const [activeCanvasTool, setActiveCanvasTool] = useState("select");
-  const [temperature, setTemperature] = useState(25);
-  const [pressure, setPressure] = useState(1);
-  const [catalyst, setCatalyst] = useState("Không");
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState("1x");
 
   const resetBoard = useLabStore((s) => s.resetBoard);
   const isLoading = useLabStore((s) => s.isLoading);
   const vesselCount = useLabStore((s) => Object.keys(s.vessels).length);
+  const temperature = useLabStore((s) => s.temperature);
+  const pressure = useLabStore((s) => s.pressure);
+  const catalyst = useLabStore((s) => s.catalyst);
+  const setEnvironment = useLabStore((s) => s.setEnvironment);
+
+  const toggleChatbotPanel = useChatbotStore((s) => s.togglePanel);
+  const isChatbotOpen = useChatbotStore((s) => s.isOpen);
 
   return (
     <div className="flex h-14 w-full items-center gap-2 border-b border-border bg-card/80 px-4 backdrop-blur-sm">
@@ -189,7 +195,7 @@ export function Toolbar() {
           min={-20}
           max={500}
           unit="°C"
-          onChange={setTemperature}
+          onChange={(v) => setEnvironment({ temperature: v })}
         />
         <SliderControl
           icon={Gauge}
@@ -198,7 +204,7 @@ export function Toolbar() {
           min={1}
           max={10}
           unit="atm"
-          onChange={setPressure}
+          onChange={(v) => setEnvironment({ pressure: v })}
         />
         <div className="relative">
           <button className="flex items-center gap-1.5 rounded-lg bg-muted/60 px-2.5 py-1.5 text-xs font-medium text-navy transition-colors hover:bg-muted">
@@ -215,6 +221,12 @@ export function Toolbar() {
 
       {/* Simulation controls */}
       <div className="flex items-center gap-1.5">
+        <ToolButton
+          icon={Bot}
+          label="Trợ lý hoá học"
+          active={isChatbotOpen}
+          onClick={toggleChatbotPanel}
+        />
         <ToolButton
           icon={RotateCcw}
           label="Đặt lại"

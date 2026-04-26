@@ -86,6 +86,11 @@ interface LabStore {
   isLoading: boolean;
   error: string | null;
 
+  // Environment conditions
+  temperature: number;
+  pressure: number;
+  catalyst: string;
+
   // Actions
   setCenterBeaker: (id: string | null) => void;
   addVessel: (chemical: { name: string; formula: string; category?: string; chemicalId?: string }, position: Position) => string;
@@ -97,6 +102,8 @@ interface LabStore {
   resetBoard: () => Promise<void>;
   clearEffect: () => void;
   setError: (error: string | null) => void;
+
+  setEnvironment: (conditions: Partial<{ temperature: number; pressure: number; catalyst: string }>) => void;
 }
 
 // ─── Effect Duration Map ────────────────────────────────────────────
@@ -120,6 +127,10 @@ export const useLabStore = create<LabStore>((set, get) => ({
   sessionCode: `session-${nanoid(8)}`,
   isLoading: false,
   error: null,
+
+  temperature: 25,
+  pressure: 1,
+  catalyst: "Không",
 
   setCenterBeaker: (id) => set({ centerBeakerId: id }),
 
@@ -190,6 +201,9 @@ export const useLabStore = create<LabStore>((set, get) => ({
         targetVesselId: targetId,
         sourceContents: [chemical],
         targetContents: target.contents,
+        temperature: state.temperature,
+        pressure: state.pressure,
+        catalyst: state.catalyst,
       });
 
       const result = response.result;
@@ -278,6 +292,9 @@ export const useLabStore = create<LabStore>((set, get) => ({
         targetVesselId: targetId,
         sourceContents: source.contents,
         targetContents: target.contents,
+        temperature: state.temperature,
+        pressure: state.pressure,
+        catalyst: state.catalyst,
       });
 
       const result = response.result;
@@ -377,4 +394,6 @@ export const useLabStore = create<LabStore>((set, get) => ({
   clearEffect: () => set({ activeEffect: null }),
 
   setError: (error) => set({ error }),
+
+  setEnvironment: (conditions) => set((state) => ({ ...state, ...conditions })),
 }));
