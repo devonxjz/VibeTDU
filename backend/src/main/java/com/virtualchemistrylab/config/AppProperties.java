@@ -5,6 +5,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Strongly-typed configuration bound from application.properties.
  * All app.* keys are mapped here to avoid magic strings.
@@ -24,7 +27,7 @@ public class AppProperties {
 
     @Getter @Setter
     public static class Ai {
-        private String apiKey = "";
+        private List<String> apiKeys = new ArrayList<>();
         private String apiUrl = "https://api.openai.com/v1/chat/completions";
         private String model = "gpt-4o-mini";
         private boolean mockMode = true;

@@ -14,6 +14,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * AI client hỗ trợ hai provider:
@@ -40,6 +41,7 @@ public class AiClient {
     private final WebClient webClient;
     private final AppProperties appProperties;
     private final ApiErrorLogRepository apiErrorLogRepository;
+    private final AtomicInteger currentKeyIndex = new AtomicInteger(0);
 
     public AiClient(WebClient webClient,
                     AppProperties appProperties,
@@ -60,19 +62,28 @@ public class AiClient {
             return getMockReaction(reactantFormulae);
         }
 
-        String apiKey = appProperties.getAi().getApiKey();
-        if (apiKey == null || apiKey.isBlank()) {
-            log.warn("[AI] No API key – falling back to mock");
+        List<String> apiKeys = appProperties.getAi().getApiKeys();
+        if (apiKeys == null || apiKeys.isEmpty()) {
+            log.warn("[AI] No API keys – falling back to mock");
             return getMockReaction(reactantFormulae);
         }
 
         String prompt = buildReactionPrompt(reactantFormulae);
 
-        if (isGeminiKey(apiKey) || isGeminiUrl(appProperties.getAi().getApiUrl())) {
-            return callGemini(prompt, apiKey);
+        String firstKey = apiKeys.get(0).contains("#") ? apiKeys.get(0).split("#")[0].trim() : apiKeys.get(0).trim();
+        String result = null;
+
+        if (isGeminiKey(firstKey) || isGeminiUrl(appProperties.getAi().getApiUrl())) {
+            result = callGemini(prompt);
         } else {
-            return callOpenAi(prompt, apiKey);
+            result = callOpenAi(prompt);
         }
+        
+        if (result == null) {
+            log.warn("[AI] AI call failed or all keys exhausted. Falling back to mock.");
+            return getMockReaction(reactantFormulae);
+        }
+        return result;
     }
 
     /**
@@ -84,8 +95,8 @@ public class AiClient {
                     + "Hãy tắt mock mode và cấu hình AI_API_KEY để nhận câu trả lời thực từ Gemini.";
         }
 
-        String apiKey = appProperties.getAi().getApiKey();
-        if (apiKey == null || apiKey.isBlank()) {
+        List<String> apiKeys = appProperties.getAi().getApiKeys();
+        if (apiKeys == null || apiKeys.isEmpty()) {
             return "Hệ thống AI chưa được cấu hình. Vui lòng liên hệ quản trị viên.";
         }
 
@@ -93,24 +104,29 @@ public class AiClient {
                 + "Ngữ cảnh phản ứng:\n" + reactionContext
                 + "\n\nCâu hỏi: " + question;
 
-        if (isGeminiKey(apiKey) || isGeminiUrl(appProperties.getAi().getApiUrl())) {
-            return callGemini(prompt, apiKey);
+        String firstKey = apiKeys.get(0).contains("#") ? apiKeys.get(0).split("#")[0].trim() : apiKeys.get(0).trim();
+        String result = null;
+
+        if (isGeminiKey(firstKey) || isGeminiUrl(appProperties.getAi().getApiUrl())) {
+            result = callGemini(prompt);
         } else {
-            return callOpenAi(prompt, apiKey);
+            result = callOpenAi(prompt);
         }
+        
+        if (result == null) {
+            return "Xin lỗi, hệ thống AI hiện đang không khả dụng hoặc bị quá tải. Vui lòng thử lại sau.";
+        }
+        return result;
     }
 
     // ─── Google Gemini ──────────────────────────────────────────────────────────
 
-    private String callGemini(String prompt, String apiKey) {
+    private String callGemini(String prompt) {
         String model = appProperties.getAi().getModel();
         // Default Gemini model if user didn't override
         if (model == null || model.isBlank() || model.startsWith("gpt-")) {
             model = "gemini-2.0-flash";
         }
-
-        // Gemini uses API key as query param
-        String url = GEMINI_BASE_URL + "/" + model + ":generateContent?key=" + apiKey;
 
         // Build Gemini request body format
         String requestBody;
@@ -132,22 +148,43 @@ public class AiClient {
 
         log.info("[AI-Gemini] Calling Gemini model: {}", model);
 
-        try {
-            String response = webClient.post()
-                    .uri(url)
-                    .bodyValue(requestBody)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .timeout(TIMEOUT)
-                    .block();
+        List<String> apiKeys = appProperties.getAi().getApiKeys();
+        int totalKeys = apiKeys != null ? apiKeys.size() : 0;
 
-            return extractGeminiContent(response);
+        for (int i = 0; i < totalKeys; i++) {
+            int index = Math.abs(currentKeyIndex.getAndIncrement() % totalKeys);
+            String rawKey = apiKeys.get(index);
+            String apiKey = rawKey.contains("#") ? rawKey.split("#")[0].trim() : rawKey.trim();
+            String url = GEMINI_BASE_URL + "/" + model + ":generateContent?key=" + apiKey;
 
-        } catch (Exception e) {
-            log.error("[AI-Gemini] Call failed: {}", e.getMessage());
-            saveErrorLog("AI_GEMINI", prompt.substring(0, Math.min(200, prompt.length())), e.getMessage());
-            return null;
+            try {
+                String response = webClient.post()
+                        .uri(url)
+                        .bodyValue(requestBody)
+                        .retrieve()
+                        .bodyToMono(String.class)
+                        .timeout(TIMEOUT)
+                        .block();
+
+                return extractGeminiContent(response);
+
+            } catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
+                if (e.getStatusCode().value() == 429) {
+                    log.warn("[AI-Gemini] Key index {} exceeded quota (429). Rotating...", index);
+                    continue;
+                }
+                log.error("[AI-Gemini] Call failed (HTTP {}): {}", e.getStatusCode().value(), e.getMessage());
+                saveErrorLog("AI_GEMINI", prompt.substring(0, Math.min(200, prompt.length())), e.getMessage());
+                return null;
+            } catch (Exception e) {
+                log.error("[AI-Gemini] Call failed: {}", e.getMessage());
+                saveErrorLog("AI_GEMINI", prompt.substring(0, Math.min(200, prompt.length())), e.getMessage());
+                return null;
+            }
         }
+        
+        log.error("[AI-Gemini] All {} keys have exceeded quota.", totalKeys);
+        return null;
     }
 
     /**
@@ -175,7 +212,10 @@ public class AiClient {
 
     // ─── OpenAI-compatible ──────────────────────────────────────────────────────
 
-    private String callOpenAi(String prompt, String apiKey) {
+    private String callOpenAi(String prompt) {
+        List<String> apiKeys = appProperties.getAi().getApiKeys();
+        String rawKey = apiKeys != null && !apiKeys.isEmpty() ? apiKeys.get(0) : "";
+        String apiKey = rawKey.contains("#") ? rawKey.split("#")[0].trim() : rawKey.trim();
         String requestBody;
         try {
             Map<String, Object> body = Map.of(
@@ -227,7 +267,7 @@ public class AiClient {
 
     private String buildReactionPrompt(List<String> reactants) {
         return """
-                Bạn là chuyên gia hóa học và hệ thống mô phỏng giáo dục.
+                Bạn là hệ thống mô phỏng phản ứng hóa học giáo dục.
                 Các chất phản ứng: %s
 
                 Hãy dự đoán kết quả phản ứng và trả về JSON theo đúng schema sau (KHÔNG kèm markdown, KHÔNG giải thích ngoài JSON):
@@ -247,13 +287,14 @@ public class AiClient {
                 }
 
                 Quy tắc bắt buộc:
-                - hasReaction=true NẾU CÓ PHẢN ỨNG XẢY RA, ngay cả khi không có hiện tượng trực quan rõ rệt (ví dụ: phản ứng trung hòa axit-bazơ như H2SO4 + NaOH).
-                - effectType phải thuộc đúng các giá trị enum trên. Đối với trung hòa axit-bazơ, có thể chọn "COLOR_CHANGE" hoặc "PRECIPITATE" nếu cần hiển thị màu.
-                - BẮT BUỘC có `productFormula` (chứa các chất sản phẩm, ví dụ: "Na2SO4 + H2O"). Không được để null nếu có phản ứng.
-                - messageVi, explanationVi, safetyNoteVi phải bằng tiếng Việt.
-                - BẮT BUỘC trong phần explanationVi: Bạn phải MÔ TẢ CHI TIẾT TRẠNG THÁI VÀ MÀU SẮC của cả chất tham gia lẫn sản phẩm tạo thành. (LƯU Ý ĐẶC BIỆT: Trong mô phỏng này, đối với phản ứng H2SO4 + NaOH, hãy quy định Na2SO4 có màu trắng, effectColor/precipitateColor="#FFFFFF").
-                - Nếu không chắc → hasReaction=false hoặc confidence thấp.
-                - Trả về DUY NHẤT JSON thuần, không markdown.
+                - effectType phải thuộc đúng các giá trị enum trên
+                - BẮT BUỘC NHẬN DIỆN phản ứng trung hòa (Axit + Bazơ -> Muối + Nước).
+                - BẮT BUỘC cung cấp `productFormula` chứa CHỈ các sản phẩm của phản ứng (ví dụ: "Cu(OH)2 + Na2SO4").
+                - Phải trả về TẤT CẢ sản phẩm trong `productFormula`.
+                - BẮT BUỘC có mô tả màu sắc của sản phẩm trong `messageVi` và `explanationVi`. Ví dụ: Na2SO4 có màu trắng, Cu(OH)2 kết tủa xanh.
+                - Đối với các kết tủa, `precipitateColor` phải là mã màu HEX chính xác.
+                - messageVi, explanationVi, safetyNoteVi phải bằng tiếng Việt
+                - Trả về DUY NHẤT JSON thuần, không markdown
                 """.formatted(String.join(" + ", reactants));
     }
 
