@@ -2,6 +2,7 @@ C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\example\virtual
 C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\virtualchemistrylab\dto\AiAskRequest.java
 C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\virtualchemistrylab\service\ChemicalResolverService.java
 C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\virtualchemistrylab\dto\VesselContentDTO.java
+C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\virtualchemistrylab\dto\ChatMessage.java
 C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\example\virtualchemistrylab\dto\AiAskRequest.java
 C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\example\virtualchemistrylab\exception\GlobalExceptionHandler.java
 C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\example\virtualchemistrylab\entity\ExperimentLog.java
@@ -12,6 +13,7 @@ C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\example\virtual
 C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\example\virtualchemistrylab\service\LabMixService.java
 C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\example\virtualchemistrylab\exception\ValidationException.java
 C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\virtualchemistrylab\repository\ApiErrorLogRepository.java
+C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\virtualchemistrylab\dto\AiChatResponse.java
 C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\example\virtualchemistrylab\config\DatabaseConnectionSingleton.java
 C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\virtualchemistrylab\client\PubChemClient.java
 C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\virtualchemistrylab\entity\ExperimentSession.java
@@ -67,6 +69,7 @@ C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\virtualchemistr
 C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\virtualchemistrylab\config\DatabaseConnectionSingleton.java
 C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\example\virtualchemistrylab\dto\AiAskResponse.java
 C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\example\virtualchemistrylab\dto\ChemicalInfoDTO.java
+C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\virtualchemistrylab\dto\AiChatRequest.java
 C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\virtualchemistrylab\dto\MixResponse.java
 C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\virtualchemistrylab\service\ReactionPredictionService.java
 C:\Users\ADMIN\Documents\MyProject\TDU\backend\src\main\java\com\example\virtualchemistrylab\client\CactusClient.java

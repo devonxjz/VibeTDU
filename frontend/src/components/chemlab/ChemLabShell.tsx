@@ -19,6 +19,7 @@ import { chemLabCollisionDetection } from "@/utils/collision";
 import { PouringAnimation } from "@/components/chemlab/PouringAnimation";
 import { getBottleColor } from "@/constants/chemicals";
 import { Formula } from "@/components/chemlab/Formula";
+import { ChatbotWidget } from "@/components/chatbot/ChatbotWidget";
 
 interface DraggedChemical {
   name: string;
@@ -237,6 +238,8 @@ export function ChemLabShell() {
           onComplete={handlePourAnimationComplete}
         />
       )}
+
+      <ChatbotWidget />
     </DndContext>
   );
 }

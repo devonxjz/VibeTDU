@@ -29,4 +29,8 @@ public class MixRequest {
     @NotEmpty(message = "targetContents must not be empty")
     @Valid
     private List<VesselContentDTO> targetContents;
+
+    private Double temperature;
+    private Double pressure;
+    private String catalyst;
 }

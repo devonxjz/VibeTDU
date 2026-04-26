@@ -79,7 +79,12 @@ public class LabMixService {
         log.info("[lab-mix] Reaction key: {}", key);
 
         // E–H. Predict (cache-aware)
-        var prediction = reactionPredictionService.predict(allFormulae);
+        var prediction = reactionPredictionService.predict(
+            allFormulae, 
+            request.getTemperature(), 
+            request.getPressure(), 
+            request.getCatalyst()
+        );
         ReactionResultDTO result = prediction.result();
 
         // Build vessel state from result
