@@ -18,11 +18,8 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-<<<<<<< HEAD
 import java.util.concurrent.atomic.AtomicInteger;
-=======
 import java.util.Objects;
->>>>>>> feat/update_chatbotAI
 
 /**
  * AI client hỗ trợ hai provider:

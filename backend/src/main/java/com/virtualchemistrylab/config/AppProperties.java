@@ -31,6 +31,10 @@ public class AppProperties {
         private String apiUrl = "https://api.openai.com/v1/chat/completions";
         private String model = "gpt-4o-mini";
         private boolean mockMode = true;
+
+        public String getApiKey() {
+            return (apiKeys != null && !apiKeys.isEmpty()) ? apiKeys.get(0) : null;
+        }
     }
 
     @Getter @Setter
