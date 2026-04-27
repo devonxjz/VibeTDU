@@ -537,6 +537,10 @@ public class AiClient {
             return """
                     {"hasReaction":true,"equation":"HCl + NaOH → NaCl + H2O","productFormula":"NaCl + H2O","effectType":"HEAT","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Phản ứng trung hòa, toả nhiệt nhẹ, dung dịch trở nên trung tính.","explanationVi":"Axit mạnh HCl phản ứng với bazơ mạnh NaOH trong phản ứng trung hòa tạo muối NaCl và nước, đồng thời toả nhiệt.","safetyNoteVi":"Đây là mô phỏng giáo dục.","confidence":0.96}""";
         }
+        if (key.equals("HCL__NA")) {
+            return """
+                    {"hasReaction":true,"equation":"2Na + 2HCl → 2NaCl + H2↑","productFormula":"NaCl + H2","effectType":"EXPLOSION","effectColor":null,"gasFormula":"H2","precipitateFormula":null,"precipitateColor":null,"messageVi":"Phản ứng mãnh liệt, có khí H2 thoát ra và có thể gây nổ nhỏ.","explanationVi":"Kim loại kiềm Na phản ứng rất mạnh với axit HCl tạo ra muối NaCl và khí Hydro (H2). Phản ứng toả nhiều nhiệt có thể làm cháy khí H2.","safetyNoteVi":"CẢNH BÁO: Phản ứng cực kỳ mãnh liệt và nguy hiểm. Tuyệt đối không thử ở ngoài đời thực mà không có trang bị bảo hộ chuyên dụng.","confidence":0.99}""";
+        }
         // Unknown pair
         return """
                 {"hasReaction":false,"equation":null,"productFormula":null,"effectType":"NONE","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Hai chất này không phản ứng với nhau trong điều kiện hiện tại.","explanationVi":"Điều kiện phản ứng không phù hợp hoặc cặp chất này không xảy ra phản ứng trong phạm vi mô phỏng.","safetyNoteVi":null,"confidence":1.0}""";
