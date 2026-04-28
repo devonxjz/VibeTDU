@@ -1,5 +1,24 @@
 # VibeTDU - Virtual Chemistry Lab
 
+<div align="center">
+
+### 👥 Contributors
+
+<table>
+  <tr>
+    <td align="center" width="300">
+      <img src="https://img.shields.io/badge/🧑‍💻-Trần_Lê_Thái-0D1117?style=for-the-badge&labelColor=1a1b27&color=38bdae" alt="Trần Lê Thái" /><br/>
+      <img src="https://img.shields.io/badge/MSSV-24110331-blue?style=flat-square&logo=bookstack&logoColor=white" alt="24110331" />
+    </td>
+    <td align="center" width="300">
+      <img src="https://img.shields.io/badge/🧑‍💻-Lương_Viết_Vĩ_Đông-0D1117?style=for-the-badge&labelColor=1a1b27&color=7c3aed" alt="Lương Viết Vĩ Đông" /><br/>
+      <img src="https://img.shields.io/badge/MSSV-24110202-blue?style=flat-square&logo=bookstack&logoColor=white" alt="24110202" />
+    </td>
+  </tr>
+</table>
+
+</div>
+
 ## 🔬 About the Project
 
 **VibeTDU (Virtual Chemistry Lab)** is an interactive, web-based platform that simulates real-world chemistry experiments. Designed for educational purposes and curiosity-driven exploration, it provides a safe virtual environment where users can drag, drop, and mix various chemicals to observe reactions in real-time. 
