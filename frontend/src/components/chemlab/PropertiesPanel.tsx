@@ -3,9 +3,9 @@
 import {
   Settings2,
   Trash2,
-  Save,
-  Image as ImageIcon,
-  Share2,
+  Undo2,
+  Play,
+  RotateCcw,
   FlaskConical,
   AlertTriangle,
   Info,
@@ -204,7 +204,14 @@ function ReactionResultPanel() {
 
 export function PropertiesPanel() {
   const resetBoard = useLabStore((s) => s.resetBoard);
+  const undoLastChemical = useLabStore((s) => s.undoLastChemical);
+  const runReaction = useLabStore((s) => s.runReaction);
+  const isLoading = useLabStore((s) => s.isLoading);
+  const centerBeakerId = useLabStore((s) => s.centerBeakerId);
+  const centerVessel = useLabStore((s) => s.centerBeakerId ? s.vessels[s.centerBeakerId] : null);
   const error = useLabStore((s) => s.error);
+
+  const canPlay = !isLoading && !!centerBeakerId && (centerVessel?.contents.filter(c => c.formula).length ?? 0) >= 2;
 
   return (
     <aside className="flex h-full w-full flex-col overflow-hidden bg-transparent">
@@ -233,11 +240,33 @@ export function PropertiesPanel() {
           <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-navy-soft">
             Thao tác nhanh
           </h3>
-          <div className="grid grid-cols-2 gap-2">
+
+          {/* Primary action — Play */}
+          <button
+            disabled={!canPlay}
+            onClick={async () => {
+              if (!canPlay || !centerBeakerId) return;
+              await runReaction(centerBeakerId);
+            }}
+            className={cn(
+              "mb-3 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold transition-all duration-200",
+              canPlay
+                ? "bg-gradient-to-r from-mint to-baby text-navy shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-lift)] hover:scale-[1.02] active:scale-[0.98]"
+                : "bg-muted/60 text-navy-soft cursor-not-allowed",
+            )}
+          >
+            {isLoading ? (
+              <RotateCcw className="h-4.5 w-4.5 animate-spin" />
+            ) : (
+              <Play className="h-4.5 w-4.5" />
+            )}
+            {isLoading ? "Đang phản ứng…" : "Chạy phản ứng"}
+          </button>
+
+          <div className="grid grid-cols-3 gap-2">
             <QuickAction icon={Trash2} label="Xoá board" onClick={() => resetBoard()} />
-            <QuickAction icon={Save} label="Lưu thí nghiệm" />
-            <QuickAction icon={ImageIcon} label="Xuất ảnh" />
-            <QuickAction icon={Share2} label="Chia sẻ" />
+            <QuickAction icon={RotateCcw} label="Đặt lại" onClick={() => resetBoard()} />
+            <QuickAction icon={Undo2} label="Hoàn tác" onClick={() => undoLastChemical()} />
           </div>
         </section>
 

@@ -2,17 +2,14 @@
 
 import {
   FlaskConical,
-  Play,
-  Pause,
-  RotateCcw,
   Trash2,
   Thermometer,
   Gauge,
   Sparkles,
   ChevronDown,
   Bot,
+  UserCircle2,
 } from "lucide-react";
-import { useState } from "react";
 import { cn } from "@/utils/cn";
 import { useLabStore } from "@/stores/lab-store";
 import { useChatbotStore } from "@/stores/chatbot-store";
@@ -103,19 +100,12 @@ function SliderControl({
 }
 
 export function Toolbar() {
-  const [playing, setPlaying] = useState(false);
-
-  const resetBoard = useLabStore((s) => s.resetBoard);
-  const isLoading = useLabStore((s) => s.isLoading);
   const vesselCount = useLabStore((s) => Object.keys(s.vessels).length);
   const temperature = useLabStore((s) => s.temperature);
   const pressure = useLabStore((s) => s.pressure);
   const catalyst = useLabStore((s) => s.catalyst);
   const setEnvironment = useLabStore((s) => s.setEnvironment);
-  const runReaction = useLabStore((s) => s.runReaction);
-  const centerBeakerId = useLabStore((s) => s.centerBeakerId);
-  const centerVessel = useLabStore((s) => s.centerBeakerId ? s.vessels[s.centerBeakerId] : null);
-  const canPlay = !isLoading && !!centerBeakerId && (centerVessel?.contents.filter(c => c.formula).length ?? 0) >= 2;
+  const resetBoard = useLabStore((s) => s.resetBoard);
 
   const toggleChatbotPanel = useChatbotStore((s) => s.togglePanel);
   const isChatbotOpen = useChatbotStore((s) => s.isOpen);
@@ -179,7 +169,7 @@ export function Toolbar() {
       {/* Spacer */}
       <div className="flex-1" />
 
-      {/* Simulation controls */}
+      {/* Right side — Chatbot + User */}
       <div className="flex items-center gap-1.5">
         <ToolButton
           icon={Bot}
@@ -187,23 +177,13 @@ export function Toolbar() {
           active={isChatbotOpen}
           onClick={toggleChatbotPanel}
         />
+        <Divider />
         <ToolButton
-          icon={RotateCcw}
-          label="Đặt lại"
-          onClick={() => resetBoard()}
-          disabled={isLoading}
-        />
-        <ToolButton
-          icon={playing ? Pause : Play}
-          label={playing ? "Tạm dừng" : "Chạy phản ứng"}
-          variant="primary"
-          onClick={async () => {
-            if (!canPlay || !centerBeakerId) return;
-            setPlaying(true);
-            await runReaction(centerBeakerId);
-            setPlaying(false);
+          icon={UserCircle2}
+          label="Đăng nhập"
+          onClick={() => {
+            // TODO: wire to login flow
           }}
-          disabled={!canPlay}
         />
       </div>
     </div>

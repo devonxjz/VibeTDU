@@ -106,6 +106,8 @@ interface LabStore {
   mixVessels: (sourceId: string, targetId: string) => Promise<void>;
   mixChemicalIntoVessel: (chemical: VesselContent, targetId: string) => Promise<void>;
   resetBoard: () => Promise<void>;
+  /** Remove the last chemical added to center beaker */
+  undoLastChemical: () => void;
   clearEffect: () => void;
   setError: (error: string | null) => void;
 
@@ -519,6 +521,44 @@ export const useLabStore = create<LabStore>((set, get) => ({
       sessionCode: `session-${nanoid(8)}`,
       isLoading: false,
       error: null,
+    });
+  },
+
+  undoLastChemical: () => {
+    set((state) => {
+      const beakerId = state.centerBeakerId;
+      if (!beakerId) return state;
+      const vessel = state.vessels[beakerId];
+      if (!vessel || vessel.contents.length === 0) return state;
+
+      const newContents = vessel.contents.slice(0, -1);
+      const realContents = newContents.filter((c) => c.formula);
+
+      // Recompute color: use last remaining chemical's color, or transparent if empty
+      let newColor = "rgba(200,230,255,0.0)";
+      if (realContents.length > 0) {
+        const last = realContents[realContents.length - 1];
+        newColor = getDisplayColor("", last.formula, "");
+      }
+
+      const newLabel = realContents.length > 0
+        ? [...new Set(realContents.map((c) => c.formula).filter(Boolean))].join(" + ")
+        : "";
+
+      return {
+        vessels: {
+          ...state.vessels,
+          [beakerId]: {
+            ...vessel,
+            contents: newContents,
+            displayColor: newColor,
+            label: newLabel,
+          },
+        },
+        // Clear reaction result when undoing
+        lastReaction: null,
+        activeEffect: null,
+      };
     });
   },
 
