@@ -27,8 +27,8 @@ public class CactusClient {
     private final ApiErrorLogRepository apiErrorLogRepository;
 
     public CactusClient(WebClient webClient,
-                        AppProperties appProperties,
-                        ApiErrorLogRepository apiErrorLogRepository) {
+            AppProperties appProperties,
+            ApiErrorLogRepository apiErrorLogRepository) {
         this.webClient = webClient;
         this.appProperties = appProperties;
         this.apiErrorLogRepository = apiErrorLogRepository;
@@ -59,7 +59,7 @@ public class CactusClient {
 
             return ChemicalInfoDTO.builder()
                     .input(query)
-                    .canonicalFormula(query.trim()) // Cactus doesn't reliably return formula
+                    .canonicalFormula(query.trim())
                     .canonicalName(iupacName.trim())
                     .source("CACTUS")
                     .build();
@@ -86,6 +86,7 @@ public class CactusClient {
                     .requestPayload(request)
                     .errorMessage(error)
                     .build());
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 }

@@ -182,151 +182,124 @@
   }
 }
 
-/* Board scene — 2.5D phòng thí nghiệm với kệ + bàn */
-.lab-scene {
-  position: relative;
-  background:
-    /* ánh sáng đèn từ trên xuống */
-    radial-gradient(
-      ellipse 70% 50% at 50% 0%,
-      oklch(1 0.02 90 / 0.55) 0%,
-      transparent 70%
-    ),
-    /* tường gradient mint→baby */
-    linear-gradient(
-      180deg,
-      oklch(0.96 0.035 200) 0%,
-      oklch(0.94 0.04 220) 55%,
-      oklch(0.92 0.045 240) 100%
-    );
-  box-shadow: var(--shadow-inset-board);
-}
+/* ─── Lab Scene 2.5D — Warm Cozy Lab Style ────────────────────────── */
 
-/* Tường sau — perspective với grid gạch nhẹ */
-.lab-wall {
-  position: absolute;
-  inset: 0 0 38% 0;
-  background-image:
-    linear-gradient(oklch(0.28 0.05 260 / 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, oklch(0.28 0.05 260 / 0.05) 1px, transparent 1px);
-  background-size: 56px 56px, 56px 56px;
-  mask-image: linear-gradient(180deg, oklch(0 0 0 / 0.6) 0%, oklch(0 0 0 / 0.9) 70%, transparent 100%);
-}
-
-/* Sàn bàn — perspective gỗ-lab pastel */
-.lab-floor {
-  position: absolute;
-  inset: 62% 0 0 0;
-  background:
-    linear-gradient(
-      180deg,
-      oklch(0.92 0.025 80) 0%,
-      oklch(0.88 0.035 75) 45%,
-      oklch(0.83 0.04 70) 100%
-    );
-  transform-origin: top center;
-  box-shadow:
-    inset 0 8px 16px oklch(0.3 0.05 250 / 0.08),
-    inset 0 -16px 32px oklch(0.3 0.05 250 / 0.12);
-}
-
-/* Đường vân gỗ trên sàn bàn — perspective lines */
-.lab-floor::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: repeating-linear-gradient(
-    90deg,
-    transparent 0,
-    transparent 80px,
-    oklch(0.5 0.06 60 / 0.08) 80px,
-    oklch(0.5 0.06 60 / 0.08) 81px
-  );
-  mask-image: linear-gradient(180deg, transparent 0%, oklch(0 0 0 / 0.6) 30%, oklch(0 0 0 / 0.9) 100%);
-}
-
-/* Mép bàn phía trước — tạo lip 3D */
-.lab-floor::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 14px;
+.lab-scene-2d {
+  color-scheme: light;
   background: linear-gradient(
     180deg,
-    oklch(0.78 0.045 65) 0%,
-    oklch(0.68 0.05 60) 100%
+    #F5EDE0 0%,
+    #FAF3E8 35%,
+    #EDE3D4 58%,
+    #D8CCBB 100%
   );
-  box-shadow: 0 -2px 6px oklch(0.3 0.05 250 / 0.15);
 }
 
-/* Vùng làm việc trên bàn — vùng sáng spotlight */
-.lab-worktop {
-  position: absolute;
-  inset: 38% 8% 14% 8%;
-  border-radius: 32px 32px 18px 18px / 60px 60px 18px 18px;
-  background: radial-gradient(
-    ellipse 70% 80% at 50% 35%,
-    oklch(0.99 0.01 90 / 0.85) 0%,
-    oklch(0.96 0.025 120 / 0.55) 55%,
-    transparent 100%
-  );
-  box-shadow:
-    inset 0 2px 4px oklch(1 0 0 / 0.6),
-    0 12px 28px oklch(0.3 0.05 250 / 0.08);
-}
-
-/* Dot-grid mờ chỉ trong vùng worktop */
-.lab-worktop::before {
+.lab-scene-2d::before {
   content: "";
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background-image: radial-gradient(circle at 1px 1px, oklch(0.28 0.05 260 / 0.1) 1px, transparent 0);
-  background-size: 22px 22px;
-  mask-image: radial-gradient(ellipse 60% 70% at 50% 40%, oklch(0 0 0 / 0.9) 0%, transparent 100%);
+  inset: 0 0 38% 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(160,130,90,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(160,130,90,0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%);
+  z-index: 0;
 }
 
-/* Vignette 4 góc */
-.lab-vignette {
+.lab-scene-2d::after {
+  content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
   background: radial-gradient(
-    ellipse 100% 100% at 50% 50%,
-    transparent 50%,
-    oklch(0.28 0.05 260 / 0.12) 100%
+    ellipse 55% 38% at 50% 0%,
+    rgba(255,235,180,0.4) 0%,
+    rgba(255,220,150,0.15) 35%,
+    transparent 70%
   );
+  z-index: 0;
 }
 
-/* Kệ trên tường */
-.lab-shelf {
-  position: absolute;
-  height: 68px;
-  background: linear-gradient(
-    180deg,
-    oklch(0.94 0.02 200) 0%,
-    oklch(0.9 0.025 210) 100%
-  );
-  border-radius: 8px;
-  box-shadow:
-    0 2px 0 oklch(0.78 0.03 220),
-    0 6px 12px oklch(0.3 0.05 250 / 0.12),
-    inset 0 1px 0 oklch(1 0 0 / 0.7);
+.shelf-2d { position: absolute; border-radius: 4px 4px 2px 2px; }
+
+.shelf-2d-top {
+  height: 12px;
+  background:
+    repeating-linear-gradient(90deg, transparent 0px, transparent 18px, rgba(140,90,40,0.07) 18px, rgba(140,90,40,0.07) 19px),
+    linear-gradient(180deg, #D4A96A 0%, #C8A060 100%);
+  border-radius: 3px 3px 0 0;
+  transform: perspective(400px) rotateX(8deg);
+  transform-origin: bottom center;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
 }
 
-.lab-shelf::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -8px;
-  height: 8px;
-  background: linear-gradient(180deg, oklch(0.78 0.03 220) 0%, transparent 100%);
-  border-radius: 0 0 6px 6px;
-  opacity: 0.5;
+.shelf-2d-front {
+  height: 16px;
+  background:
+    repeating-linear-gradient(90deg, transparent 0px, transparent 22px, rgba(100,60,20,0.09) 22px, rgba(100,60,20,0.09) 23px),
+    linear-gradient(180deg, #A07840 0%, #8A6430 100%);
+  box-shadow: 0 4px 8px rgba(80,50,20,0.25), inset 0 1px 0 rgba(200,160,90,0.4);
 }
+
+.shelf-2d-shadow {
+  height: 10px;
+  background: linear-gradient(180deg, rgba(60,40,20,0.18) 0%, transparent 100%);
+  border-radius: 0 0 4px 4px;
+}
+
+.shelf-2d-bracket {
+  position: absolute;
+  width: 14px;
+  background: linear-gradient(90deg, #8A6430 0%, #A07840 50%, #7A5428 100%);
+  border-radius: 2px;
+  box-shadow: 2px 0 4px rgba(0,0,0,0.15);
+}
+
+.counter-2d {
+  position: absolute;
+  background: linear-gradient(180deg, #C8D0D8 0%, #B8C0C8 60%, #A8B0B8 100%);
+  border-top: 3px solid #D8E0E8;
+  box-shadow: inset 0 2px 4px rgba(255,255,255,0.5), 0 8px 24px rgba(60,80,100,0.2), 0 2px 0 rgba(100,120,140,0.3);
+}
+
+.cat-badge { display: inline-flex; align-items: center; gap: 3px; padding: 2px 6px; border-radius: 999px; font-size: 9px; font-weight: 700; letter-spacing: 0.03em; white-space: nowrap; }
+.cat-badge-acid     { background: #FFF3EE; color: #C84B11; border: 1px solid #FFCDB5; }
+.cat-badge-base     { background: #E3F0FF; color: #0D47A1; border: 1px solid #90CAF9; }
+.cat-badge-salt     { background: #F5EEF8; color: #6A1B9A; border: 1px solid #CE93D8; }
+.cat-badge-metal    { background: #F5F5F5; color: #37474F; border: 1px solid #B0BEC5; }
+.cat-badge-indicator{ background: #FFFDE7; color: #F57F17; border: 1px solid #FFF176; }
+.cat-badge-organic  { background: #F1F8E9; color: #1B5E20; border: 1px solid #A5D6A7; }
+.cat-badge-gas      { background: #E1F5FE; color: #01579B; border: 1px solid #81D4FA; }
+
+@keyframes flame-flicker {
+  0%   { transform: scaleY(1)    scaleX(1)    translateY(0);    opacity: 1; }
+  20%  { transform: scaleY(1.1)  scaleX(0.92) translateY(-2px); opacity: 0.95; }
+  40%  { transform: scaleY(0.95) scaleX(1.05) translateY(1px);  opacity: 0.9; }
+  60%  { transform: scaleY(1.08) scaleX(0.96) translateY(-1px); opacity: 1; }
+  80%  { transform: scaleY(0.98) scaleX(1.02) translateY(0);    opacity: 0.95; }
+  100% { transform: scaleY(1)    scaleX(1)    translateY(0);    opacity: 1; }
+}
+.flame-animate { animation: flame-flicker 0.8s ease-in-out infinite alternate; will-change: transform, opacity; transform-origin: bottom center; }
+
+@keyframes precipitate-form {
+  0%   { transform: scaleX(0) scaleY(0.5); opacity: 0; }
+  60%  { transform: scaleX(1.08) scaleY(1.05); opacity: 0.7; }
+  100% { transform: scaleX(1) scaleY(1); opacity: 0.9; }
+}
+
+@keyframes particle-fall {
+  0%   { transform: translateY(-20px) scale(0); opacity: 0; }
+  20%  { opacity: 0.8; }
+  100% { transform: translateY(0) scale(1); opacity: 0; }
+}
+
+@keyframes liquid-rise {
+  from { transform: scaleY(0); transform-origin: bottom; }
+  to   { transform: scaleY(1); transform-origin: bottom; }
+}
+
 
 /* Subtle scrollbar */
 .thin-scroll::-webkit-scrollbar {

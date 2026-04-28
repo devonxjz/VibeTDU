@@ -73,7 +73,7 @@ function DraggableChemicalCard({
   chemical: Chemical;
   group: CategoryGroup;
 }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
+  const { attributes, listeners, setNodeRef, isDragging } =
     useDraggable({
       id: `chemical-${chemical.id}`,
       data: {
@@ -86,32 +86,37 @@ function DraggableChemicalCard({
       },
     });
 
-  const style = transform
-    ? {
-        transform: `translate(${transform.x}px, ${transform.y}px)`,
-        zIndex: 100,
-      }
-    : undefined;
-
   const bottleColor = getBottleColor(chemical.id, chemical.formula);
 
   return (
+    /* Card — static, not draggable */
     <div
-      ref={setNodeRef}
-      {...attributes}
-      {...listeners}
-      style={style}
       className={cn(
-        "group flex cursor-grab items-center gap-3 rounded-xl border border-border bg-card p-2.5",
+        "group flex items-center gap-3 rounded-xl border border-border bg-card p-2.5",
         "transition-all duration-200 ease-out",
-        "hover:-translate-y-0.5 hover:border-transparent hover:shadow-[var(--shadow-card)]",
-        "active:cursor-grabbing active:scale-[0.98]",
-        isDragging && "opacity-50 shadow-lg",
+        "hover:border-transparent hover:shadow-[var(--shadow-card)]",
+        isDragging && "opacity-40",
       )}
     >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center">
-        <ChemicalBottleSVG liquidColor={bottleColor} size={40} />
+      {/* ── Bottle icon — THIS is the drag handle ── */}
+      <div
+        ref={setNodeRef}
+        {...attributes}
+        {...listeners}
+        className={cn(
+          "flex h-11 w-11 shrink-0 cursor-grab items-center justify-center rounded-lg",
+          "transition-all duration-150",
+          "hover:scale-110 hover:drop-shadow-[0_4px_12px_rgba(0,0,0,0.2)]",
+          "active:cursor-grabbing active:scale-95",
+          isDragging && "scale-95 opacity-70",
+        )}
+        title={`Kéo ${chemical.name} vào bình phản ứng`}
+        style={{ touchAction: "none" }}
+      >
+        <ChemicalBottleSVG liquidColor={bottleColor} size={44} />
       </div>
+
+      {/* Info text — static */}
       <div className="min-w-0 flex-1">
         <div className="truncate text-xs font-semibold text-navy">
           {chemical.name}
@@ -121,7 +126,12 @@ function DraggableChemicalCard({
           className="font-display text-[11px] font-medium text-navy-soft"
         />
       </div>
-      <GripVertical className="h-4 w-4 shrink-0 text-navy-soft/40 opacity-0 transition-opacity group-hover:opacity-100" />
+
+      {/* Drag hint icon */}
+      <div className="flex shrink-0 flex-col items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-60">
+        <div className="text-[9px] font-medium text-navy-soft">kéo</div>
+        <GripVertical className="h-3.5 w-3.5 text-navy-soft" />
+      </div>
     </div>
   );
 }

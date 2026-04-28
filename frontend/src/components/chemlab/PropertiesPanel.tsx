@@ -6,10 +6,13 @@ import {
   Save,
   Image as ImageIcon,
   Share2,
-  History,
   FlaskConical,
   AlertTriangle,
   Info,
+  Zap,
+  ChevronDown,
+  FlaskRound,
+  Plus,
 } from "lucide-react";
 import { useLabStore } from "@/stores/lab-store";
 import { ReactionFormula, Formula } from "./Formula";
@@ -39,104 +42,142 @@ function QuickAction({ icon: Icon, label, onClick }: QuickActionProps) {
   );
 }
 
-function VesselDetail() {
-  const selectedId = useLabStore((s) => s.selectedVesselId);
-  const vessel = useLabStore((s) =>
-    s.selectedVesselId ? s.vessels[s.selectedVesselId] : null,
-  );
+/* ─── Center Beaker Contents Tray ───────────────────────────────────── */
+
+function BeakerTray() {
+  const centerBeakerId = useLabStore((s) => s.centerBeakerId);
+  const vessel = useLabStore((s) => s.centerBeakerId ? s.vessels[s.centerBeakerId] : null);
 
   if (!vessel) return null;
 
+  const contents = vessel.contents.filter((c) => c.formula);
+
   return (
-    <section className="px-4 py-4">
-      <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-navy-soft">
-        Ống nghiệm đang chọn
+    <section className="px-4 py-3">
+      <h3 className="mb-2.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-navy-soft">
+        <FlaskRound className="h-3.5 w-3.5" />
+        Bình phản ứng
       </h3>
-      <div className="rounded-xl border border-mint/40 bg-mint-soft/30 p-3">
-        <div className="flex items-center gap-3">
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg shadow-[var(--shadow-soft)]"
-            style={{ backgroundColor: vessel.displayColor }}
-          >
-            <FlaskConical className="h-5 w-5 text-white/80" strokeWidth={1.8} />
-          </div>
-          <div>
-            <Formula
-              formula={vessel.label}
-              className="text-sm font-bold text-navy"
-            />
-            <div className="text-[11px] text-navy-soft">
-              {vessel.contents.length} chất · {vessel.contents[0]?.amountMl ?? 10} mL
-            </div>
-          </div>
+
+      {/* Beaker mini preview */}
+      <div className="mb-2 flex items-center gap-2 rounded-xl border border-border bg-card/80 p-2.5">
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg shadow-inner border border-white/40"
+          style={{ backgroundColor: vessel.displayColor || "rgba(180,220,255,0.4)" }}
+        >
+          <FlaskConical className="h-5 w-5 text-white/80" strokeWidth={1.8} />
         </div>
-        {vessel.contents.length > 0 && (
-          <div className="mt-2 space-y-1">
-            {vessel.contents.map((c, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between rounded-md bg-card/60 px-2 py-1"
-              >
-                <span className="text-xs text-navy">{c.inputName}</span>
-                <Formula
-                  formula={c.formula}
-                  className="text-[11px] font-medium text-navy-soft"
-                />
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="min-w-0 flex-1">
+          {contents.length === 0 ? (
+            <p className="text-xs text-navy-soft italic">Bình trống — kéo hoá chất vào</p>
+          ) : (
+            <>
+              <Formula formula={vessel.label} className="text-sm font-bold text-navy truncate" />
+              <p className="text-[11px] text-navy-soft">{contents.length} chất · {contents[0]?.amountMl ?? 10} mL</p>
+            </>
+          )}
+        </div>
       </div>
+
+      {/* Chemical chips */}
+      {contents.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {contents.map((c, i) => (
+            <span
+              key={i}
+              className="flex items-center gap-1 rounded-full bg-mint-soft/60 px-2.5 py-1 text-[11px] font-semibold text-navy"
+            >
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: vessel.displayColor }} />
+              <Formula formula={c.formula} className="text-[11px] font-semibold text-navy" />
+            </span>
+          ))}
+          <span className="flex items-center gap-1 rounded-full border border-dashed border-border px-2.5 py-1 text-[11px] text-navy-soft">
+            <Plus className="h-3 w-3" /> Kéo thêm
+          </span>
+        </div>
+      )}
+
+      {contents.length >= 2 && (
+        <p className="mt-2 text-[11px] text-mint font-medium">
+          ▶ Nhấn Play để chạy phản ứng
+        </p>
+      )}
     </section>
   );
 }
+
+/* ─── Reaction Result ────────────────────────────────────────────────── */
 
 function ReactionResultPanel() {
   const reaction = useLabStore((s) => s.lastReaction);
   if (!reaction) return null;
 
+  const reactionTypeName: Record<string, string> = {
+    GAS_BUBBLE: "Phản ứng tạo khí",
+    PRECIPITATE: "Phản ứng kết tủa",
+    COLOR_CHANGE: "Phản ứng đổi màu",
+    HEAT: "Phản ứng toả nhiệt",
+    EXPLOSION: "Phản ứng nổ",
+    NONE: "Không có phản ứng",
+  };
+
   return (
-    <section className="px-4 py-4">
-      <h3 className="mb-3 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-navy-soft">
-        <History className="h-3.5 w-3.5" />
-        Phản ứng gần nhất
+    <section className="px-4 py-3">
+      <h3 className="mb-2.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-navy-soft">
+        <Zap className="h-3.5 w-3.5 text-amber-500" />
+        Kết quả phản ứng
       </h3>
+
       <div className="space-y-2">
-        {/* Equation */}
+        {/* Reaction equation box — styled like the reference image */}
         {reaction.equation && (
-          <div className="rounded-xl border border-border bg-card p-3">
+          <div className="rounded-xl border border-border/80 bg-card p-3 shadow-sm">
+            <div className="mb-1.5 flex items-center justify-between">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-navy-soft">
+                Phương trình
+              </span>
+              {reaction.effectType && reaction.effectType !== "NONE" && (
+                <span className="rounded-full bg-mint/20 px-2 py-0.5 text-[10px] font-semibold text-navy">
+                  {reactionTypeName[reaction.effectType] ?? reaction.effectType}
+                </span>
+              )}
+            </div>
             <ReactionFormula
               formula={reaction.equation}
-              className="text-sm font-semibold text-navy"
+              className="text-sm font-bold leading-relaxed text-navy"
             />
+            {reaction.effectType && reaction.effectType !== "NONE" && (
+              <div className="mt-1.5 flex items-center gap-1.5">
+                <span className="text-xs text-navy-soft">Loại:</span>
+                <span className="text-xs font-semibold text-navy">
+                  {reaction.effectType === "GAS_BUBBLE" && "🫧 Sủi bọt khí"}
+                  {reaction.effectType === "PRECIPITATE" && "⬇️ Kết tủa"}
+                  {reaction.effectType === "COLOR_CHANGE" && "🎨 Đổi màu"}
+                  {reaction.effectType === "HEAT" && "🔥 Toả nhiệt"}
+                  {reaction.effectType === "EXPLOSION" && "💥 Nổ"}
+                </span>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Message */}
+        {/* Observation */}
         {reaction.messageVi && (
-          <div className="flex items-start gap-2 rounded-xl bg-baby-soft/40 p-3">
+          <div className="flex items-start gap-2 rounded-xl bg-baby-soft/60 p-3">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-navy-soft" />
-            <p className="text-xs leading-relaxed text-navy">
-              {reaction.messageVi}
-            </p>
+            <div>
+              <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-navy-soft">Hiện tượng quan sát</p>
+              <p className="text-xs leading-relaxed text-navy">{reaction.messageVi}</p>
+            </div>
           </div>
         )}
 
-        {/* Safety note */}
-        {reaction.safetyNoteVi && (
-          <div className="flex items-start gap-2 rounded-xl bg-rose-50 p-3">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
-            <p className="text-xs leading-relaxed text-rose-700">
-              {reaction.safetyNoteVi}
-            </p>
-          </div>
-        )}
-
-        {/* Explanation */}
+        {/* Explanation — expandable */}
         {reaction.explanationVi && (
           <details className="group rounded-xl border border-border bg-card">
-            <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-navy">
+            <summary className="flex cursor-pointer items-center justify-between px-3 py-2 text-xs font-semibold text-navy">
               Giải thích chi tiết
+              <ChevronDown className="h-3.5 w-3.5 transition-transform group-open:rotate-180" />
             </summary>
             <p className="border-t border-border px-3 py-2 text-xs leading-relaxed text-navy-soft">
               {reaction.explanationVi}
@@ -144,16 +185,14 @@ function ReactionResultPanel() {
           </details>
         )}
 
-        {/* Effect badge */}
-        {reaction.effectType && reaction.effectType !== "NONE" && (
-          <div className="flex items-center gap-2">
-            <span className="rounded-full bg-mint/20 px-2.5 py-1 text-[10px] font-semibold text-navy">
-              {reaction.effectType === "GAS_BUBBLE" && "🫧 Sủi bọt khí"}
-              {reaction.effectType === "PRECIPITATE" && "⬇️ Kết tủa"}
-              {reaction.effectType === "COLOR_CHANGE" && "🎨 Đổi màu"}
-              {reaction.effectType === "HEAT" && "🔥 Toả nhiệt"}
-              {reaction.effectType === "EXPLOSION" && "💥 Nổ"}
-            </span>
+        {/* Safety note */}
+        {reaction.safetyNoteVi && (
+          <div className="flex items-start gap-2 rounded-xl bg-rose-50 p-3">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
+            <div>
+              <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-rose-600">Lưu ý an toàn</p>
+              <p className="text-xs leading-relaxed text-rose-700">{reaction.safetyNoteVi}</p>
+            </div>
           </div>
         )}
       </div>
@@ -161,18 +200,18 @@ function ReactionResultPanel() {
   );
 }
 
+/* ─── Main PropertiesPanel ──────────────────────────────────────────── */
+
 export function PropertiesPanel() {
   const resetBoard = useLabStore((s) => s.resetBoard);
   const error = useLabStore((s) => s.error);
 
   return (
-    <aside className="flex h-full w-full flex-col overflow-hidden rounded-2xl border border-white/20 bg-card/60 shadow-[0_8px_32px_rgba(0,0,0,0.1)] backdrop-blur-xl">
+    <aside className="flex h-full w-full flex-col overflow-hidden bg-transparent">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3.5 bg-card/40">
+      <div className="flex items-center justify-between border-b border-border/60 px-4 py-3.5">
         <div>
-          <h2 className="font-display text-sm font-bold text-navy">
-            Bảng điều khiển
-          </h2>
+          <h2 className="font-display text-sm font-bold text-navy">Bảng điều khiển</h2>
           <p className="text-[11px] text-navy-soft">Quản lý thí nghiệm</p>
         </div>
         <button className="flex h-8 w-8 items-center justify-center rounded-lg text-navy-soft transition-colors hover:bg-muted hover:text-navy">
@@ -195,25 +234,21 @@ export function PropertiesPanel() {
             Thao tác nhanh
           </h3>
           <div className="grid grid-cols-2 gap-2">
-            <QuickAction
-              icon={Trash2}
-              label="Xoá board"
-              onClick={() => resetBoard()}
-            />
+            <QuickAction icon={Trash2} label="Xoá board" onClick={() => resetBoard()} />
             <QuickAction icon={Save} label="Lưu thí nghiệm" />
             <QuickAction icon={ImageIcon} label="Xuất ảnh" />
             <QuickAction icon={Share2} label="Chia sẻ" />
           </div>
         </section>
 
-        <div className="mx-4 h-px bg-border" />
+        <div className="mx-4 h-px bg-border/60" />
 
-        {/* Selected Vessel Detail */}
-        <VesselDetail />
+        {/* Center Beaker Tray */}
+        <BeakerTray />
 
-        <div className="mx-4 h-px bg-border" />
+        <div className="mx-4 h-px bg-border/60" />
 
-        {/* Latest Reaction Result */}
+        {/* Reaction Result */}
         <ReactionResultPanel />
       </div>
     </aside>

@@ -18,8 +18,8 @@
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
 
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-display: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+  --font-sans: var(--font-inter, "Inter", system-ui, sans-serif);
+  --font-display: var(--font-plus-jakarta, "Plus Jakarta Sans", "Inter", system-ui, sans-serif);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -176,130 +176,150 @@
   }
 }
 
-.lab-scene {
-  position: relative;
-  background: #1a1e1b;
-  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.9);
+/* ─── Lab Scene 2.5D — Warm Cozy Lab Style ─────────────────────────────── */
+
+/* Main scene container — warm cream wall, cozy lab vibe */
+.lab-scene-2d {
+  color-scheme: light;
+  background: linear-gradient(
+    180deg,
+    #F5EDE0 0%,      /* top wall: warm cream */
+    #FAF3E8 35%,     /* mid wall: lighter warm white */
+    #EDE3D4 58%,     /* lower wall: warm sand */
+    #D8CCBB 100%     /* wall bottom near counter */
+  );
 }
 
-.lab-wall {
+/* Wall tile grid overlay — warm subtle grid */
+.lab-scene-2d::before {
+  content: "";
   position: absolute;
   inset: 0 0 38% 0;
-  background-color: #2c3531; /* Blackboard green-grey */
-  background-image: 
-    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 60%),
-    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 100% 100%, 56px 56px, 56px 56px;
-  box-shadow: inset 0 0 60px rgba(0,0,0,0.8);
-  border-bottom: 8px solid #3e2723; /* Wooden chalk ledge */
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(160,130,90,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(160,130,90,0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%);
+  z-index: 0;
 }
 
-.lab-wall::after {
+/* Spotlight from ceiling lamp — warm golden light */
+.lab-scene-2d::after {
   content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 4px;
-  background: #5d4037;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-}
-
-.lab-floor {
-  position: absolute;
-  inset: 62% 0 0 0;
-  background: linear-gradient(180deg, #111111 0%, #0a0a0a 45%, #050505 100%);
-  transform-origin: top center;
-  box-shadow:
-    inset 0 12px 24px rgba(0,0,0,0.6),
-    inset 0 -16px 32px rgba(0,0,0,0.8);
-}
-
-.lab-floor::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: repeating-linear-gradient(
-    90deg,
-    transparent 0,
-    transparent 80px,
-    rgba(255,255,255,0.03) 80px,
-    rgba(255,255,255,0.03) 82px
-  );
-  mask-image: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.5) 30%, rgba(0,0,0,0.9) 100%);
-}
-
-.lab-floor::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 14px;
-  background: linear-gradient(180deg, #1a1a1a 0%, #000000 100%);
-  box-shadow: 0 -2px 6px rgba(0,0,0,0.8);
-}
-
-.lab-worktop {
-  position: absolute;
-  inset: 38% 8% 14% 8%;
-  border-radius: 32px 32px 18px 18px / 60px 60px 18px 18px;
-  background: radial-gradient(
-    ellipse 70% 80% at 50% 35%,
-    #2c2c2c 0%,
-    #151515 55%,
-    #050505 100%
-  );
-  border-top: 1px solid rgba(255,255,255,0.15);
-  box-shadow:
-    inset 0 2px 4px rgba(255,255,255,0.05),
-    0 16px 32px rgba(0,0,0,0.8);
-}
-
-.lab-worktop::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0);
-  background-size: 24px 24px;
-  mask-image: radial-gradient(ellipse 60% 70% at 50% 40%, rgba(0,0,0,0.9) 0%, transparent 100%);
-}
-
-.lab-vignette {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background: radial-gradient(
-    ellipse 100% 100% at 50% 50%,
-    transparent 50%,
-    rgba(0,0,0,0.6) 100%
+    ellipse 55% 38% at 50% 0%,
+    rgba(255,235,180,0.4) 0%,
+    rgba(255,220,150,0.15) 35%,
+    transparent 70%
   );
+  z-index: 0;
 }
 
-.lab-shelf {
+/* ─── Wooden Shelf 2.5D ────────────────────────────────────────────────── */
+.shelf-2d {
   position: absolute;
-  height: 68px;
-  background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
-  border-radius: 8px;
-  box-shadow:
-    0 2px 0 #000,
-    0 6px 12px rgba(0,0,0,0.5),
-    inset 0 1px 0 rgba(255,255,255,0.1);
+  border-radius: 4px 4px 2px 2px;
 }
 
-.lab-shelf::after {
+/* Shelf top face — lighter wood, slight perspective tilt */
+.shelf-2d-top {
+  height: 12px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 18px,
+      rgba(140,90,40,0.07) 18px,
+      rgba(140,90,40,0.07) 19px
+    ),
+    linear-gradient(180deg, #D4A96A 0%, #C8A060 100%);
+  border-radius: 3px 3px 0 0;
+  transform: perspective(400px) rotateX(8deg);
+  transform-origin: bottom center;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
+}
+
+/* Shelf front face — darker wood grain, visible depth */
+.shelf-2d-front {
+  height: 16px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 22px,
+      rgba(100,60,20,0.09) 22px,
+      rgba(100,60,20,0.09) 23px
+    ),
+    linear-gradient(180deg, #A07840 0%, #8A6430 100%);
+  box-shadow:
+    0 4px 8px rgba(80,50,20,0.25),
+    inset 0 1px 0 rgba(200,160,90,0.4);
+}
+
+/* Shelf bottom shadow cast on wall */
+.shelf-2d-shadow {
+  height: 10px;
+  background: linear-gradient(180deg, rgba(60,40,20,0.18) 0%, transparent 100%);
+  border-radius: 0 0 4px 4px;
+}
+
+/* Shelf bracket/support — vertical columns */
+.shelf-2d-bracket {
+  position: absolute;
+  width: 14px;
+  background: linear-gradient(90deg, #8A6430 0%, #A07840 50%, #7A5428 100%);
+  border-radius: 2px;
+  box-shadow: 2px 0 4px rgba(0,0,0,0.15);
+}
+
+/* ─── Counter Surface 2.5D — Warm Wood ─────────────────────────────────── */
+.counter-2d {
+  position: absolute;
+  background: linear-gradient(180deg, #5C4033 0%, #4A3228 55%, #3D2820 100%);
+  border-top: 3px solid #7A5C48;
+  box-shadow:
+    inset 0 2px 4px rgba(100,80,60,0.3),
+    0 8px 24px rgba(50,30,15,0.25),
+    0 2px 0 rgba(80,55,35,0.4);
+}
+
+.counter-2d::before {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -8px;
-  height: 8px;
-  background: linear-gradient(180deg, #111 0%, transparent 100%);
-  border-radius: 0 0 6px 6px;
-  opacity: 0.5;
+  inset: 0;
+  background-image: 
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 40px,
+      rgba(255,240,210,0.04) 40px,
+      rgba(255,240,210,0.04) 41px
+    );
 }
+
+/* ─── Category Color Badges ────────────────────────────────────────────── */
+.cat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+.cat-badge-acid     { background: #FFF3EE; color: #C84B11; border: 1px solid #FFCDB5; }
+.cat-badge-base     { background: #E3F0FF; color: #0D47A1; border: 1px solid #90CAF9; }
+.cat-badge-salt     { background: #F5EEF8; color: #6A1B9A; border: 1px solid #CE93D8; }
+.cat-badge-metal    { background: #F5F5F5; color: #37474F; border: 1px solid #B0BEC5; }
+.cat-badge-indicator{ background: #FFFDE7; color: #F57F17; border: 1px solid #FFF176; }
+.cat-badge-organic  { background: #F1F8E9; color: #1B5E20; border: 1px solid #A5D6A7; }
+.cat-badge-gas      { background: #E1F5FE; color: #01579B; border: 1px solid #81D4FA; }
 
 /* Subtle scrollbar */
 .thin-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -346,4 +366,39 @@
 @keyframes chalk-write {
   from { clip-path: inset(0 100% 0 0); }
   to   { clip-path: inset(0 0% 0 0); }
+}
+
+/* Bunsen burner flame flicker */
+@keyframes flame-flicker {
+  0%   { transform: scaleY(1)   scaleX(1)    translateY(0);   opacity: 1; }
+  20%  { transform: scaleY(1.1) scaleX(0.92) translateY(-2px); opacity: 0.95; }
+  40%  { transform: scaleY(0.95) scaleX(1.05) translateY(1px); opacity: 0.9; }
+  60%  { transform: scaleY(1.08) scaleX(0.96) translateY(-1px); opacity: 1; }
+  80%  { transform: scaleY(0.98) scaleX(1.02) translateY(0);  opacity: 0.95; }
+  100% { transform: scaleY(1)   scaleX(1)    translateY(0);   opacity: 1; }
+}
+.flame-animate {
+  animation: flame-flicker 0.8s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+  transform-origin: bottom center;
+}
+
+/* Precipitate form — settling particles after reaction */
+@keyframes precipitate-form {
+  0%   { transform: scaleX(0) scaleY(0.5); opacity: 0; }
+  60%  { transform: scaleX(1.08) scaleY(1.05); opacity: 0.7; }
+  100% { transform: scaleX(1) scaleY(1); opacity: 0.9; }
+}
+
+/* Particle fall — individual precipitate dots */
+@keyframes particle-fall {
+  0%   { transform: translateY(-20px) scale(0); opacity: 0; }
+  20%  { opacity: 0.8; }
+  100% { transform: translateY(0) scale(1); opacity: 0; }
+}
+
+/* Liquid level rise */
+@keyframes liquid-rise {
+  from { transform: scaleY(0); transform-origin: bottom; }
+  to   { transform: scaleY(1); transform-origin: bottom; }
 }

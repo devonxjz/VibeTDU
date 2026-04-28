@@ -124,6 +124,10 @@ export function Toolbar() {
   const pressure = useLabStore((s) => s.pressure);
   const catalyst = useLabStore((s) => s.catalyst);
   const setEnvironment = useLabStore((s) => s.setEnvironment);
+  const runReaction = useLabStore((s) => s.runReaction);
+  const centerBeakerId = useLabStore((s) => s.centerBeakerId);
+  const centerVessel = useLabStore((s) => s.centerBeakerId ? s.vessels[s.centerBeakerId] : null);
+  const canPlay = !isLoading && !!centerBeakerId && (centerVessel?.contents.filter(c => c.formula).length ?? 0) >= 2;
 
   const toggleChatbotPanel = useChatbotStore((s) => s.togglePanel);
   const isChatbotOpen = useChatbotStore((s) => s.isOpen);
@@ -235,10 +239,15 @@ export function Toolbar() {
         />
         <ToolButton
           icon={playing ? Pause : Play}
-          label={playing ? "Tạm dừng" : "Chạy mô phỏng"}
+          label={playing ? "Tạm dừng" : "Chạy phản ứng"}
           variant="primary"
-          onClick={() => setPlaying((p) => !p)}
-          disabled={isLoading}
+          onClick={async () => {
+            if (!canPlay || !centerBeakerId) return;
+            setPlaying(true);
+            await runReaction(centerBeakerId);
+            setPlaying(false);
+          }}
+          disabled={!canPlay}
         />
         <div className="flex items-center rounded-lg bg-muted/60 p-0.5">
           {(["0.5x", "1x", "2x"] as const).map((s) => (

@@ -93,10 +93,16 @@ interface LabStore {
 
   // Actions
   setCenterBeaker: (id: string | null) => void;
+  /** Create the center beaker vessel with EMPTY contents (used on Board init) */
+  initCenterBeaker: () => string;
   addVessel: (chemical: { name: string; formula: string; category?: string; chemicalId?: string }, position: Position) => string;
   removeVessel: (id: string) => void;
   selectVessel: (id: string | null) => void;
   moveVessel: (id: string, position: Position) => void;
+  /** Add a chemical to an existing vessel locally (no API call) */
+  addChemicalToVessel: (chemical: VesselContent & { category?: string; chemicalId?: string }, targetId: string) => void;
+  /** Run the reaction API for a vessel (called by Play button) */
+  runReaction: (vesselId: string) => Promise<void>;
   mixVessels: (sourceId: string, targetId: string) => Promise<void>;
   mixChemicalIntoVessel: (chemical: VesselContent, targetId: string) => Promise<void>;
   resetBoard: () => Promise<void>;
@@ -133,6 +139,130 @@ export const useLabStore = create<LabStore>((set, get) => ({
   catalyst: "Không",
 
   setCenterBeaker: (id) => set({ centerBeakerId: id }),
+
+  /* ── Create empty center beaker ─────────────────────────────────── */
+  initCenterBeaker: () => {
+    const id = `vessel-${nanoid(8)}`;
+    const vessel: Vessel = {
+      id,
+      position: { x: 0, y: 0 },
+      contents: [],          // ← truly empty
+      displayColor: "rgba(200,230,255,0.0)", // transparent until chemical added
+      label: "",
+    };
+    set((state) => ({
+      vessels: { ...state.vessels, [id]: vessel },
+      centerBeakerId: id,
+    }));
+    return id;
+  },
+
+  addChemicalToVessel: (chemical, targetId) => {
+    set((state) => {
+      const target = state.vessels[targetId];
+      if (!target) return state;
+
+      const newContents = [
+        ...target.contents,
+        { inputName: chemical.inputName, formula: chemical.formula, amountMl: chemical.amountMl ?? 10 },
+      ];
+
+      // Always recompute color: use the LATEST chemical's color as dominant
+      // This ensures beaker color updates visibly on every pour
+      const incomingColor = getDisplayColor(
+        chemical.chemicalId ?? "",
+        chemical.formula,
+        chemical.category ?? ""
+      );
+      const realContents = newContents.filter((c) => c.formula);
+      // Simple blend: if only 1 chemical, use its color. If 2+, blend toward latest.
+      let blendedColor: string;
+      if (realContents.length <= 1) {
+        blendedColor = incomingColor;
+      } else {
+        // Mix: 40% old + 60% new (latest chemical dominates visual)
+        blendedColor = incomingColor; // simplified — latest wins for clear visual feedback
+      }
+
+      // Build label: all unique formulas joined with +
+      const newFormulas = [...new Set(realContents.map((c) => c.formula).filter(Boolean))];
+      const newLabel = newFormulas.join(" + ") || target.label;
+
+      return {
+        vessels: {
+          ...state.vessels,
+          [targetId]: {
+            ...target,
+            displayColor: blendedColor,
+            contents: newContents,
+            label: newLabel,
+          },
+        },
+      };
+    });
+  },
+
+  /* ── Run reaction via API (triggered by Play button) ─────────────── */
+  runReaction: async (vesselId) => {
+    const state = get();
+    const vessel = state.vessels[vesselId];
+    if (!vessel || vessel.contents.length < 2) {
+      set({ error: "Cần ít nhất 2 hóa chất trong bình để chạy phản ứng" });
+      setTimeout(() => get().setError(null), 3000);
+      return;
+    }
+
+    set({ isLoading: true, error: null });
+
+    try {
+      // Build a fake "source" with all chemicals except the first
+      const [first, ...rest] = vessel.contents;
+      const response: MixResponse = await mixChemicals({
+        sessionCode: state.sessionCode,
+        sourceVesselId: `${vesselId}-source`,
+        targetVesselId: vesselId,
+        sourceContents: rest,
+        targetContents: [first],
+        temperature: state.temperature,
+        pressure: state.pressure,
+        catalyst: state.catalyst,
+      });
+
+      const result = response.result;
+      const effectType = result?.effectType ?? "NONE";
+
+      let newColor = vessel.displayColor;
+      if (response.newTargetVesselState?.displayColor) newColor = response.newTargetVesselState.displayColor;
+      else if (result?.effectColor) newColor = result.effectColor;
+      else if (result?.precipitateColor) newColor = result.precipitateColor;
+      else { const pc = getProductColor(result?.productFormula, result?.effectColor); if (pc) newColor = pc; }
+
+      let newLabel = vessel.label;
+      if (result?.hasReaction && result?.productFormula) newLabel = result.productFormula;
+
+      set({
+        vessels: {
+          ...state.vessels,
+          [vesselId]: {
+            ...vessel,
+            displayColor: newColor,
+            label: newLabel,
+            contents: response.newTargetVesselState?.contents?.map((p) => ({ inputName: p.formula, formula: p.formula })) as VesselContent[] ?? vessel.contents,
+          },
+        },
+        lastReaction: result ?? null,
+        activeEffect: effectType !== "NONE" ? { type: effectType, vesselId, color: result?.effectColor, precipitateColor: result?.precipitateColor, gasFormula: result?.gasFormula } : null,
+        isLoading: false,
+      });
+
+      if (effectType !== "NONE") {
+        const duration = EFFECT_DURATION[effectType] ?? 3000;
+        setTimeout(() => get().clearEffect(), duration);
+      }
+    } catch (err) {
+      set({ isLoading: false, error: err instanceof Error ? err.message : "Lỗi phản ứng" });
+    }
+  },
 
   addVessel: (chemical, position) => {
     const id = `vessel-${nanoid(8)}`;
@@ -382,6 +512,7 @@ export const useLabStore = create<LabStore>((set, get) => ({
     }
     set({
       vessels: {},
+      centerBeakerId: null,
       selectedVesselId: null,
       activeEffect: null,
       lastReaction: null,

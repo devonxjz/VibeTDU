@@ -29,7 +29,7 @@ interface DraggedChemical {
   color?: string;
 }
 
-/* ─── Drag Overlay Bottle ─────────────────────────────────────────── */
+/* ─── Drag Overlay — only the bottle, no card ────────────────────── */
 
 function DragOverlayBottle({
   chemical,
@@ -39,41 +39,40 @@ function DragOverlayBottle({
   const bottleColor = getBottleColor(chemical.chemicalId);
 
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-mint/30 bg-card/95 p-2.5 shadow-[var(--shadow-drag)] scale-105 backdrop-blur-sm">
-      {/* Bottle SVG */}
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center">
-        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-          <rect x="14" y="2" width="12" height="5" rx="2" fill="#78909C" />
-          <rect x="15" y="1" width="10" height="3" rx="1.5" fill="#90A4AE" />
-          <rect x="16" y="7" width="8" height="6" rx="1" fill="rgba(200,220,240,0.4)" stroke="rgba(120,160,200,0.3)" strokeWidth="0.5" />
-          <path
-            d="M16 13 L12 18 Q10 20 10 23 L10 34 Q10 37 13 37 L27 37 Q30 37 30 34 L30 23 Q30 20 28 18 L24 13 Z"
-            fill="rgba(200,220,240,0.25)"
-            stroke="rgba(120,160,200,0.35)"
-            strokeWidth="0.7"
-          />
-          <path
-            d="M11 22 L11 34 Q11 36 13 36 L27 36 Q29 36 29 34 L29 22 Z"
-            fill={bottleColor}
-          />
-          <path
-            d="M13 18 L13 34 Q13 35 14 35"
-            stroke="rgba(255,255,255,0.5)"
-            strokeWidth="1.2"
-            strokeLinecap="round"
-            fill="none"
-          />
-        </svg>
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-xs font-semibold text-navy">
-          {chemical.name}
-        </div>
-        <Formula
-          formula={chemical.formula}
-          className="font-display text-[11px] font-medium text-navy-soft"
+    <div
+      className="flex flex-col items-center pointer-events-none"
+      style={{ filter: "drop-shadow(0 6px 16px rgba(0,0,0,0.35))" }}
+    >
+      <svg width="52" height="64" viewBox="0 0 40 50" fill="none">
+        {/* Cap */}
+        <rect x="14" y="1" width="12" height="5" rx="2" fill="#546E7A" />
+        <rect x="15" y="0" width="10" height="3" rx="1.5" fill="#78909C" />
+        {/* Neck */}
+        <rect x="16" y="6" width="8" height="7" rx="1"
+          fill="rgba(200,230,255,0.35)" stroke="rgba(120,160,200,0.3)" strokeWidth="0.6" />
+        {/* Body */}
+        <path
+          d="M16 13 L12 19 Q10 22 10 25 L10 40 Q10 44 14 44 L26 44 Q30 44 30 40 L30 25 Q30 22 28 19 L24 13 Z"
+          fill="rgba(200,230,255,0.22)"
+          stroke="rgba(120,160,200,0.4)"
+          strokeWidth="0.8"
         />
-      </div>
+        {/* Liquid */}
+        <path
+          d="M11 24 L11 40 Q11 43 14 43 L26 43 Q29 43 29 40 L29 24 Z"
+          fill={bottleColor}
+          opacity="0.9"
+        />
+        {/* Glass shine */}
+        <path d="M13 19 L13 38 Q13 40 14 40"
+          stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+        {/* Label */}
+        <rect x="14" y="28" width="12" height="9" rx="1.5" fill="rgba(255,255,255,0.85)" />
+        <text x="20" y="34.5" textAnchor="middle" fontSize="6" fontWeight="800"
+          fill="#1a2340" fontFamily="system-ui, sans-serif">
+          {chemical.formula.length > 5 ? chemical.formula.slice(0, 4) + "…" : chemical.formula}
+        </text>
+      </svg>
     </div>
   );
 }
@@ -82,8 +81,10 @@ function DragOverlayBottle({
 
 export function ChemLabShell() {
   const addVessel = useLabStore((s) => s.addVessel);
+  const addChemicalToVessel = useLabStore((s) => s.addChemicalToVessel);
   const mixVessels = useLabStore((s) => s.mixVessels);
   const moveVessel = useLabStore((s) => s.moveVessel);
+  const centerBeakerId = useLabStore((s) => s.centerBeakerId);
   const [draggedChemical, setDraggedChemical] = useState<DraggedChemical | null>(null);
 
   const [pouringChemical, setPouringChemical] = useState<{
@@ -136,11 +137,25 @@ export function ChemLabShell() {
         );
       }
 
-      // Case 2: Chemical dragged from SearchPanel → existing Vessel (Center Beaker)
+      // Case 2: Chemical dropped on BeakerHero — queue pour animation
       if (activeData?.type === "chemical" && overData?.type === "vessel-target") {
-        const targetVesselId = overData.vesselId as string;
-        
-        // Trigger pouring animation state instead of mixing immediately
+        const targetVesselId = (overData.vesselId as string) || centerBeakerId;
+        if (targetVesselId) {
+          setPouringChemical({
+            chemical: {
+              name: activeData.name as string,
+              formula: activeData.formula as string,
+              category: activeData.category as string,
+              chemicalId: activeData.chemicalId as string,
+              color: activeData.color as string | undefined,
+            },
+            targetVesselId,
+          });
+        }
+      }
+
+      // Case 2b: Chemical dropped directly on board canvas — add to center beaker
+      if (activeData?.type === "chemical" && overData?.type === "board" && centerBeakerId) {
         setPouringChemical({
           chemical: {
             name: activeData.name as string,
@@ -149,7 +164,7 @@ export function ChemLabShell() {
             chemicalId: activeData.chemicalId as string,
             color: activeData.color as string | undefined,
           },
-          targetVesselId,
+          targetVesselId: centerBeakerId,
         });
       }
 
@@ -173,27 +188,24 @@ export function ChemLabShell() {
 
       setDraggedChemical(null);
     },
-    [addVessel, moveVessel, mixVessels],
+    [addVessel, moveVessel, mixVessels, centerBeakerId],
   );
 
-  const mixChemicalIntoVessel = useLabStore((s) => s.mixChemicalIntoVessel);
-
-  // Handle actual mixing after pouring animation
-  const handlePourAnimationComplete = useCallback(async () => {
+  const handlePourAnimationComplete = useCallback(() => {
     if (!pouringChemical) return;
-    
-    // Mix directly without creating a temporary source vessel
-    await mixChemicalIntoVessel(
+    // Add chemical locally — NO API call. User presses Play to run simulation.
+    addChemicalToVessel(
       {
         inputName: pouringChemical.chemical.name,
         formula: pouringChemical.chemical.formula,
         amountMl: 10,
+        category: pouringChemical.chemical.category,
+        chemicalId: pouringChemical.chemical.chemicalId,
       },
       pouringChemical.targetVesselId
     );
-    
     setPouringChemical(null);
-  }, [pouringChemical, mixChemicalIntoVessel]);
+  }, [pouringChemical, addChemicalToVessel]);
 
   return (
     <DndContext
@@ -203,22 +215,26 @@ export function ChemLabShell() {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="relative h-screen w-screen overflow-hidden bg-background">
-        <div className="absolute inset-0 z-0">
-          <Board />
-        </div>
+      {/* ── True 3-column layout — lab scene stays in center column ── */}
+      <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
+        {/* Top toolbar */}
+        <Toolbar />
 
-        <div className="pointer-events-none absolute inset-0 z-10 flex flex-col">
-          <div className="pointer-events-auto">
-            <Toolbar />
+        {/* Main content row */}
+        <div className="flex min-h-0 flex-1">
+          {/* Left panel */}
+          <div className="w-72 shrink-0 overflow-hidden border-r border-border bg-card/60 backdrop-blur-sm">
+            <PropertiesPanel />
           </div>
-          <div className="flex min-h-0 flex-1 items-start justify-between p-4 gap-4">
-            <div className="pointer-events-auto h-full w-72">
-              <PropertiesPanel />
-            </div>
-            <div className="pointer-events-auto h-full w-80">
-              <SearchPanel />
-            </div>
+
+          {/* Center — lab canvas */}
+          <div className="relative min-w-0 flex-1">
+            <Board />
+          </div>
+
+          {/* Right panel */}
+          <div className="w-80 shrink-0 overflow-hidden border-l border-border bg-card/60 backdrop-blur-sm">
+            <SearchPanel />
           </div>
         </div>
       </div>
