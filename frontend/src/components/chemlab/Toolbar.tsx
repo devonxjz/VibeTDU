@@ -2,20 +2,10 @@
 
 import {
   FlaskConical,
-  TestTube,
-  Beaker,
-  Flame,
-  Filter,
-  MousePointer2,
-  Hand,
-  ZoomIn,
-  ZoomOut,
-  Undo2,
-  Redo2,
-  Trash2,
   Play,
   Pause,
   RotateCcw,
+  Trash2,
   Thermometer,
   Gauge,
   Sparkles,
@@ -113,9 +103,7 @@ function SliderControl({
 }
 
 export function Toolbar() {
-  const [activeCanvasTool, setActiveCanvasTool] = useState("select");
   const [playing, setPlaying] = useState(false);
-  const [speed, setSpeed] = useState("1x");
 
   const resetBoard = useLabStore((s) => s.resetBoard);
   const isLoading = useLabStore((s) => s.isLoading);
@@ -146,46 +134,14 @@ export function Toolbar() {
 
       <Divider />
 
-      {/* Canvas tools */}
+      {/* Quick actions */}
       <div className="flex items-center gap-0.5">
-        <ToolButton
-          icon={MousePointer2}
-          label="Chọn"
-          active={activeCanvasTool === "select"}
-          onClick={() => setActiveCanvasTool("select")}
-        />
-        <ToolButton
-          icon={Hand}
-          label="Di chuyển"
-          active={activeCanvasTool === "pan"}
-          onClick={() => setActiveCanvasTool("pan")}
-        />
-        <ToolButton icon={ZoomIn} label="Phóng to" />
-        <ToolButton icon={ZoomOut} label="Thu nhỏ" />
-      </div>
-
-      <Divider />
-
-      <div className="flex items-center gap-0.5">
-        <ToolButton icon={Undo2} label="Hoàn tác" />
-        <ToolButton icon={Redo2} label="Làm lại" />
         <ToolButton
           icon={Trash2}
           label="Xoá tất cả"
           onClick={() => resetBoard()}
           disabled={vesselCount === 0}
         />
-      </div>
-
-      <Divider />
-
-      {/* Lab tools */}
-      <div className="flex items-center gap-0.5">
-        <ToolButton icon={Beaker} label="Cốc thuỷ tinh" />
-        <ToolButton icon={TestTube} label="Ống nghiệm" />
-        <ToolButton icon={FlaskConical} label="Bình cầu" />
-        <ToolButton icon={Flame} label="Đèn cồn" />
-        <ToolButton icon={Filter} label="Phễu lọc" />
       </div>
 
       <Divider />
@@ -249,22 +205,6 @@ export function Toolbar() {
           }}
           disabled={!canPlay}
         />
-        <div className="flex items-center rounded-lg bg-muted/60 p-0.5">
-          {(["0.5x", "1x", "2x"] as const).map((s) => (
-            <button
-              key={s}
-              onClick={() => setSpeed(s)}
-              className={cn(
-                "rounded-md px-2 py-1 text-[11px] font-semibold transition-all",
-                speed === s
-                  ? "bg-card text-navy shadow-[var(--shadow-soft)]"
-                  : "text-navy-soft hover:text-navy",
-              )}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
       </div>
     </div>
   );
