@@ -1,503 +1,506 @@
-# TASKS — ChemLab Dev Tracker
+# VibeTDU — Virtual Chemistry Lab
 
-> **Agent rules:**
-> 1. Đọc README.md trước khi làm bất cứ thứ gì.
-> 2. Làm từng task một — không skip, không làm song song.
-> 3. Sau mỗi task chạy `npx tsc --noEmit`. Không pass → không sang task tiếp.
-> 4. Chỉ được touch file trong danh sách **Files** của từng task.
-> 5. Không xóa code đang hoạt động — chỉ extend.
-> 6. Tất cả UI text dùng tiếng Việt.
+<div align="center">
+
+### 👥 Contributors
+
+<table>
+  <tr>
+    <td align="center" width="300">
+      <img src="https://img.shields.io/badge/🧑‍💻-Trần_Lê_Thái-0D1117?style=for-the-badge&labelColor=1a1b27&color=38bdae" /><br/>
+      <img src="https://img.shields.io/badge/MSSV-24110331-blue?style=flat-square&logo=bookstack&logoColor=white" />
+    </td>
+    <td align="center" width="300">
+      <img src="https://img.shields.io/badge/🧑‍💻-Lương_Viết_Vĩ_Đông-0D1117?style=for-the-badge&labelColor=1a1b27&color=7c3aed" /><br/>
+      <img src="https://img.shields.io/badge/MSSV-24110202-blue?style=flat-square&logo=bookstack&logoColor=white" />
+    </td>
+  </tr>
+</table>
+
+</div>
 
 ---
 
-## ✅ Phase 1–2 — DONE. Không sửa. Không touch.
-
-> Bao gồm: toàn bộ layout, DnD context, store cơ bản, BeakerHero, LabScene2D,
-> SearchPanel, PropertiesPanel, Toolbar, PouringAnimation, ChatbotWidget,
-> tất cả 5 effect components, constants/chemicals.ts.
-
----
-
-## 🗺️ Kiến trúc cần nắm trước khi làm
+## ⚠️ Agent — Đọc phần này trước khi làm bất cứ thứ gì
 
 ```
-Entry:       src/app/page.tsx → <ChemLabShell />
-DnD:         ChemLabShell.tsx — DndContext bao toàn bộ app
-Board:       Board.tsx — canvas chính, render BeakerHero + floating vessels
-Store:       src/stores/lab-store.ts — Zustand, source of truth
-  vessels:           Record<string, Vessel>   — tất cả vessels trên board
-  centerBeakerId:    string | null            — ID của bình trung tâm
-  lastReaction:      ReactionResult | null    — kết quả từ BE
-  activeEffect:      ActiveEffect | null      — hiệu ứng đang chạy
-  sessionCode:       string                   — nanoid(8), gửi kèm mọi API call
-
-Drag flow:   SearchPanel → DragOverlay bottle → drop vào BeakerHero (vessel-target)
-             → ChemLabShell.handleDragEnd → setPouringChemical
-             → PouringAnimation.onComplete → addChemicalToVessel (LOCAL, không API)
-             → User bấm Play → runReaction(centerBeakerId) → POST /api/lab/mix
-
-Types:       src/types/lab.ts   — Vessel, ActiveEffect, Position, DragData
-             src/types/api.ts   — MixRequest, MixResponse, ReactionResult, VesselContent
-Constants:   src/constants/chemicals.ts — CATEGORY_GROUPS, CHEMICAL_COLORS,
-                                          BOTTLE_COLORS, getBottleColor(), getChemicalColor()
+STACK:        Next.js 15 + TypeScript + Tailwind CSS v4 + Zustand + dnd-kit + Framer Motion
+ENTRY POINT:  src/app/page.tsx → <ChemLabShell />
+STATE:        src/stores/lab-store.ts  (Zustand)
+TYPES:        src/types/lab.ts | src/types/api.ts
+CONSTANTS:    src/constants/chemicals.ts
+STYLES:       src/app/globals.css  (design tokens — đừng override, chỉ extend)
+BACKEND URL:  http://localhost:8080  (local) | xem .env.local
+DATABASE:     Supabase PostgreSQL (hosted) — KHÔNG phải local PostgreSQL
 ```
 
----
-
-## 🔴 Phase 3 — Offline Mock + Reaction Controls nâng cao
-
-> Prerequisite: Phase 1–2 pass (đã done).
-
----
-
-### TASK 3-1 — reaction-mock.ts ⚠️ CRITICAL
-
-**Mục đích:** Cho phép app chạy offline, không cần BE, không cần network.
-Kết quả mock phải có đúng shape của `ReactionResult` từ `src/types/api.ts`.
-
-**Files:**
-- `src/utils/reaction-mock.ts` *(create)*
-
-**Interface cần implement — khớp CHÍNH XÁC với `ReactionResult` trong api.ts:**
-```ts
-// ReactionResult đã định nghĩa trong src/types/api.ts — KHÔNG tạo lại
-// Mock function trả về đúng type này
-import type { ReactionResult } from "@/types/api";
-
-export function getMockReaction(reactants: string[]): ReactionResult
-export const NO_REACTION: ReactionResult
-```
-
-**Key generation:**
-```ts
-const key = reactants.map(r => r.toLowerCase()).sort().join("+");
-```
-
-**10 reactions bắt buộc** — đủ tất cả fields của `ReactionResult`:
-
-| Key (sorted) | equation | effectType | effectColor / precipitateColor |
-|---|---|---|---|
-| `hcl+naoh` | HCl + NaOH → NaCl + H₂O | COLOR_CHANGE | `rgba(220,235,250,0.8)` |
-| `bacl2+h2so4` | BaCl₂ + H₂SO₄ → BaSO₄↓ + 2HCl | PRECIPITATE | precipitateColor: `#ffffff` |
-| `agno3+nacl` | AgNO₃ + NaCl → AgCl↓ + NaNO₃ | PRECIPITATE | precipitateColor: `#f5f5f5` |
-| `cuso4+naoh` | CuSO₄ + 2NaOH → Cu(OH)₂↓ + Na₂SO₄ | PRECIPITATE | precipitateColor: `#1565C0` |
-| `hcl+zn` | Zn + 2HCl → ZnCl₂ + H₂↑ | GAS_BUBBLE | gasFormula: `H2` |
-| `hcl+na2co3` | Na₂CO₃ + 2HCl → 2NaCl + H₂O + CO₂↑ | GAS_BUBBLE | gasFormula: `CO2` |
-| `h2so4+kmno4` | 2KMnO₄ + H₂SO₄ → K₂SO₄ + 2MnO₄⁻ | COLOR_CHANGE | effectColor: `#E040FB` |
-| `fe+hcl` | Fe + 2HCl → FeCl₂ + H₂↑ | GAS_BUBBLE | gasFormula: `H2` |
-| `ca+h2o` | Ca + 2H₂O → Ca(OH)₂ + H₂↑ | GAS_BUBBLE | gasFormula: `H2` |
-| `hcl+mg` | Mg + 2HCl → MgCl₂ + H₂↑ | GAS_BUBBLE | gasFormula: `H2` |
-
-**Mỗi reaction phải có đủ:**
-```ts
-{
-  hasReaction: true,
-  equation: "...",
-  productFormula: "...",    // sản phẩm chính
-  effectType: "GAS_BUBBLE" | "PRECIPITATE" | "COLOR_CHANGE",
-  effectColor?: "...",       // nếu COLOR_CHANGE
-  precipitateColor?: "...",  // nếu PRECIPITATE
-  gasFormula?: "...",        // nếu GAS_BUBBLE
-  messageVi: "...",          // QUAN TRỌNG: field này = "Hiện tượng quan sát" trong PropertiesPanel
-  explanationVi: "...",      // hiển thị trong "Giải thích chi tiết"
-  safetyNoteVi: "...",       // hiển thị trong "Lưu ý an toàn"
-}
-```
-
-> ⚠️ Field là `messageVi` (không phải `observationVi`) — khớp với `ReactionResult` trong api.ts
-> và với PropertiesPanel đang đọc `reaction.messageVi`.
-
-**Verify:**
-- [x] `getMockReaction(['HCl','NaOH'])` → `hasReaction: true, effectType: 'COLOR_CHANGE'`
-- [x] `getMockReaction(['HCl','HCl'])` → `hasReaction: false`
-- [x] `getMockReaction(['ZN','HCL'])` → `hasReaction: true` (case-insensitive + sort)
-- [x] `npx tsc --noEmit` → 0 errors
+**Quy tắc bắt buộc:**
+- Sau mỗi task chạy `npx tsc --noEmit`. Không pass → không tiếp.
+- Chỉ touch file được liệt kê trong task.
+- Không xóa code đang hoạt động — chỉ extend.
+- Không cài thêm package nếu không có trong task.
+- Phase 1–2 đã DONE — không sửa.
 
 ---
 
-### TASK 3-2 — Offline fallback trong store
+## 🔬 About the Project
 
-**Mục đích:** Khi BE offline/lỗi, `runReaction()` tự fallback sang mock thay vì chỉ set error.
+**VibeTDU (Virtual Chemistry Lab)** là nền tảng web mô phỏng thí nghiệm hoá học tương tác. Thiết kế cho mục đích giáo dục, cung cấp môi trường ảo an toàn để kéo-thả hoá chất và quan sát phản ứng theo thời gian thực.
 
-**Files:**
-- `src/stores/lab-store.ts` *(modify — ADD ONLY)*
-
-**Checklist:**
-- [ ] Import `getMockReaction` từ `@/utils/reaction-mock`
-- [ ] Trong `runReaction()`, bọc `mixChemicals()` trong try/catch:
-  - Nếu thành công → xử lý response như hiện tại
-  - Nếu throw (network error, 5xx) → gọi `getMockReaction(formulas)`, set `lastReaction` và `activeEffect` từ mock result
-  - Mock fallback: set `isLoading = false`, KHÔNG set `error`
-- [ ] `formulas` = `vessel.contents.map(c => c.formula)` (không lowercase — mock function tự xử lý)
-- [ ] Tương tự cho `mixChemicalIntoVessel()` và `mixVessels()` nếu muốn (optional, chỉ bắt buộc cho `runReaction`)
-
-**Verify:**
-- [x] Tắt BE → bấm Play → mock reaction hiển thị đúng (không hiện error toast)
-- [x] Bật BE → bấm Play → gọi API thật bình thường
-- [x] `npx tsc --noEmit` → 0 errors
+Tích hợp cơ sở dữ liệu hoá chất bên ngoài (PubChem, Cactus, OPSIN) và AI assistant (Google Gemini) để giải thích phản ứng bằng tiếng Việt.
 
 ---
 
-### TASK 3-3 — Catalyst dropdown hoàn chỉnh trong Toolbar
+## ✨ Features
 
-**Mục đích:** Dropdown "Xúc tác" hiện đang là button tĩnh, chưa có options.
-
-**Files:**
-- `src/components/chemlab/Toolbar.tsx` *(modify)*
-
-**Checklist:**
-- [x] Dùng Radix `<DropdownMenu>` (đã có trong `src/components/ui/dropdown-menu.tsx`)
-- [x] Options: `Không`, `MnO₂`, `Fe`, `Pt`, `Ni`, `V₂O₅`
-- [x] Click option → gọi `setEnvironment({ catalyst: value })`
-- [x] Button hiển thị catalyst hiện tại (đã có `{catalyst}` trong text)
-- [x] Icon `<ChevronDown>` rotate 180° khi menu mở (dùng `data-[state=open]` của Radix)
-
-**Verify:**
-- [x] Chọn `MnO₂` → store `catalyst === 'MnO₂'`
-- [x] Chọn `Không` → store `catalyst === 'Không'`
-- [x] `npx tsc --noEmit` → 0 errors
+- **Drag & Drop Interface** — `@dnd-kit`, kéo hoá chất từ thư viện vào beaker
+- **Pouring Animation** — chai hoá chất đổ vào beaker có animation thực tế
+- **Real-time Reaction Simulation** — `GAS_BUBBLE`, `PRECIPITATE`, `COLOR_CHANGE`, `HEAT`, `EXPLOSION`
+- **Dynamic Chemical Resolution** — DB Cache → PubChem → Cactus → OPSIN
+- **AI Chatbot** — Google Gemini, context-aware, tiếng Việt, multi-turn
+- **Experiment Logging** — lưu toàn bộ action theo session trên Supabase
+- **Offline Mock Mode** — `reaction-mock.ts` chạy không cần backend
 
 ---
 
-### TASK 3-4 — PresetSelector component
+## 🛠️ Tech Stack
 
-**Mục đích:** Cho phép load nhanh cặp hoá chất hay dùng vào beaker.
-
-**Files:**
-- `src/components/chemlab/PresetSelector.tsx` *(create)*
-- `src/components/chemlab/PropertiesPanel.tsx` *(modify — thêm PresetSelector vào UI)*
-
-**5 Presets:**
-
-| Tên | chemicalIds | Mô tả |
-|---|---|---|
-| Trung hoà | `['hcl', 'naoh']` | Phản ứng acid-base |
-| Kết tủa trắng | `['agno3', 'nacl']` | Tạo AgCl↓ trắng |
-| Sinh khí H₂ | `['hcl', 'zn']` | Giải phóng khí H₂ |
-| Kết tủa xanh | `['cuso4', 'naoh']` | Cu(OH)₂↓ xanh |
-| Đổi màu tím | `['h2so4', 'kmno4']` | Màu tím đặc trưng |
-
-**Checklist:**
-- [x] `PresetSelector` nhận không có props, đọc store trực tiếp
-- [x] Hiển thị 5 preset dạng horizontal scroll hoặc grid 2-3 cột
-- [x] Mỗi preset: tên + mô tả ngắn + icon emoji
-- [x] Click preset:
-  1. Gọi `resetBoard()` để clear board
-  2. Sau 200ms: gọi `initCenterBeaker()` để tạo beaker mới
-  3. Sau 400ms: gọi `addChemicalToVessel()` cho chemical đầu tiên
-  4. Sau 700ms: gọi `addChemicalToVessel()` cho chemical thứ hai
-  - Dùng `setTimeout` chain — delay giúp animation rõ hơn
-  - Chemical data lấy từ `CATEGORY_GROUPS` trong `@/constants/chemicals`
-- [x] Thêm `<PresetSelector />` vào `PropertiesPanel.tsx` — đặt ngay trên `<BeakerTray />`
-- [x] Wrap trong `<section>` với heading "Thí nghiệm nhanh"
-
-> ⚠️ `resetBoard()` là async (gọi API), await nó trước khi setTimeout.
-> `initCenterBeaker()` PHẢI được gọi sau `resetBoard()` vì `resetBoard` xóa sạch vessels.
-
-**Verify:**
-- [x] Click "Trung hoà" → board clear → beaker xuất hiện → HCl vào → NaOH vào (delay nhìn rõ)
-- [x] Không crash khi click preset liên tục
-- [x] `npx tsc --noEmit` → 0 errors
-
----
-
-### ✅ Phase 3 — Acceptance Criteria
-
-- [x] `npx tsc --noEmit` → 0 errors
-- [x] `getMockReaction(['HCl','NaOH'])` → `hasReaction: true`
-- [x] Tắt BE → Play → mock result hiển thị trong PropertiesPanel (không có error)
-- [x] Catalyst dropdown chọn được, store cập nhật
-- [x] Click preset → chemicals load tuần tự có delay
-
-> Phase 4 chỉ bắt đầu khi tất cả criteria trên pass.
-
----
-
-## 🔴 Phase 4 — ExperimentTimeline + Keyboard Shortcuts
-
-> Prerequisite: Phase 3 pass.
-
----
-
-### TASK 4-1 — TimelineEvent type + store actions
-
-**Mục đích:** Tracking mọi action trong session để hiển thị timeline.
-
-**Files:**
-- `src/types/lab.ts` *(modify — ADD ONLY)*
-- `src/stores/lab-store.ts` *(modify — ADD ONLY)*
-
-**Thêm vào `src/types/lab.ts`:**
-```ts
-export interface TimelineEvent {
-  id: string;              // nanoid(6)
-  timestamp: string;       // format "HH:MM:SS"
-  type: "ADD" | "REACT" | "UNDO" | "RESET" | "PRESET";
-  description: string;     // ví dụ: "Thêm HCl · 10 mL"
-  formulaLabel?: string;   // formula chính liên quan (nếu có)
-}
-```
-
-**Thêm vào store interface và implementation:**
-```ts
-timelineEvents: TimelineEvent[]   // init []
-addTimelineEvent: (event: Omit<TimelineEvent, "id" | "timestamp">) => void
-clearTimeline: () => void
-```
-
-**Wire vào các actions hiện có:**
-- `addChemicalToVessel()` → push event `ADD`, description: `"Thêm {formula} · {amountMl} mL"`
-- `runReaction()` success → push event `REACT`, description: equation hoặc `"Phản ứng đã chạy"`
-- `undoLastChemical()` → push event `UNDO`, description: `"Hoàn tác: {formula đã xóa}"`
-- `resetBoard()` → push event `RESET`, description: `"Đặt lại thí nghiệm"` + gọi `clearTimeline()`
-
-> Dùng `nanoid(6)` cho id (đã có trong package), timestamp = `new Date().toTimeString().slice(0,8)`
-
-**Verify:**
-- [x] Thêm HCl vào beaker → `timelineEvents` có 1 item type `ADD`
-- [x] Bấm Play → `timelineEvents` có thêm item type `REACT`
-- [x] `npx tsc --noEmit` → 0 errors
-
----
-
-### TASK 4-2 — ExperimentTimeline component
-
-**Files:**
-- `src/components/chemlab/timeline/ExperimentTimeline.tsx` *(create)*
-- `src/components/chemlab/PropertiesPanel.tsx` *(modify — thêm timeline vào bottom)*
-
-**Checklist:**
-- [x] `ExperimentTimeline` đọc `timelineEvents` từ store
-- [x] Layout: horizontal scrollable bar, mỗi event là 1 chip/card nhỏ
-- [x] Mỗi event hiển thị: icon theo type + description + timestamp
-  - `ADD` → 🧪 icon xanh
-  - `REACT` → ⚡ icon amber
-  - `UNDO` → ↩️ icon xám
-  - `RESET` → 🔄 icon đỏ nhạt
-  - `PRESET` → ✨ icon tím
-- [x] Khi `timelineEvents.length === 0` → hiển thị placeholder "Chưa có thao tác nào"
-- [x] Scroll tự cuộn đến item mới nhất khi có event mới (`useEffect` + `ref.scrollLeft`)
-- [x] Thêm vào `PropertiesPanel.tsx`: đặt `<ExperimentTimeline />` ở cuối `<aside>`, sau `<ReactionResultPanel />`
-
-**Verify:**
-- [x] Drop HCl vào beaker → timeline xuất hiện chip mới
-- [x] Bấm Reset → timeline xóa sạch
-- [x] `npx tsc --noEmit` → 0 errors
-
----
-
-### TASK 4-3 — Keyboard Shortcuts
-
-**Files:**
-- `src/components/chemlab/ChemLabShell.tsx` *(modify — ADD ONLY)*
-
-**Checklist:**
-- [x] `useEffect` + `window.addEventListener('keydown', handler)` trong `ChemLabShell`
-- [x] Cleanup: `return () => window.removeEventListener('keydown', handler)` 
-- [x] Shortcuts:
-
-| Key | Action | Điều kiện |
-|---|---|---|
-| `Z` hoặc `Ctrl+Z` / `Cmd+Z` | `undoLastChemical()` | luôn |
-| `R` | `resetBoard()` | luôn |
-| `Space` hoặc `Enter` | `runReaction(centerBeakerId)` | chỉ khi `canPlay` |
-
-- [x] `canPlay` = `centerVessel?.contents.filter(c => c.formula).length >= 2 && !isLoading`
-- [x] Khi focus đang ở `<input>` hoặc `<textarea>` → KHÔNG trigger shortcuts (check `e.target`)
-- [x] `Space` phải `e.preventDefault()` để không scroll page
-
-**Verify:**
-- [x] Thêm 2 chất → nhấn Space → reaction chạy
-- [x] Nhấn Z → undo
-- [x] Nhấn R → reset
-- [x] Đang gõ vào SearchPanel input → Space không trigger reaction
-- [x] `npx tsc --noEmit` → 0 errors
-
----
-
-### ✅ Phase 4 — Acceptance Criteria
-
-- [x] `npx tsc --noEmit` → 0 errors
-- [x] Timeline hiển thị đúng sau mỗi action (ADD, REACT, UNDO, RESET)
-- [x] Timeline scroll đến item mới nhất tự động
-- [x] `Space` → trigger reaction (khi đủ điều kiện)
-- [x] `Z` / `Ctrl+Z` → undo
-- [x] `R` → reset
-- [x] Shortcuts không trigger khi đang focus input
-
-> Phase 5 chỉ bắt đầu khi tất cả criteria trên pass.
-
----
-
-## 🔴 Phase 5 — ExplanationPanel (3-level learning)
-
-> Prerequisite: Phase 4 pass.
-
----
-
-### TASK 5-1 — Mở rộng reaction-mock với 3 cấp giải thích
-
-**Files:**
-- `src/utils/reaction-mock.ts` *(modify)*
-- `src/types/api.ts` *(modify — ADD ONLY)*
-
-**Thêm vào `ReactionResult` trong `src/types/api.ts`:**
-```ts
-// Thêm 3 optional fields vào interface ReactionResult đã có:
-basicExplanation?: string;          // 1-2 câu đơn giản, dành cho cấp 1
-intermediateExplanation?: string;   // giải thích cơ chế, dành cho cấp 2
-advancedExplanation?: string;       // phương trình ion rút gọn, dành cho cấp 3
-```
-
-**Populate trong reaction-mock.ts** — thêm 3 fields này vào tất cả 10 reactions:
-
-Ví dụ cho `hcl+naoh`:
-```ts
-basicExplanation: "Axit HCl và bazơ NaOH tác dụng với nhau tạo thành muối NaCl và nước. Đây là phản ứng trung hòa.",
-intermediateExplanation: "Ion H⁺ từ HCl kết hợp với ion OH⁻ từ NaOH tạo thành H₂O. Na⁺ và Cl⁻ là ion khán giả, không tham gia phản ứng.",
-advancedExplanation: "Phương trình ion rút gọn: H⁺(aq) + OH⁻(aq) → H₂O(l). ΔG < 0, phản ứng tự phát. Ka × Kb >> 1.",
-```
-
-**Verify:**
-- [ ] `getMockReaction(['HCl','NaOH']).basicExplanation` có giá trị
-- [ ] `npx tsc --noEmit` → 0 errors
-
----
-
-### TASK 5-2 — ExplanationPanel component
-
-**Files:**
-- `src/components/chemlab/panels/ExplanationPanel.tsx` *(create)*
-- `src/components/chemlab/PropertiesPanel.tsx` *(modify — tích hợp vào ReactionResultPanel)*
-
-**Checklist:**
-- [ ] 3 tabs: **Cơ bản** | **Trung cấp** | **Nâng cao**
-- [ ] Dùng Radix `<Tabs>` từ `src/components/ui/tabs.tsx`
-- [ ] Đọc `lastReaction` từ store
-- [ ] Mỗi tab hiển thị field tương ứng: `basicExplanation`, `intermediateExplanation`, `advancedExplanation`
-- [ ] Khi field đó là `undefined` → hiển thị placeholder "Không có giải thích cho cấp này"
-- [ ] Khi `lastReaction === null` → hiển thị "Chạy phản ứng để xem giải thích"
-- [ ] Integrate vào `PropertiesPanel`: thay thế block `<details>` "Giải thích chi tiết" hiện tại bằng `<ExplanationPanel />`
-
-**Verify:**
-- [ ] Chạy phản ứng HCl+NaOH → 3 tabs hiển thị đúng content
-- [ ] Switch tab không mất data
-- [ ] `npx tsc --noEmit` → 0 errors
-
----
-
-### TASK 5-3 — Polish: Font + Dark mode check
-
-**Files:**
-- `src/app/globals.css` *(modify)*
-- `src/app/layout.tsx` *(modify)*
-
-**Checklist:**
-- [ ] Thêm `DM_Sans` vào `layout.tsx`:
-  ```ts
-  import { Inter, Plus_Jakarta_Sans, DM_Sans } from "next/font/google";
-  const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans", display: "swap" });
-  // Thêm dmSans.variable vào className của <html>
-  ```
-- [ ] Trong `globals.css`, đổi `--font-sans`:
-  ```css
-  --font-sans: var(--font-dm-sans, "DM Sans", system-ui, sans-serif);
-  ```
-  (Giữ nguyên `--font-display` là Plus Jakarta Sans)
-- [ ] Kiểm tra `globals.css` có đủ `@keyframes` sau không, nếu thiếu thì thêm:
-  - `@keyframes shake` — dùng cho ExplosionEffect nếu cần CSS fallback
-  - `@keyframes particle-fall` — dùng cho PrecipitateEffect nếu cần CSS fallback
-- [ ] Kiểm tra class `.thin-scroll` (đang dùng trong PropertiesPanel, SearchPanel) hoạt động đúng ở dark mode
-
-**Verify:**
-- [ ] Font chữ body đổi sang DM Sans (inspect element confirm)
-- [ ] `npx tsc --noEmit` → 0 errors
-
----
-
-### ✅ Phase 5 — Acceptance Criteria
-
-- [ ] `npx tsc --noEmit` → 0 errors
-- [ ] Tab Cơ bản / Trung cấp / Nâng cao switch đúng content
-- [ ] Content khác nhau rõ rệt giữa 3 cấp
-- [ ] Font body đổi sang DM Sans
-- [ ] `Space` → reaction, `Z` → undo, `R` → reset (từ phase 4, vẫn phải pass)
-
----
-
-## 📋 Master Checklist
-
-### Phase 3
-- [x] `getMockReaction(['HCl','NaOH'])` → `hasReaction: true, effectType: 'COLOR_CHANGE'`
-- [x] `getMockReaction(['HCl','HCl'])` → `hasReaction: false`
-- [x] Tắt BE → Play → mock result hiển thị (không crash, không error toast)
-- [x] Catalyst dropdown: chọn MnO₂ → store cập nhật
-- [x] Click preset "Sinh khí H₂" → HCl + Zn load vào beaker tuần tự
-
-### Phase 4
-- [x] Drop chemical → timeline có chip ADD mới
-- [x] Play → timeline có chip REACT mới
-- [x] Undo → timeline có chip UNDO mới
-- [x] Reset → timeline xóa sạch + chip RESET
-- [x] Space → trigger reaction (đủ điều kiện)
-- [x] Z → undo
-- [x] R → reset
-- [x] Shortcuts không trigger khi focus vào search input
-
-### Phase 5
-- [ ] 3 tabs explanation switch đúng
-- [ ] Content 3 cấp khác nhau rõ ràng
-- [ ] Font DM Sans active
-
----
-
-## ❌ Những thứ KHÔNG làm (đã có sẵn)
-
-Danh sách component/logic đã implement trong Phase 1-2, **không được sửa**:
-
-| Đã có | Vị trí |
+### Frontend
+| | |
 |---|---|
-| DnD context, DragOverlay, PouringAnimation | `ChemLabShell.tsx` |
-| BeakerHero (SVG beaker + liquid fill + droppable) | `scene/BeakerHero.tsx` |
-| GasBubbleEffect, PrecipitateEffect, ColorChangeEffect, HeatEffect, ExplosionEffect | `effects/` |
-| ReactionEffect dispatcher | `effects/ReactionEffect.tsx` |
-| PropertiesPanel (Play button, BeakerTray, ReactionResultPanel) | `PropertiesPanel.tsx` |
-| SearchPanel + DraggableChemicalCard + API search | `SearchPanel.tsx` |
-| Toolbar (Temperature slider, Pressure slider, catalyst button, Reset) | `Toolbar.tsx` |
-| CATEGORY_GROUPS, CHEMICAL_COLORS, BOTTLE_COLORS | `constants/chemicals.ts` |
-| ChatbotWidget, ChatbotStore | `chatbot/` |
-| runReaction, mixVessels, mixChemicalIntoVessel, addChemicalToVessel, undoLastChemical, resetBoard | `lab-store.ts` |
-| Tất cả BE: LabController, AiController, ChemicalController, LabMixService, ReactionPredictionService | `backend/` |
+| Framework | Next.js 15 / React 19 |
+| Language | TypeScript |
+| Styling | Tailwind CSS v4 + tw-animate-css |
+| Components | Radix UI + Lucide React |
+| State | Zustand |
+| Animation | Framer Motion |
+| Drag & Drop | @dnd-kit |
+
+### Backend
+| | |
+|---|---|
+| Framework | Spring Boot 3.2.5 |
+| Language | Java 17 |
+| Database | Supabase PostgreSQL (prod) / H2 (dev) |
+| API Docs | SpringDoc OpenAPI / Swagger UI |
+| AI | Google Gemini via WebClient (key rotation tự động) |
+| External APIs | PubChem, NCI/Cactus, OPSIN |
 
 ---
 
-## 🐛 Lưu ý kỹ thuật
+## 🗂️ Cấu trúc thư mục Frontend
 
-**Về store mutations:**
-- Luôn dùng `set((state) => ({...}))` form khi đọc state cũ
-- `nanoid` đã import sẵn trong lab-store.ts, dùng lại
-
-**Về DnD data shape:**
-```ts
-// Chemical từ SearchPanel có data:
-{ type: "chemical", chemicalId, name, formula, category, color }
-
-// Vessel drag có data:
-{ type: "vessel", vesselId }
-
-// Drop target (BeakerHero) có data:
-{ type: "vessel-target", vesselId }
+```
+frontend/src/
+├── app/
+│   ├── layout.tsx              # Root layout, font imports (Inter + Plus Jakarta Sans)
+│   ├── page.tsx                # Entry → <ChemLabShell />
+│   └── globals.css             # Design tokens, CSS vars, keyframes
+├── components/
+│   └── chemlab/
+│       ├── ChemLabShell.tsx    # DndContext, DragOverlay, PouringAnimation
+│       ├── Board.tsx           # Canvas chính: LabScene2D + BeakerHero + floating vessels
+│       ├── Toolbar.tsx         # Top bar: Temperature, Pressure, Catalyst, Reset
+│       ├── PropertiesPanel.tsx # Left panel: Play button, BeakerTray, ReactionResultPanel
+│       ├── SearchPanel.tsx     # Right panel: thư viện hoá chất, DraggableChemicalCard
+│       ├── Vessel.tsx          # Floating vessel component (non-center)
+│       ├── Formula.tsx         # Render công thức hoá học với subscript
+│       ├── PouringAnimation.tsx# Animation đổ hoá chất vào beaker
+│       ├── scene/
+│       │   ├── LabScene2D.tsx  # Background lab 2.5D (kệ, bàn, thiết bị)
+│       │   ├── BeakerHero.tsx  # Beaker SVG trung tâm + liquid fill + droppable
+│       │   ├── ChemicalBottle2D.tsx
+│       │   └── LabEquipment2D.tsx
+│       ├── effects/
+│       │   ├── ReactionEffect.tsx    # Dispatcher → chọn effect theo effectType
+│       │   ├── GasBubbleEffect.tsx   # Bọt khí nổi lên
+│       │   ├── PrecipitateEffect.tsx # Hạt kết tủa rơi xuống
+│       │   ├── ColorChangeEffect.tsx # Đổi màu dung dịch
+│       │   ├── HeatEffect.tsx        # Hơi nóng + glow cam đỏ
+│       │   └── ExplosionEffect.tsx   # Flash + sparks + smoke
+│       ├── panels/
+│       │   └── ExplanationPanel.tsx  # [Phase 5] 3-level learning tabs
+│       └── timeline/
+│           └── ExperimentTimeline.tsx # [Phase 4] Timeline thao tác
+├── stores/
+│   ├── lab-store.ts            # Zustand: vessels, reaction, effects, session
+│   └── chatbot-store.ts        # Zustand: chat messages, persist to localStorage
+├── types/
+│   ├── lab.ts                  # Vessel, ActiveEffect, Position, DragData, TimelineEvent
+│   └── api.ts                  # MixRequest, MixResponse, ReactionResult, VesselContent
+├── constants/
+│   └── chemicals.ts            # CATEGORY_GROUPS, CHEMICAL_COLORS, BOTTLE_COLORS,
+│                               # getChemicalColor(), getBottleColor(), formatFormula()
+├── api/
+│   └── client/
+│       ├── http.ts             # fetch wrapper: get(), post(), HttpError
+│       ├── lab.ts              # mixChemicals(), resetSession(), getSessionLogs(), healthCheck()
+│       ├── chemical.ts         # resolveChemical()
+│       └── ai.ts               # askAi(), chatAi()
+└── utils/
+    ├── cn.ts                   # clsx + tailwind-merge
+    ├── collision.ts            # Custom DnD collision detection
+    └── reaction-mock.ts        # [Phase 3] getMockReaction() — offline data
 ```
 
-**Về Radix UI:**
-- DropdownMenu: `src/components/ui/dropdown-menu.tsx` ✅
-- Tabs: `src/components/ui/tabs.tsx` ✅
-- Không cài thêm package nào
+---
 
-**Về font DM Sans:**
-- `next/font/google` hỗ trợ sẵn — không cần cài thêm
-- Thêm variable CSS `--font-dm-sans` rồi reference trong globals.css
+## 🔄 System Flow — User → UI → State → API → Backend → UI
 
-**Về offline fallback:**
-- Chỉ fallback khi `catch` — không fallback nếu BE trả `{ status: "error" }`
-- Mock không cần delay (instant), không gọi setTimeout
+> Đây là bức tranh toàn cảnh: mỗi action của user kéo theo gì trong hệ thống.
+
+### Thí nghiệm đầy đủ (happy path)
+
+```
+① USER chọn hoá chất từ SearchPanel (right panel)
+   └─ SearchPanel.tsx → DraggableChemicalCard
+      data: { type: "chemical", chemicalId, name, formula, category }
+
+② USER kéo (drag) chai hoá chất
+   └─ ChemLabShell: onDragStart → setDraggedChemical → DragOverlay hiện bottle
+
+③ USER thả (drop) vào BeakerHero
+   └─ ChemLabShell: onDragEnd
+      over.data.type === "vessel-target"
+      → setPouringChemical({ chemical, targetVesselId })
+      → PouringAnimation bắt đầu (2.2s)
+
+④ PouringAnimation hoàn tất
+   └─ onComplete → addChemicalToVessel(chemical, vesselId)
+      [Zustand] vessel.contents.push(chemical)
+               vessel.displayColor = getDisplayColor(...)
+               vessel.label = formulas.join(" + ")
+      ⚠️ KHÔNG gọi API ở bước này — chỉ update state local
+
+⑤ USER bấm nút ▶ Play (PropertiesPanel)
+   └─ runReaction(centerBeakerId)
+      [Zustand] isLoading = true
+      → mixChemicals(MixRequest) → POST /api/lab/mix
+
+⑥ BACKEND xử lý (Spring Boot :8080)
+   ├─ Validate request (@NotBlank, @NotEmpty)
+   ├─ Rate limit check (2000ms cooldown / session)
+   ├─ Resolve chemicals: Supabase cache → PubChem → Cactus → OPSIN
+   ├─ Predict reaction: Supabase cache → Google Gemini → validate JSON
+   ├─ Save: ReactionApiCache + ExperimentLog → Supabase
+   └─ Return MixResponse { status, source, result, newTargetVesselState }
+
+⑦ FRONTEND nhận response
+   └─ [Zustand] parse result:
+      → vessel.displayColor = newTargetVesselState.displayColor hoặc effectColor
+      → vessel.label = productFormula
+      → lastReaction = result  (→ PropertiesPanel render equation, messageVi, explanationVi)
+      → activeEffect = { type, vesselId, color, ... } (→ ReactionEffect trigger)
+      → isLoading = false
+
+⑧ UI cập nhật đồng thời
+   ├─ BeakerHero: màu liquid thay đổi (spring animation)
+   ├─ ReactionEffect: GasBubble / Precipitate / ColorChange / Heat / Explosion
+   ├─ PropertiesPanel: hiển thị equation + observation + safety note
+   └─ Effect auto-clear sau N ms (GAS_BUBBLE: 3s, PRECIPITATE: 2.5s, EXPLOSION: 4s)
+
+⑨ USER hỏi AI Chatbot
+   └─ ChatbotWidget → useChatbotStore.sendMessage(text)
+      → buildReactionContext(labState) — đính kèm equation, messageVi, temperature, ...
+      → chatAi(AiChatRequest) → POST /api/ai/chat
+      → BE gọi Gemini với context → trả answerVi
+      → ChatPanel hiển thị câu trả lời
+```
+
+### Offline fallback (khi BE tắt)
+
+```
+⑤ USER bấm Play
+   └─ runReaction() → mixChemicals() → network error (throw)
+      catch → getMockReaction(formulas)  [reaction-mock.ts]
+      → set lastReaction + activeEffect từ mock
+      ⚠️ Không hiện error — user không biết đang offline
+```
+
+### Vessel-to-vessel mix
+
+```
+USER kéo floating vessel → thả lên BeakerHero
+└─ ChemLabShell: onDragEnd
+   active.type === "vessel", over.type === "vessel-target"
+   → mixVessels(sourceId, targetId)
+   → POST /api/lab/mix (sourceContents + targetContents)
+   → source vessel bị xóa sau khi đổ xong
+```
+
+---
+
+## 🏗️ Kiến trúc Backend
+
+```
+Spring Boot (:8080)
+├── controller/
+│   ├── LabController       → /api/health, /api/lab/mix, /api/session/*
+│   ├── ChemicalController  → /api/chemicals/resolve
+│   └── AiController        → /api/ai/ask, /api/ai/chat
+├── service/
+│   ├── LabMixService           → orchestrate toàn bộ mix flow
+│   ├── ReactionPredictionService → cache check + Gemini predict
+│   ├── ChemicalResolverService  → fallback chain: DB→PubChem→Cactus→OPSIN
+│   ├── AiInterpretationService  → single/multi-turn chat với Gemini
+│   ├── ExperimentLogService     → ghi log mọi action vào Supabase
+│   ├── CacheService             → read/write ReactionApiCache
+│   └── RateLimitService         → 2000ms cooldown per session
+├── client/
+│   ├── AiClient        → Google Gemini API + key rotation tự động khi 429
+│   ├── PubChemClient   → PubChem REST API
+│   ├── CactusClient    → NCI/Cactus API
+│   └── OpsinClient     → OPSIN (IUPAC name → formula)
+├── config/
+│   ├── CorsConfig              → đọc app.cors.allowed-origins
+│   ├── AppProperties           → strongly-typed config từ application.properties
+│   ├── DataSourceConfig        → Supabase connection (không dùng Spring auto-config)
+│   └── DatabaseConnectionSingleton → singleton pattern cho DB connection
+└── entity/
+    ├── ChemicalCache       → cache kết quả resolve chemical
+    ├── ReactionApiCache    → cache kết quả predict reaction (tránh gọi Gemini lại)
+    ├── ExperimentSession   → session metadata
+    └── ExperimentLog       → log từng action (MIX, AI_ASK, AI_CHAT, SESSION_RESET)
+```
+
+**Fallback chain resolve chemical:**
+```
+Input (tên/formula)
+  → Supabase ChemicalCache (B-Tree index, O(log n))
+  → PubChem REST API
+  → NCI/Cactus API
+  → OPSIN (IUPAC name parser)
+  → AI fallback (Gemini)
+```
+
+**Fallback chain predict reaction:**
+```
+reactants
+  → Supabase ReactionApiCache
+  → Google Gemini (với key rotation: key[0] → key[1] → key[2] khi gặp 429)
+  → Validate JSON output
+  → Save cache
+```
+
+---
+
+## 📡 API Reference
+
+Base URL: `http://localhost:8080`
+Swagger UI: `http://localhost:8080/swagger-ui.html`
+
+### Lab
+
+| Method | Endpoint | Mô tả |
+|---|---|---|
+| GET | `/api/health` | Health check |
+| POST | `/api/lab/mix` | Simulate reaction — endpoint chính |
+| GET | `/api/session/{sessionCode}/logs` | Lấy log thí nghiệm |
+| POST | `/api/session/reset` | Reset session (log vẫn giữ trong DB) |
+
+**POST `/api/lab/mix` — Request:**
+```json
+{
+  "sessionCode": "session-abc12345",
+  "sourceVesselId": "vessel-xyz-source",
+  "targetVesselId": "vessel-xyz",
+  "sourceContents": [{ "inputName": "HCl", "formula": "HCl", "amountMl": 10 }],
+  "targetContents": [{ "inputName": "NaOH", "formula": "NaOH", "amountMl": 10 }],
+  "temperature": 25,
+  "pressure": 1,
+  "catalyst": "Không"
+}
+```
+
+**POST `/api/lab/mix` — Response:**
+```json
+{
+  "status": "success",
+  "source": "AI_PREDICTION",
+  "cached": false,
+  "confidence": 0.95,
+  "result": {
+    "hasReaction": true,
+    "equation": "HCl + NaOH → NaCl + H₂O",
+    "productFormula": "NaCl + H₂O",
+    "effectType": "COLOR_CHANGE",
+    "effectColor": "#e8f5e9",
+    "messageVi": "Phản ứng trung hòa tạo muối NaCl và nước.",
+    "explanationVi": "Axit HCl tác dụng với bazơ NaOH...",
+    "safetyNoteVi": "Phản ứng tỏa nhiệt, cẩn thận khi thao tác.",
+    "confidence": 0.95
+  },
+  "newTargetVesselState": {
+    "vesselId": "vessel-xyz",
+    "displayColor": "#e8f5e9",
+    "contents": [
+      { "formula": "NaCl", "state": "AQUEOUS" },
+      { "formula": "H2O", "state": "LIQUID" }
+    ]
+  }
+}
+```
+
+**`source` field:**
+
+| Value | Nghĩa |
+|---|---|
+| `CACHE` | Lấy từ Supabase cache |
+| `AI_PREDICTION` | Gemini dự đoán lần đầu |
+| `API_PREDICTION` | Từ external chemical API |
+| `MOCK` | Mock mode (BE dev/test) |
+
+**`effectType` values:**
+
+| Value | Hiệu ứng FE |
+|---|---|
+| `NONE` | Không có hiệu ứng |
+| `GAS_BUBBLE` | `GasBubbleEffect` — bọt khí nổi lên |
+| `PRECIPITATE` | `PrecipitateEffect` — hạt rơi xuống |
+| `COLOR_CHANGE` | `ColorChangeEffect` — đổi màu dung dịch |
+| `HEAT` | `HeatEffect` — hơi nóng, glow cam |
+| `EXPLOSION` | `ExplosionEffect` — flash + sparks + warning |
+
+**Error responses:**
+
+| HTTP | Khi nào |
+|---|---|
+| `400` | Thiếu `sessionCode`, `sourceContents` rỗng, ... |
+| `429` | Gọi `/api/lab/mix` quá nhanh (< 2s per session) |
+| `500` | Gemini timeout, Supabase không kết nối được, ... |
+
+### Chemical
+
+| Method | Endpoint | Mô tả |
+|---|---|---|
+| GET | `/api/chemicals/resolve?query=H2SO4` | Resolve tên/công thức hoá chất |
+
+### AI Assistant
+
+| Method | Endpoint | Mô tả |
+|---|---|---|
+| POST | `/api/ai/ask` | Single-turn Q&A về phản ứng |
+| POST | `/api/ai/chat` | Multi-turn conversation |
+
+---
+
+## 🔐 CORS & Session
+
+**CORS** — config tại `CorsConfig.java`, đọc từ `application.properties`:
+```properties
+# Dev (hiện tại — cho phép tất cả):
+app.cors.allowed-origins=*
+
+# Production — đổi thành:
+app.cors.allowed-origins=https://yourdomain.com,http://localhost:3000
+```
+Áp dụng cho `/api/**`, methods: `GET, POST, PUT, DELETE, OPTIONS`.
+
+**Session Code** — do FE generate, không phải BE:
+```typescript
+// lab-store.ts — khởi tạo khi load page
+sessionCode: `session-${nanoid(8)}`
+// Lưu trong Zustand in-memory → mất khi F5 → session mới
+// Gửi kèm mọi request để BE group logs đúng session
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js >= 20
+- Java 17
+- Tài khoản Supabase (hoặc dùng H2 in-memory cho dev không cần DB)
+
+### Frontend
+
+```bash
+cd frontend
+cp .env.example .env.local
+npm install
+npm run dev    # http://localhost:3000
+```
+
+`.env.local`:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8080
+```
+
+### Backend
+
+```bash
+cd backend
+./mvnw spring-boot:run    # http://localhost:8080
+# Swagger: http://localhost:8080/swagger-ui.html
+```
+
+`application.properties` (các key quan trọng):
+```properties
+# Supabase
+app.supabase.url=https://<project-ref>.supabase.co
+app.supabase.anon-key=<anon-key>
+
+# Gemini — nhiều key tự động xoay vòng khi quota 429
+app.ai.api-keys[0]=AIzaSy...
+app.ai.api-keys[1]=AIzaSy...
+app.ai.model=gemini-2.0-flash
+app.ai.mock-mode=false    # true = dùng mock, không gọi Gemini
+
+# CORS
+app.cors.allowed-origins=*
+
+# Rate limit
+app.rate-limit.mix-cooldown-ms=2000
+```
+
+> ⚠️ Schema DB được quản lý thủ công — chạy `schema.sql` trên Supabase Dashboard lần đầu.
+> `spring.jpa.hibernate.ddl-auto=none` — Spring KHÔNG tự tạo bảng.
+
+### Chạy offline (không cần backend)
+
+```bash
+# Chỉ chạy frontend — mock reactions sẽ tự động được dùng khi BE không respond
+cd frontend && npm run dev
+```
+
+Mock mode hoạt động nhờ `src/utils/reaction-mock.ts` — không cần network, không cần config.
+
+---
+
+## 🧪 Kiểm tra nhanh
+
+```bash
+# Health check
+curl http://localhost:8080/api/health
+
+# Test mix HCl + NaOH
+curl -X POST http://localhost:8080/api/lab/mix \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sessionCode": "test-001",
+    "sourceVesselId": "s1",
+    "targetVesselId": "t1",
+    "sourceContents": [{"inputName":"HCl","formula":"HCl","amountMl":10}],
+    "targetContents": [{"inputName":"NaOH","formula":"NaOH","amountMl":10}]
+  }'
+
+# Resolve hoá chất
+curl "http://localhost:8080/api/chemicals/resolve?query=H2SO4"
+
+# Swagger UI
+open http://localhost:8080/swagger-ui.html
+```
+
+---
+
+## 🌳 Architecture Notes
+
+- **Supabase PostgreSQL** — hosted DB, B-Tree index trên chemical registry (O(log n) lookup)
+- **Reaction cache** — `ReactionApiCache` lưu kết quả Gemini, tránh gọi lại cho cùng reactants
+- **AI key rotation** — `AiClient` tự xoay sang key tiếp theo khi gặp HTTP 429
+- **Rate limiting** — 2000ms cooldown per `sessionCode` tại BE
+- **Offline mode** — FE fallback sang `reaction-mock.ts` khi `mixChemicals()` throw error
+- **Session-based logging** — mọi action (MIX, AI_ASK, RESET) được log vào `ExperimentLog` theo `sessionCode`
+- **No SSR for lab** — toàn bộ lab UI là `"use client"`, Zustand store khởi tạo phía browser
