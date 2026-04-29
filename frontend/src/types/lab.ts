@@ -63,3 +63,13 @@ export interface LabState {
   isLoading: boolean;
   error: string | null;
 }
+
+// ─── Timeline ───────────────────────────────────────────────────────
+
+export interface TimelineEvent {
+  id: string;              // nanoid(6)
+  timestamp: string;       // format "HH:MM:SS"
+  type: "ADD" | "REACT" | "UNDO" | "RESET" | "PRESET";
+  description: string;     // ví dụ: "Thêm HCl · 10 mL"
+  formulaLabel?: string;   // formula chính liên quan (nếu có)
+}

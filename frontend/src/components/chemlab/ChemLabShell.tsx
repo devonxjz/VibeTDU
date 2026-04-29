@@ -9,7 +9,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Toolbar } from "@/components/chemlab/Toolbar";
 import { PropertiesPanel } from "@/components/chemlab/PropertiesPanel";
 import { SearchPanel } from "@/components/chemlab/SearchPanel";
@@ -85,6 +85,57 @@ export function ChemLabShell() {
   const mixVessels = useLabStore((s) => s.mixVessels);
   const moveVessel = useLabStore((s) => s.moveVessel);
   const centerBeakerId = useLabStore((s) => s.centerBeakerId);
+  const undoLastChemical = useLabStore((s) => s.undoLastChemical);
+  const resetBoard = useLabStore((s) => s.resetBoard);
+  const runReaction = useLabStore((s) => s.runReaction);
+  const isLoading = useLabStore((s) => s.isLoading);
+  const vessels = useLabStore((s) => s.vessels);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if focus is in input or textarea
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+
+      // Undo: Z or Ctrl+Z or Cmd+Z
+      if (e.key.toLowerCase() === "z" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z")) {
+        e.preventDefault();
+        undoLastChemical();
+        return;
+      }
+
+      // Reset: R
+      if (e.key.toLowerCase() === "r" && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        resetBoard();
+        return;
+      }
+
+      // Play: Space or Enter
+      if (e.key === " " || e.key === "Enter") {
+        if (e.key === " ") {
+          e.preventDefault(); // Prevent page scroll
+        }
+        
+        const centerVessel = centerBeakerId ? vessels[centerBeakerId] : null;
+        const contentsCount = centerVessel?.contents.filter(c => c.formula).length || 0;
+        const canPlay = contentsCount >= 2 && !isLoading;
+        
+        if (canPlay && centerBeakerId) {
+          runReaction(centerBeakerId);
+        }
+        return;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [centerBeakerId, vessels, isLoading, undoLastChemical, resetBoard, runReaction]);
+
   const [draggedChemical, setDraggedChemical] = useState<DraggedChemical | null>(null);
 
   const [pouringChemical, setPouringChemical] = useState<{
