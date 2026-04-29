@@ -13,6 +13,12 @@ import {
 import { cn } from "@/utils/cn";
 import { useLabStore } from "@/stores/lab-store";
 import { useChatbotStore } from "@/stores/chatbot-store";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ToolButtonProps {
   icon: React.ComponentType<{ className?: string }>;
@@ -156,14 +162,27 @@ export function Toolbar() {
           unit="atm"
           onChange={(v) => setEnvironment({ pressure: v })}
         />
-        <div className="relative">
-          <button className="flex items-center gap-1.5 rounded-lg bg-muted/60 px-2.5 py-1.5 text-xs font-medium text-navy transition-colors hover:bg-muted">
-            <Sparkles className="h-4 w-4 text-navy-soft" />
-            <span className="text-[11px] text-navy-soft">Xúc tác</span>
-            <span className="font-semibold">{catalyst}</span>
-            <ChevronDown className="h-3 w-3 text-navy-soft" />
-          </button>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-1.5 rounded-lg bg-muted/60 px-2.5 py-1.5 text-xs font-medium text-navy transition-colors hover:bg-muted data-[state=open]:bg-muted [&[data-state=open]>svg:last-child]:rotate-180">
+              <Sparkles className="h-4 w-4 text-navy-soft" />
+              <span className="text-[11px] text-navy-soft">Xúc tác</span>
+              <span className="font-semibold">{catalyst}</span>
+              <ChevronDown className="h-3 w-3 text-navy-soft transition-transform duration-200" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-32">
+            {["Không", "MnO₂", "Fe", "Pt", "Ni", "V₂O₅"].map((option) => (
+              <DropdownMenuItem
+                key={option}
+                onClick={() => setEnvironment({ catalyst: option })}
+                className={cn("cursor-pointer", catalyst === option && "font-bold text-mint")}
+              >
+                {option}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Spacer */}

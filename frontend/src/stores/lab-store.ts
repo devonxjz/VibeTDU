@@ -2,11 +2,12 @@
 
 import { create } from "zustand";
 import { nanoid } from "nanoid";
-import type { Vessel, ActiveEffect, Position } from "@/types/lab";
+import type { Vessel, ActiveEffect, Position, TimelineEvent } from "@/types/lab";
 import type { MixResponse, ReactionResult, VesselContent } from "@/types/api";
 import { mixChemicals } from "@/api/client/lab";
 import { resetSession as apiResetSession } from "@/api/client/lab";
 import { CHEMICAL_COLORS, getBottleColor } from "@/constants/chemicals";
+import { getMockReaction } from "@/utils/reaction-mock";
 
 // ─── Color map by chemical category ─────────────────────────────────
 
@@ -85,6 +86,7 @@ interface LabStore {
   sessionCode: string;
   isLoading: boolean;
   error: string | null;
+  timelineEvents: TimelineEvent[];
 
   // Environment conditions
   temperature: number;
@@ -112,6 +114,8 @@ interface LabStore {
   setError: (error: string | null) => void;
 
   setEnvironment: (conditions: Partial<{ temperature: number; pressure: number; catalyst: string }>) => void;
+  addTimelineEvent: (event: Omit<TimelineEvent, "id" | "timestamp">) => void;
+  clearTimeline: () => void;
 }
 
 // ─── Effect Duration Map ────────────────────────────────────────────
@@ -135,10 +139,24 @@ export const useLabStore = create<LabStore>((set, get) => ({
   sessionCode: `session-${nanoid(8)}`,
   isLoading: false,
   error: null,
+  timelineEvents: [],
 
   temperature: 25,
   pressure: 1,
   catalyst: "Không",
+
+  addTimelineEvent: (event) => set((state) => ({
+    timelineEvents: [
+      ...state.timelineEvents,
+      {
+        ...event,
+        id: nanoid(6),
+        timestamp: new Date().toTimeString().slice(0, 8),
+      },
+    ],
+  })),
+
+  clearTimeline: () => set({ timelineEvents: [] }),
 
   setCenterBeaker: (id) => set({ centerBeakerId: id }),
 
@@ -160,6 +178,12 @@ export const useLabStore = create<LabStore>((set, get) => ({
   },
 
   addChemicalToVessel: (chemical, targetId) => {
+    get().addTimelineEvent({
+      type: "ADD",
+      description: `Thêm ${chemical.formula} · ${chemical.amountMl ?? 10} mL`,
+      formulaLabel: chemical.formula,
+    });
+
     set((state) => {
       const target = state.vessels[targetId];
       if (!target) return state;
@@ -257,12 +281,59 @@ export const useLabStore = create<LabStore>((set, get) => ({
         isLoading: false,
       });
 
+      if (result?.hasReaction) {
+        get().addTimelineEvent({
+          type: "REACT",
+          description: result.equation || "Phản ứng đã chạy",
+        });
+      }
+
       if (effectType !== "NONE") {
         const duration = EFFECT_DURATION[effectType] ?? 3000;
         setTimeout(() => get().clearEffect(), duration);
       }
     } catch (err) {
-      set({ isLoading: false, error: err instanceof Error ? err.message : "Lỗi phản ứng" });
+      // Offline fallback
+      const formulas = vessel.contents.map(c => c.formula).filter(Boolean);
+      const mockResult = getMockReaction(formulas);
+      const effectType = mockResult.effectType ?? "NONE";
+      
+      let newColor = vessel.displayColor;
+      if (mockResult.effectColor) newColor = mockResult.effectColor;
+      else if (mockResult.precipitateColor) newColor = mockResult.precipitateColor;
+      else {
+        const pc = getProductColor(mockResult.productFormula, mockResult.effectColor);
+        if (pc) newColor = pc;
+      }
+      
+      let newLabel = vessel.label;
+      if (mockResult.hasReaction && mockResult.productFormula) newLabel = mockResult.productFormula;
+
+      set({
+        vessels: {
+          ...state.vessels,
+          [vesselId]: {
+            ...vessel,
+            displayColor: newColor,
+            label: newLabel,
+          },
+        },
+        lastReaction: mockResult,
+        activeEffect: effectType !== "NONE" ? { type: effectType, vesselId, color: mockResult.effectColor, precipitateColor: mockResult.precipitateColor, gasFormula: mockResult.gasFormula } : null,
+        isLoading: false,
+      });
+
+      if (mockResult.hasReaction) {
+        get().addTimelineEvent({
+          type: "REACT",
+          description: mockResult.equation || "Phản ứng đã chạy",
+        });
+      }
+
+      if (effectType !== "NONE") {
+        const duration = EFFECT_DURATION[effectType] ?? 3000;
+        setTimeout(() => get().clearEffect(), duration);
+      }
     }
   },
 
@@ -402,10 +473,48 @@ export const useLabStore = create<LabStore>((set, get) => ({
         }, duration);
       }
     } catch (err) {
+      // Offline fallback
+      const formulas = [...target.contents.map(c => c.formula), chemical.formula].filter(Boolean);
+      const mockResult = getMockReaction(formulas);
+      const effectType = mockResult.effectType ?? "NONE";
+      
+      let newColor = target.displayColor;
+      if (mockResult.effectColor) newColor = mockResult.effectColor;
+      else if (mockResult.precipitateColor) newColor = mockResult.precipitateColor;
+      else {
+        const pc = getProductColor(mockResult.productFormula, mockResult.effectColor);
+        if (pc) newColor = pc;
+      }
+      
+      let newLabel = target.label;
+      if (mockResult.hasReaction && mockResult.productFormula) {
+        newLabel = mockResult.productFormula;
+      } else {
+        const existingFormulas = target.contents.map(c => c.formula);
+        if (!existingFormulas.includes(chemical.formula)) {
+          newLabel = [...existingFormulas, chemical.formula].join(" + ");
+        }
+      }
+
       set({
+        vessels: {
+          ...state.vessels,
+          [targetId]: {
+            ...target,
+            displayColor: newColor,
+            label: newLabel,
+            contents: [...target.contents, chemical],
+          },
+        },
+        lastReaction: mockResult,
+        activeEffect: effectType !== "NONE" ? { type: effectType, vesselId: targetId, color: mockResult.effectColor, precipitateColor: mockResult.precipitateColor, gasFormula: mockResult.gasFormula } : null,
         isLoading: false,
-        error: err instanceof Error ? err.message : "Lỗi không xác định",
       });
+
+      if (effectType !== "NONE") {
+        const duration = EFFECT_DURATION[effectType] ?? 3000;
+        setTimeout(() => get().clearEffect(), duration);
+      }
     }
   },
 
@@ -498,10 +607,48 @@ export const useLabStore = create<LabStore>((set, get) => ({
         }, duration);
       }
     } catch (err) {
+      // Offline fallback
+      const formulas = [...target.contents.map(c => c.formula), ...source.contents.map(c => c.formula)].filter(Boolean);
+      const mockResult = getMockReaction(formulas);
+      const effectType = mockResult.effectType ?? "NONE";
+      
+      let newColor = target.displayColor;
+      if (mockResult.effectColor) newColor = mockResult.effectColor;
+      else if (mockResult.precipitateColor) newColor = mockResult.precipitateColor;
+      else {
+        const pc = getProductColor(mockResult.productFormula, mockResult.effectColor);
+        if (pc) newColor = pc;
+      }
+      
+      let newLabel = target.label;
+      if (mockResult.hasReaction && mockResult.productFormula) {
+        newLabel = mockResult.productFormula;
+      } else {
+        const allFormulas = [...target.contents.map(c => c.formula), ...source.contents.map(c => c.formula)];
+        newLabel = [...new Set(allFormulas)].join(" + ");
+      }
+
+      const { [sourceId]: _, ...remainingVessels } = state.vessels;
+
       set({
+        vessels: {
+          ...remainingVessels,
+          [targetId]: {
+            ...target,
+            displayColor: newColor,
+            label: newLabel,
+            contents: [...target.contents, ...source.contents],
+          },
+        },
+        lastReaction: mockResult,
+        activeEffect: effectType !== "NONE" ? { type: effectType, vesselId: targetId, color: mockResult.effectColor, precipitateColor: mockResult.precipitateColor, gasFormula: mockResult.gasFormula } : null,
         isLoading: false,
-        error: err instanceof Error ? err.message : "Lỗi không xác định",
       });
+
+      if (effectType !== "NONE") {
+        const duration = EFFECT_DURATION[effectType] ?? 3000;
+        setTimeout(() => get().clearEffect(), duration);
+      }
     }
   },
 
@@ -521,10 +668,31 @@ export const useLabStore = create<LabStore>((set, get) => ({
       sessionCode: `session-${nanoid(8)}`,
       isLoading: false,
       error: null,
+      timelineEvents: [{
+        id: nanoid(6),
+        timestamp: new Date().toTimeString().slice(0, 8),
+        type: "RESET",
+        description: "Đặt lại thí nghiệm",
+      }],
     });
   },
 
   undoLastChemical: () => {
+    const state = get();
+    const beakerId = state.centerBeakerId;
+    if (beakerId) {
+      const vessel = state.vessels[beakerId];
+      if (vessel && vessel.contents.length > 0) {
+        const lastChemical = vessel.contents[vessel.contents.length - 1];
+        if (lastChemical && lastChemical.formula) {
+          get().addTimelineEvent({
+            type: "UNDO",
+            description: `Hoàn tác: ${lastChemical.formula}`,
+          });
+        }
+      }
+    }
+
     set((state) => {
       const beakerId = state.centerBeakerId;
       if (!beakerId) return state;

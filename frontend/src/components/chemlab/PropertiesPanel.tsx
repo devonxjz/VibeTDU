@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { useLabStore } from "@/stores/lab-store";
 import { ReactionFormula, Formula } from "./Formula";
+import { PresetSelector } from "./PresetSelector";
+import { ExperimentTimeline } from "./timeline/ExperimentTimeline";
 import { cn } from "@/utils/cn";
 
 interface QuickActionProps {
@@ -272,6 +274,11 @@ export function PropertiesPanel() {
 
         <div className="mx-4 h-px bg-border/60" />
 
+        {/* Preset Selector */}
+        <PresetSelector />
+
+        <div className="mx-4 h-px bg-border/60" />
+
         {/* Center Beaker Tray */}
         <BeakerTray />
 
@@ -280,6 +287,8 @@ export function PropertiesPanel() {
         {/* Reaction Result */}
         <ReactionResultPanel />
       </div>
+
+      <ExperimentTimeline />
     </aside>
   );
 }
