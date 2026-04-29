@@ -13,13 +13,13 @@ import java.sql.SQLException;
 /**
  * ╔══════════════════════════════════════════════════════════╗
  * ║         DatabaseConnectionSingleton                     ║
- * ║  Singleton Pattern – đảm bảo chỉ có MỘT instance       ║
- * ║  quản lý và xác minh kết nối tới Supabase PostgreSQL.  ║
+ * ║  Singleton Pattern - ensures only ONE instance          ║
+ * ║  manages and verifies Supabase PostgreSQL connection.   ║
  * ╚══════════════════════════════════════════════════════════╝
  *
- * <p>Spring Bean đã là Singleton theo mặc định (@Component).
- * Class này bổ sung thêm static holder để bất kỳ code non-Spring
- * nào cũng có thể truy cập instance qua {@link #getInstance()}.</p>
+ * <p>Spring Bean is Singleton by default (@Component).
+ * This class adds a static holder so any non-Spring code
+ * can also access the instance via {@link #getInstance()}.</p>
  */
 @Component
 public class DatabaseConnectionSingleton {
@@ -32,7 +32,7 @@ public class DatabaseConnectionSingleton {
     private final DataSource dataSource;
     private boolean verified = false;
 
-    // ── Constructor injection (Spring quản lý) ─────────────────────────
+    // ── Constructor injection (managed by Spring) ─────────────────────────
     @Autowired
     public DatabaseConnectionSingleton(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -42,31 +42,31 @@ public class DatabaseConnectionSingleton {
     }
 
     /**
-     * Trả về singleton instance.
-     * Nếu Spring chưa khởi tạo Bean này, trả về null và log cảnh báo.
+     * Returns the singleton instance.
+     * If Spring has not initialized this Bean yet, returns null and logs a warning.
      */
     public static DatabaseConnectionSingleton getInstance() {
         if (INSTANCE == null) {
             LoggerFactory.getLogger(DatabaseConnectionSingleton.class)
-                    .warn("⚠️  DatabaseConnectionSingleton chưa được Spring khởi tạo!");
+                    .warn("DatabaseConnectionSingleton has not been initialized by Spring!");
         }
         return INSTANCE;
     }
 
     /**
-     * Xác minh kết nối tới database.
-     * Chỉ thực hiện một lần (lazy-verify); kết quả cache lại.
+     * Verifies the database connection.
+     * Executed only once (lazy-verify); result is cached.
      *
-     * @return {@code true} nếu kết nối thành công
+     * @return {@code true} if connection is successful
      */
     public synchronized boolean verifyAndLog() {
         if (verified) {
-            log.debug("🔄  Kết nối DB đã được xác minh trước đó – bỏ qua lần kiểm tra này.");
+            log.debug("DB connection already verified previously - skipping this check.");
             return true;
         }
 
         log.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        log.info("🔌  Đang kiểm tra kết nối tới Supabase PostgreSQL...");
+        log.info("Verifying connection to Supabase PostgreSQL...");
 
         try (Connection conn = dataSource.getConnection()) {
             DatabaseMetaData meta = conn.getMetaData();
@@ -75,7 +75,7 @@ public class DatabaseConnectionSingleton {
             String jdbcUrl    = meta.getURL();
             String user       = meta.getUserName();
 
-            log.info("✅  KẾT NỐI THÀNH CÔNG!");
+            log.info("CONNECTION SUCCESSFUL!");
             log.info("    ┌─────────────────────────────────────────────────");
             log.info("    │  🗄️  Database   : {}", dbProduct);
             log.info("    │  📦  Version    : {}", dbVersion);
@@ -90,7 +90,7 @@ public class DatabaseConnectionSingleton {
 
         } catch (SQLException ex) {
             log.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-            log.error("❌  KẾT NỐI THẤT BẠI!");
+            log.error("CONNECTION FAILED!");
             log.error("    ┌─────────────────────────────────────────────────");
             log.error("    │  💥  Error Code : {}", ex.getErrorCode());
             log.error("    │  📝  SQL State  : {}", ex.getSQLState());
@@ -102,8 +102,8 @@ public class DatabaseConnectionSingleton {
     }
 
     /**
-     * Lấy một connection từ pool để dùng trực tiếp.
-     * Caller có trách nhiệm đóng connection sau khi dùng.
+     * Gets a connection from the pool for direct use.
+     * Caller is responsible for closing the connection after use.
      */
     public Connection getConnection() throws SQLException {
         return dataSource.getConnection();

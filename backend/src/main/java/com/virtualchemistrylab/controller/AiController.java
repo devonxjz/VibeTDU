@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/ai")
-@Tag(name = "AI", description = "Hỏi đáp hóa học bằng tiếng Việt qua Google Gemini AI")
+@Tag(name = "AI", description = "Chemistry Q&A via Google Gemini AI")
 public class AiController {
 
     private final AiInterpretationService aiInterpretationService;
@@ -35,59 +35,59 @@ public class AiController {
     }
 
     @Operation(
-        summary = "Hỏi AI về phản ứng hóa học",
+        summary = "Ask AI about chemical reactions",
         description = """
-            Gửi câu hỏi tiếng Việt về hiện tượng hóa học.
-            AI sẽ trả lời dựa trên ngữ cảnh phản ứng được cung cấp.
+            Send a question about chemical phenomena.
+            AI will respond based on the provided reaction context.
 
-            **Mock mode (mặc định):** Trả lời mẫu không cần internet.
-            **Real mode:** Kết nối Google Gemini để có câu trả lời chính xác.
+            **Mock mode (default):** Returns sample response without internet.
+            **Real mode:** Connects to Google Gemini for accurate answers.
             """
     )
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "AI trả lời thành công bằng tiếng Việt",
+            description = "AI answered successfully",
             content = @Content(examples = @ExampleObject(value = """
                 {
                   "status": "success",
-                  "answerVi": "Bọt khí xuất hiện vì phản ứng tạo ra khí CO2. Khí CO2 thoát ra khỏi dung dịch nên bạn thấy hiện tượng sủi bọt."
+                  "answerVi": "Gas bubbles appear because the reaction produces CO2 gas. CO2 escapes from the solution, causing the bubbling phenomenon."
                 }
                 """))
         ),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "sessionCode hoặc question rỗng")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "sessionCode or question is empty")
     })
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
-        description = "Câu hỏi và ngữ cảnh phản ứng",
+        description = "Question and reaction context",
         required = true,
         content = @Content(
             examples = {
-                @ExampleObject(name = "Hỏi về bọt khí CO2", value = """
+                @ExampleObject(name = "Ask about CO2 bubbles", value = """
                     {
                       "sessionCode": "demo-001",
                       "reactionContext": {
-                        "equation": "2HCl + CaCO3 → CaCl2 + CO2↑ + H2O",
+                        "equation": "2HCl + CaCO3 -> CaCl2 + CO2 + H2O",
                         "effectType": "GAS_BUBBLE",
-                        "messageVi": "Có khí CO2 thoát ra."
+                        "messageVi": "CO2 gas is released."
                       },
-                      "question": "Tại sao lại có bọt khí?"
+                      "question": "Why are there gas bubbles?"
                     }
                     """),
-                @ExampleObject(name = "Hỏi về kết tủa xanh", value = """
+                @ExampleObject(name = "Ask about blue precipitate", value = """
                     {
                       "sessionCode": "demo-001",
                       "reactionContext": {
-                        "equation": "CuSO4 + 2NaOH → Cu(OH)2↓ + Na2SO4",
+                        "equation": "CuSO4 + 2NaOH -> Cu(OH)2 + Na2SO4",
                         "effectType": "PRECIPITATE",
-                        "messageVi": "Xuất hiện kết tủa xanh lam Cu(OH)2."
+                        "messageVi": "Blue precipitate Cu(OH)2 appears."
                       },
-                      "question": "Tại sao kết tủa có màu xanh lam?"
+                      "question": "Why is the precipitate blue?"
                     }
                     """),
-                @ExampleObject(name = "Hỏi không có ngữ cảnh", value = """
+                @ExampleObject(name = "Ask without context", value = """
                     {
                       "sessionCode": "demo-001",
-                      "question": "NaOH là gì? Có nguy hiểm không?"
+                      "question": "What is NaOH? Is it dangerous?"
                     }
                     """)
             }

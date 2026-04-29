@@ -119,8 +119,8 @@ public class ReactionPredictionService {
                 .hasReaction(false)
                 .effectType("NONE")
                 .confidence(0.0)
-                .messageVi("Hai chất này không phản ứng với nhau trong điều kiện hiện tại.")
-                .explanationVi("Điều kiện phản ứng không phù hợp hoặc cặp chất này không xảy ra phản ứng trong phạm vi mô phỏng.")
+                .messageVi("These two substances do not react with each other under current conditions.")
+                .explanationVi("Reaction conditions are not suitable or this pair of substances does not react within the simulation scope.")
                 .safetyNoteVi(null)
                 .build();
     }

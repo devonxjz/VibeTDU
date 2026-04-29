@@ -21,7 +21,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/chemicals")
-@Tag(name = "Chemical", description = "Tra cứu và chuẩn hóa tên/công thức hóa chất")
+@Tag(name = "Chemical", description = "Look up and canonicalize chemical names/formulas")
 public class ChemicalController {
 
     private final ChemicalResolverService chemicalResolverService;
@@ -31,23 +31,23 @@ public class ChemicalController {
     }
 
     @Operation(
-        summary = "Resolve tên hóa chất",
+        summary = "Resolve chemical name",
         description = """
-            Chuẩn hóa tên hoặc công thức hóa chất về dạng canonical.
+            Canonicalize a chemical name or formula.
 
-            **Luồng:** DB Cache → PubChem → Cactus → OPSIN → Minimal fallback
+            **Flow:** DB Cache -> PubChem -> Cactus -> OPSIN -> Minimal fallback
 
-            **Ví dụ query:**
-            - `NaOH` → Sodium hydroxide
-            - `sodium hydroxide` → NaOH
-            - `H2SO4` → Sulfuric acid
-            - `CaCO3` → Calcium carbonate
+            **Example queries:**
+            - `NaOH` -> Sodium hydroxide
+            - `sodium hydroxide` -> NaOH
+            - `H2SO4` -> Sulfuric acid
+            - `CaCO3` -> Calcium carbonate
             """
     )
     @ApiResponses({
         @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "Resolve thành công (cached=true nếu lấy từ cache)",
+            description = "Resolved successfully (cached=true if from cache)",
             content = @Content(examples = {
                 @ExampleObject(name = "Cache miss (PubChem)", value = """
                     {
@@ -78,12 +78,12 @@ public class ChemicalController {
                     """)
             })
         ),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "query rỗng")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "query is empty")
     })
     @GetMapping("/resolve")
     public ResponseEntity<Map<String, Object>> resolve(
             @Parameter(
-                description = "Tên hoặc công thức hóa chất cần tra cứu",
+                description = "Chemical name or formula to look up",
                 required = true,
                 examples = {
                     @ExampleObject(name = "NaOH",  value = "NaOH"),

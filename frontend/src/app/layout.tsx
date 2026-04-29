@@ -20,7 +20,7 @@ const plusJakarta = Plus_Jakarta_Sans({
 /* ─── Page Metadata ─────────────────────────────────────────────────── */
 
 export const metadata: Metadata = {
-  title: "ChemLab — Mô phỏng phản ứng hoá học 2.5D",
+  title: "ChemLab",
   description:
     "Sân chơi kéo-thả mô phỏng phản ứng hoá học 2.5D. Khám phá hợp chất, điều kiện phản ứng và mô phỏng trực quan.",
 };

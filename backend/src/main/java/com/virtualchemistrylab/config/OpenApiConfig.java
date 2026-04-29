@@ -26,21 +26,21 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("🧪 Virtual Chemistry Lab – API")
                         .description("""
-                                **Backend API** cho Phòng thí nghiệm hóa học ảo.
+                                **Backend API** for the Virtual Chemistry Lab.
 
-                                ## Tính năng chính
-                                - 🔬 **Giải mã hóa chất** – resolve tên/công thức từ PubChem, Cactus, OPSIN
-                                - ⚗️ **Mô phỏng phản ứng** – dự đoán phản ứng qua AI (Google Gemini)
-                                - 💬 **Hỏi đáp AI** – giải thích hiện tượng hóa học bằng tiếng Việt
-                                - 📝 **Lịch sử thí nghiệm** – ghi log theo sessionCode
+                                ## Main Features
+                                - **Chemical Resolution** - resolve names/formulas from PubChem, Cactus, OPSIN
+                                - **Reaction Simulation** - predict reactions via AI (Google Gemini)
+                                - **AI Q&A** - explain chemical phenomena
+                                - **Experiment History** - log actions by sessionCode
 
-                                ## Cách dùng
-                                1. Gọi `GET /api/health` để kiểm tra backend
-                                2. Gọi `POST /api/lab/mix` với danh sách hóa chất để nhận kết quả phản ứng
-                                3. Gọi `POST /api/ai/ask` để hỏi giải thích hiện tượng
+                                ## Usage
+                                1. Call `GET /api/health` to check backend status
+                                2. Call `POST /api/lab/mix` with chemical list to get reaction results
+                                3. Call `POST /api/ai/ask` to ask for phenomenon explanations
 
                                 ## Rate Limit
-                                Mỗi `sessionCode` chỉ được gọi `/api/lab/mix` tối đa **1 lần mỗi 2 giây**.
+                                Each `sessionCode` can call `/api/lab/mix` at most **once every 2 seconds**.
                                 """)
                         .version("1.0.0")
                         .contact(new Contact()

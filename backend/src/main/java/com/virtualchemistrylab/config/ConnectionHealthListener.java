@@ -9,9 +9,9 @@ import org.springframework.stereotype.Component;
 /**
  * ╔══════════════════════════════════════════════════════════╗
  * ║       ConnectionHealthListener                          ║
- * ║  Lắng nghe sự kiện ApplicationReady → tự động kiểm     ║
- * ║  tra kết nối DB qua DatabaseConnectionSingleton và      ║
- * ║  in banner kết quả ra Terminal.                         ║
+ * ║  Listens for ApplicationReady event -> automatically    ║
+ * ║  verifies DB connection via DatabaseConnectionSingleton ║
+ * ║  and prints banner result to Terminal.                  ║
  * ╚══════════════════════════════════════════════════════════╝
  */
 @Component
@@ -26,15 +26,15 @@ public class ConnectionHealthListener {
     }
 
     /**
-     * Chạy tự động SAU KHI Spring Boot hoàn tất khởi động.
-     * Sự kiện {@link ApplicationReadyEvent} đảm bảo DataSource
-     * đã sẵn sàng trước khi gọi kết nối.
+     * Runs automatically AFTER Spring Boot finishes startup.
+     * The {@link ApplicationReadyEvent} ensures DataSource
+     * is ready before attempting connection.
      */
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationReady() {
         log.info("");
         log.info("╔══════════════════════════════════════════════════════════════╗");
-        log.info("║        🧪  Virtual Chemistry Lab – Backend Ready            ║");
+        log.info("║        Virtual Chemistry Lab - Backend Ready                 ║");
         log.info("╠══════════════════════════════════════════════════════════════╣");
         log.info("║  🌐  Swagger UI   : http://localhost:8080/swagger-ui.html   ║");
         log.info("║  📋  API Docs     : http://localhost:8080/v3/api-docs        ║");
@@ -44,9 +44,9 @@ public class ConnectionHealthListener {
         boolean ok = dbSingleton.verifyAndLog();
 
         if (ok) {
-            log.info("🚀  Ứng dụng khởi động hoàn tất – Supabase PostgreSQL đã sẵn sàng!");
+            log.info("Application startup complete - Supabase PostgreSQL is ready!");
         } else {
-            log.error("🛑  Cảnh báo: Kết nối database THẤT BẠI. Kiểm tra lại cấu hình Supabase.");
+            log.error("WARNING: Database connection FAILED. Please check Supabase configuration.");
         }
         log.info("");
     }

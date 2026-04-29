@@ -28,7 +28,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api")
-@Tag(name = "Lab", description = "Pha trộn hóa chất và quản lý phiên thí nghiệm")
+@Tag(name = "Lab", description = "Mix chemicals and manage experiment sessions")
 public class LabController {
 
     private final LabMixService labMixService;
@@ -47,12 +47,12 @@ public class LabController {
 
     @Operation(
         summary = "Health check",
-        description = "Kiểm tra backend đang chạy. Frontend gọi trước khi load trang.",
+        description = "Check if backend is running. Called by frontend before page load.",
         tags = {"Health"}
     )
     @io.swagger.v3.oas.annotations.responses.ApiResponse(
         responseCode = "200",
-        description = "Backend đang hoạt động bình thường",
+        description = "Backend is running normally",
         content = @Content(examples = @ExampleObject(
             value = "{\"status\":\"ok\",\"service\":\"virtual-chemistry-lab-backend\"}"
         ))
@@ -68,39 +68,39 @@ public class LabController {
     // ─── Mix ────────────────────────────────────────────────────────────────────
 
     @Operation(
-        summary = "Pha trộn hóa chất",
+        summary = "Mix chemicals",
         description = """
-            **Endpoint chính** – Mô phỏng phản ứng khi đổ chất từ ống nghiệm này sang ống nghiệm khác.
+            **Main endpoint** - Simulates a reaction when pouring chemicals from one test tube to another.
 
-            **Luồng xử lý:**
+            **Processing flow:**
             1. Validate request (@NotBlank, @NotEmpty)
-            2. Rate limit (1 lần / 2 giây mỗi session)
-            3. Resolve chemical names (cache → PubChem → Cactus → OPSIN)
-            4. Dự đoán phản ứng (cache → Google Gemini AI → validate)
-            5. Lưu cache + log
-            6. Trả MixResponse cho frontend chạy animation
+            2. Rate limit (1 request / 2 seconds per session)
+            3. Resolve chemical names (cache -> PubChem -> Cactus -> OPSIN)
+            4. Predict reaction (cache -> Google Gemini AI -> validate)
+            5. Save cache + log
+            6. Return MixResponse for frontend animation
 
-            **effectType có thể nhận:**
-            - `NONE` – không có hiện tượng
-            - `GAS_BUBBLE` – sủi bọt khí
-            - `PRECIPITATE` – kết tủa
-            - `COLOR_CHANGE` – đổi màu
-            - `HEAT` – toả nhiệt
-            - `EXPLOSION` – nổ
+            **Possible effectType values:**
+            - `NONE` - no observable phenomenon
+            - `GAS_BUBBLE` - gas bubbles
+            - `PRECIPITATE` - precipitate formation
+            - `COLOR_CHANGE` - color change
+            - `HEAT` - exothermic reaction
+            - `EXPLOSION` - explosion
             """
     )
     @ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Mô phỏng thành công"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Request không hợp lệ (thiếu field bắt buộc)"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "429", description = "Gọi quá nhanh – chờ 2 giây")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Simulation successful"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid request (missing required fields)"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "429", description = "Too many requests - wait 2 seconds")
     })
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
-        description = "Thông tin hai ống nghiệm cần pha trộn",
+        description = "Information about the two test tubes to mix",
         required = true,
         content = @Content(
             schema = @Schema(implementation = MixRequest.class),
             examples = {
-                @ExampleObject(name = "HCl + CaCO3 (Sủi bọt)", value = """
+                @ExampleObject(name = "HCl + CaCO3 (Gas bubbles)", value = """
                     {
                       "sessionCode": "demo-001",
                       "sourceVesselId": "tube-a",
@@ -113,7 +113,7 @@ public class LabController {
                       ]
                     }
                     """),
-                @ExampleObject(name = "CuSO4 + NaOH (Kết tủa xanh)", value = """
+                @ExampleObject(name = "CuSO4 + NaOH (Blue precipitate)", value = """
                     {
                       "sessionCode": "demo-001",
                       "sourceVesselId": "tube-c",
@@ -126,7 +126,7 @@ public class LabController {
                       ]
                     }
                     """),
-                @ExampleObject(name = "AgNO3 + NaCl (Kết tủa trắng)", value = """
+                @ExampleObject(name = "AgNO3 + NaCl (White precipitate)", value = """
                     {
                       "sessionCode": "demo-001",
                       "sourceVesselId": "tube-e",
@@ -139,7 +139,7 @@ public class LabController {
                       ]
                     }
                     """),
-                @ExampleObject(name = "HCl + NaOH (Trung hoà)", value = """
+                @ExampleObject(name = "HCl + NaOH (Neutralization)", value = """
                     {
                       "sessionCode": "demo-001",
                       "sourceVesselId": "tube-g",
@@ -164,15 +164,15 @@ public class LabController {
     // ─── Session logs ────────────────────────────────────────────────────────────
 
     @Operation(
-        summary = "Lấy lịch sử thí nghiệm",
-        description = "Lấy toàn bộ log hành động của một phiên thí nghiệm, sắp xếp mới nhất trước."
+        summary = "Get experiment history",
+        description = "Retrieve all action logs for an experiment session, sorted by most recent first."
     )
     @ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Danh sách log (có thể rỗng nếu session mới)")
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "List of logs (may be empty for new sessions)")
     })
     @GetMapping("/session/{sessionCode}/logs")
     public ResponseEntity<ApiResponse<List<ExperimentLog>>> getLogs(
-            @Parameter(description = "Session code của người dùng", example = "demo-001")
+            @Parameter(description = "User's session code", example = "demo-001")
             @PathVariable String sessionCode) {
         List<ExperimentLog> logs = experimentLogService.getLogsForSession(sessionCode);
         return ResponseEntity.ok(ApiResponse.success(logs));
@@ -181,8 +181,8 @@ public class LabController {
     // ─── Session reset ────────────────────────────────────────────────────────────
 
     @Operation(
-        summary = "Reset phiên thí nghiệm",
-        description = "Đánh dấu phiên đã reset. Log trước đó vẫn được giữ trong DB để audit."
+        summary = "Reset experiment session",
+        description = "Mark session as reset. Previous logs are kept in DB for audit."
     )
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
         content = @Content(examples = @ExampleObject(value = "{\"sessionCode\":\"demo-001\"}"))
@@ -198,7 +198,7 @@ public class LabController {
         experimentLogService.log(sessionCode, "SESSION_RESET", body, null);
         return ResponseEntity.ok(ApiResponse.<Void>builder()
                 .status("success")
-                .message("Đã reset phiên thí nghiệm.")
+                .message("Experiment session has been reset.")
                 .build());
     }
 }

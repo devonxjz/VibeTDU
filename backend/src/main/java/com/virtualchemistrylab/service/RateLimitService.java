@@ -41,7 +41,7 @@ public class RateLimitService {
         if (last != null && (now - last) < cooldown) {
             long remaining = cooldown - (now - last);
             throw new ApiException(
-                    "Thao tác quá nhanh. Vui lòng chờ thêm " + remaining + "ms trước khi pha trộn tiếp.",
+                    "Too fast. Please wait " + remaining + "ms before mixing again.",
                     HttpStatus.TOO_MANY_REQUESTS
             );
         }

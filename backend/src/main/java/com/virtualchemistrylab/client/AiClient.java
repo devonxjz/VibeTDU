@@ -22,14 +22,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.Objects;
 
 /**
- * AI client hỗ trợ hai provider:
+ * AI client supporting two providers:
  *
- *  1. Google Gemini (AIzaSy… key)  – URL chứa "generativelanguage.googleapis.com"
- *     hoặc khi app.ai.provider=gemini
- *  2. OpenAI-compatible             – mọi URL khác
+ *  1. Google Gemini (AIzaSy... key) - URL contains "generativelanguage.googleapis.com"
+ *     or when app.ai.provider=gemini
+ *  2. OpenAI-compatible             - all other URLs
  *
- * Nếu app.ai.mock-mode=true (default) → trả mock response không cần internet.
- * API key KHÔNG BAO GIỜ được in ra log.
+ * If app.ai.mock-mode=true (default) -> returns mock response without internet.
+ * API key is NEVER printed to logs.
  */
 @Component
 public class AiClient {
@@ -39,7 +39,7 @@ public class AiClient {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     // Gemini endpoint template
-    // Key được append theo query param: ?key=API_KEY
+    // Key is appended as query param: ?key=API_KEY
     private static final String GEMINI_BASE_URL =
             "https://generativelanguage.googleapis.com/v1beta/models";
 
@@ -96,18 +96,18 @@ public class AiClient {
      */
     public String askQuestion(String question, String reactionContext) {
         if (appProperties.getAi().isMockMode()) {
-            return "Đây là câu trả lời mẫu (mock mode). "
-                    + "Hãy tắt mock mode và cấu hình AI_API_KEY để nhận câu trả lời thực từ Gemini.";
+            return "This is a sample response (mock mode). "
+                    + "Please disable mock mode and configure AI_API_KEY to get real responses from Gemini.";
         }
 
         List<String> apiKeys = appProperties.getAi().getApiKeys();
         if (apiKeys == null || apiKeys.isEmpty()) {
-            return "Hệ thống AI chưa được cấu hình. Vui lòng liên hệ quản trị viên.";
+            return "AI system is not configured. Please contact the administrator.";
         }
 
-        String prompt = "Bạn là trợ lý hóa học giáo dục. Trả lời ngắn gọn, chính xác bằng tiếng Việt.\n"
-                + "Ngữ cảnh phản ứng:\n" + reactionContext
-                + "\n\nCâu hỏi: " + question;
+        String prompt = "You are an educational chemistry assistant. Answer concisely and accurately in Vietnamese.\n"
+                + "Reaction context:\n" + reactionContext
+                + "\n\nQuestion: " + question;
 
         String firstKey = apiKeys.get(0).contains("#") ? apiKeys.get(0).split("#")[0].trim() : apiKeys.get(0).trim();
         String result = null;
@@ -119,7 +119,7 @@ public class AiClient {
         }
         
         if (result == null) {
-            return "Xin lỗi, hệ thống AI hiện đang không khả dụng hoặc bị quá tải. Vui lòng thử lại sau.";
+            return "Sorry, the AI system is currently unavailable or overloaded. Please try again later.";
         }
         return result;
     }
@@ -130,20 +130,20 @@ public class AiClient {
      */
     public String chat(List<ChatMessage> history, String reactionContext) {
         if (appProperties.getAi().isMockMode()) {
-            return "Đây là phản hồi giả lập (mock mode). "
-                    + "Hãy tắt mock mode và cấu hình AI_API_KEY để dùng Gemini.";
+            return "This is a mock response (mock mode). "
+                    + "Please disable mock mode and configure AI_API_KEY to use Gemini.";
         }
 
         String apiKey = appProperties.getAi().getApiKey();
         if (apiKey == null || apiKey.isBlank()) {
-            return "Hệ thống AI chưa được cấu hình. Vui lòng liên hệ quản trị viên.";
+            return "AI system is not configured. Please contact the administrator.";
         }
 
         List<ChatMessage> cleaned = sanitizeHistory(history);
 
-        String systemText = "Bạn là trợ lý hóa học giáo dục. Trả lời ngắn gọn, chính xác bằng tiếng Việt.\n"
-                + "Nếu câu hỏi liên quan đến phản ứng, hãy dựa trên ngữ cảnh phản ứng bên dưới.\n"
-                + "Ngữ cảnh phản ứng:\n" + (reactionContext == null ? "Không có ngữ cảnh phản ứng." : reactionContext);
+        String systemText = "You are an educational chemistry assistant. Answer concisely and accurately in Vietnamese.\n"
+                + "If the question relates to a reaction, base your answer on the reaction context below.\n"
+                + "Reaction context:\n" + (reactionContext == null ? "No reaction context." : reactionContext);
 
         if (isGeminiKey(apiKey) || isGeminiUrl(appProperties.getAi().getApiUrl())) {
             return callGeminiChat(systemText, cleaned, apiKey);
@@ -395,14 +395,14 @@ public class AiClient {
     // ─── Prompt builder ──────────────────────────────────────────────────────────
 
     private String buildReactionPrompt(List<String> reactants, Double temp, Double pres, String cat) {
-        String envStr = String.format("Nhiệt độ: %s °C, Áp suất: %s atm, Xúc tác: %s", 
-            temp != null ? temp : "25", pres != null ? pres : "1", cat != null ? cat : "Không");
+        String envStr = String.format("Temperature: %s C, Pressure: %s atm, Catalyst: %s", 
+            temp != null ? temp : "25", pres != null ? pres : "1", cat != null ? cat : "None");
         return """
-                Bạn là hệ thống mô phỏng phản ứng hóa học giáo dục.
-                Các chất phản ứng: %s
-                Điều kiện môi trường: %s
+                You are an educational chemistry reaction simulation system.
+                Reactants: %s
+                Environmental conditions: %s
 
-                Hãy dự đoán kết quả phản ứng và trả về JSON theo đúng schema sau (KHÔNG kèm markdown, KHÔNG giải thích ngoài JSON):
+                Predict the reaction result and return JSON according to the following schema (NO markdown, NO explanation outside JSON):
                 {
                   "hasReaction": boolean,
                   "equation": string | null,
@@ -418,15 +418,15 @@ public class AiClient {
                   "confidence": number (0.0-1.0)
                 }
 
-                Quy tắc bắt buộc:
-                - effectType phải thuộc đúng các giá trị enum trên
-                - BẮT BUỘC NHẬN DIỆN phản ứng trung hòa (Axit + Bazơ -> Muối + Nước).
-                - BẮT BUỘC cung cấp `productFormula` chứa CHỈ các sản phẩm của phản ứng (ví dụ: "Cu(OH)2 + Na2SO4").
-                - Phải trả về TẤT CẢ sản phẩm trong `productFormula`.
-                - BẮT BUỘC có mô tả màu sắc của sản phẩm trong `messageVi` và `explanationVi`. Ví dụ: Na2SO4 có màu trắng, Cu(OH)2 kết tủa xanh.
-                - Đối với các kết tủa, `precipitateColor` phải là mã màu HEX chính xác.
-                - messageVi, explanationVi, safetyNoteVi phải bằng tiếng Việt
-                - Trả về DUY NHẤT JSON thuần, không markdown
+                Mandatory rules:
+                - effectType MUST be one of the exact enum values above
+                - MUST identify neutralization reactions (Acid + Base -> Salt + Water).
+                - MUST provide `productFormula` containing ONLY the reaction products (e.g., "Cu(OH)2 + Na2SO4").
+                - MUST return ALL products in `productFormula`.
+                - MUST include color description of products in `messageVi` and `explanationVi`. E.g., Na2SO4 is white, Cu(OH)2 is blue precipitate.
+                - For precipitates, `precipitateColor` must be an exact HEX color code.
+                - messageVi, explanationVi, safetyNoteVi MUST be in Vietnamese
+                - Return ONLY pure JSON, no markdown
                 """.formatted(String.join(" + ", reactants), envStr);
     }
 
@@ -520,26 +520,26 @@ public class AiClient {
 
         if (key.equals("CACO3__HCL")) {
             return """
-                    {"hasReaction":true,"equation":"2HCl + CaCO3 → CaCl2 + CO2↑ + H2O","productFormula":"CaCl2 + CO2 + H2O","effectType":"GAS_BUBBLE","effectColor":"#FFFFFF","gasFormula":"CO2","precipitateFormula":null,"precipitateColor":null,"messageVi":"Có khí CO2 thoát ra, quan sát thấy hiện tượng sủi bọt.","explanationVi":"Axit HCl phản ứng với muối carbonate CaCO3 tạo ra muối CaCl2, nước và khí CO2.","safetyNoteVi":"Đây là mô phỏng giáo dục, không thực hiện phản ứng thật nếu không có hướng dẫn an toàn.","confidence":0.97}""";
+                    {"hasReaction":true,"equation":"2HCl + CaCO3 -> CaCl2 + CO2 + H2O","productFormula":"CaCl2 + CO2 + H2O","effectType":"GAS_BUBBLE","effectColor":"#FFFFFF","gasFormula":"CO2","precipitateFormula":null,"precipitateColor":null,"messageVi":"CO2 gas is released, bubbling is observed.","explanationVi":"Acid HCl reacts with carbonate salt CaCO3 to produce CaCl2 salt, water and CO2 gas.","safetyNoteVi":"This is an educational simulation; do not perform the real reaction without safety guidance.","confidence":0.97}""";
         }
         if (key.equals("CUSO4__NAOH")) {
             return """
-                    {"hasReaction":true,"equation":"CuSO4 + 2NaOH → Cu(OH)2↓ + Na2SO4","productFormula":"Cu(OH)2 + Na2SO4","effectType":"PRECIPITATE","effectColor":"#1E90FF","gasFormula":null,"precipitateFormula":"Cu(OH)2","precipitateColor":"#1565C0","messageVi":"Xuất hiện kết tủa xanh lam Cu(OH)2.","explanationVi":"Ion Cu²⁺ từ CuSO4 phản ứng với ion OH⁻ từ NaOH tạo kết tủa Cu(OH)2 màu xanh lam.","safetyNoteVi":"Đây là mô phỏng giáo dục.","confidence":0.98}""";
+                    {"hasReaction":true,"equation":"CuSO4 + 2NaOH -> Cu(OH)2 + Na2SO4","productFormula":"Cu(OH)2 + Na2SO4","effectType":"PRECIPITATE","effectColor":"#1E90FF","gasFormula":null,"precipitateFormula":"Cu(OH)2","precipitateColor":"#1565C0","messageVi":"Blue precipitate Cu(OH)2 appears.","explanationVi":"Cu2+ ions from CuSO4 react with OH- ions from NaOH to form blue Cu(OH)2 precipitate.","safetyNoteVi":"This is an educational simulation.","confidence":0.98}""";
         }
         if (key.equals("AGNO3__NACL")) {
             return """
-                    {"hasReaction":true,"equation":"AgNO3 + NaCl → AgCl↓ + NaNO3","productFormula":"AgCl + NaNO3","effectType":"PRECIPITATE","effectColor":"#F5F5F5","gasFormula":null,"precipitateFormula":"AgCl","precipitateColor":"#EEEEEE","messageVi":"Xuất hiện kết tủa trắng AgCl.","explanationVi":"Ion Ag⁺ từ AgNO3 kết hợp với ion Cl⁻ từ NaCl tạo kết tủa AgCl trắng không tan trong nước.","safetyNoteVi":"Đây là mô phỏng giáo dục.","confidence":0.98}""";
+                    {"hasReaction":true,"equation":"AgNO3 + NaCl -> AgCl + NaNO3","productFormula":"AgCl + NaNO3","effectType":"PRECIPITATE","effectColor":"#F5F5F5","gasFormula":null,"precipitateFormula":"AgCl","precipitateColor":"#EEEEEE","messageVi":"White precipitate AgCl appears.","explanationVi":"Ag+ ions from AgNO3 combine with Cl- ions from NaCl to form white AgCl precipitate, insoluble in water.","safetyNoteVi":"This is an educational simulation.","confidence":0.98}""";
         }
         if (key.equals("HCL__NAOH")) {
             return """
-                    {"hasReaction":true,"equation":"HCl + NaOH → NaCl + H2O","productFormula":"NaCl + H2O","effectType":"HEAT","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Phản ứng trung hòa, toả nhiệt nhẹ, dung dịch trở nên trung tính.","explanationVi":"Axit mạnh HCl phản ứng với bazơ mạnh NaOH trong phản ứng trung hòa tạo muối NaCl và nước, đồng thời toả nhiệt.","safetyNoteVi":"Đây là mô phỏng giáo dục.","confidence":0.96}""";
+                    {"hasReaction":true,"equation":"HCl + NaOH -> NaCl + H2O","productFormula":"NaCl + H2O","effectType":"HEAT","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Neutralization reaction, slight heat release, solution becomes neutral.","explanationVi":"Strong acid HCl reacts with strong base NaOH in a neutralization reaction to form NaCl salt and water, releasing heat.","safetyNoteVi":"This is an educational simulation.","confidence":0.96}""";
         }
         if (key.equals("HCL__NA")) {
             return """
-                    {"hasReaction":true,"equation":"2Na + 2HCl → 2NaCl + H2↑","productFormula":"NaCl + H2","effectType":"EXPLOSION","effectColor":null,"gasFormula":"H2","precipitateFormula":null,"precipitateColor":null,"messageVi":"Phản ứng mãnh liệt, có khí H2 thoát ra và có thể gây nổ nhỏ.","explanationVi":"Kim loại kiềm Na phản ứng rất mạnh với axit HCl tạo ra muối NaCl và khí Hydro (H2). Phản ứng toả nhiều nhiệt có thể làm cháy khí H2.","safetyNoteVi":"CẢNH BÁO: Phản ứng cực kỳ mãnh liệt và nguy hiểm. Tuyệt đối không thử ở ngoài đời thực mà không có trang bị bảo hộ chuyên dụng.","confidence":0.99}""";
+                    {"hasReaction":true,"equation":"2Na + 2HCl -> 2NaCl + H2","productFormula":"NaCl + H2","effectType":"EXPLOSION","effectColor":null,"gasFormula":"H2","precipitateFormula":null,"precipitateColor":null,"messageVi":"Violent reaction, H2 gas is released and may cause a small explosion.","explanationVi":"Alkali metal Na reacts very strongly with HCl acid to produce NaCl salt and Hydrogen gas (H2). The reaction releases a lot of heat which can ignite H2.","safetyNoteVi":"WARNING: Extremely violent and dangerous reaction. Never attempt in real life without professional protective equipment.","confidence":0.99}""";
         }
         // Unknown pair
         return """
-                {"hasReaction":false,"equation":null,"productFormula":null,"effectType":"NONE","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Hai chất này không phản ứng với nhau trong điều kiện hiện tại.","explanationVi":"Điều kiện phản ứng không phù hợp hoặc cặp chất này không xảy ra phản ứng trong phạm vi mô phỏng.","safetyNoteVi":null,"confidence":1.0}""";
+                {"hasReaction":false,"equation":null,"productFormula":null,"effectType":"NONE","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"These two substances do not react with each other under current conditions.","explanationVi":"Reaction conditions are not suitable or this pair does not react within the simulation scope.","safetyNoteVi":null,"confidence":1.0}""";
     }
 }

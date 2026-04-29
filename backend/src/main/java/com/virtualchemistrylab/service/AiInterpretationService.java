@@ -34,7 +34,7 @@ public class AiInterpretationService {
     public String answer(String question, Map<String, String> reactionContext) {
         log.info("[ai-interpret] Question received: {}", question);
 
-        String contextStr = reactionContext == null ? "Không có ngữ cảnh phản ứng." :
+        String contextStr = reactionContext == null ? "No reaction context." :
                 reactionContext.entrySet().stream()
                         .map(e -> e.getKey() + ": " + e.getValue())
                         .reduce("", (a, b) -> a + "\n" + b);
@@ -43,14 +43,14 @@ public class AiInterpretationService {
 
         if (answer == null || answer.isBlank()) {
             log.warn("[ai-interpret] AI returned empty answer");
-            return "Xin lỗi, hệ thống AI không thể trả lời câu hỏi này lúc này. Vui lòng thử lại sau.";
+            return "Sorry, the AI system cannot answer this question right now. Please try again later.";
         }
 
         return answer;
     }
 
     public String chat(List<ChatMessage> messages, Map<String, String> reactionContext) {
-        String contextStr = reactionContext == null ? "Không có ngữ cảnh phản ứng." :
+        String contextStr = reactionContext == null ? "No reaction context." :
                 reactionContext.entrySet().stream()
                         .map(e -> e.getKey() + ": " + e.getValue())
                         .reduce("", (a, b) -> a + "\n" + b);
@@ -59,7 +59,7 @@ public class AiInterpretationService {
 
         if (answer == null || answer.isBlank()) {
             log.warn("[ai-interpret] AI returned empty chat answer");
-            return "Xin lỗi, hệ thống AI không thể trả lời câu hỏi này lúc này. Vui lòng thử lại sau.";
+            return "Sorry, the AI system cannot answer this question right now. Please try again later.";
         }
 
         return answer;
