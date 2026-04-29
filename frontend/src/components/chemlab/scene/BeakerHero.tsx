@@ -66,7 +66,7 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
       {/* Product label — floats above beaker */}
       {showLabel && vessel && (
         <motion.div
-          key={vessel.label}
+          key={vessel.label || "empty-label"}
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           className="absolute bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2 z-20"

@@ -18,7 +18,7 @@
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
 
-  --font-sans: var(--font-inter, "Inter", system-ui, sans-serif);
+  --font-sans: var(--font-dm-sans, "DM Sans", system-ui, sans-serif);
   --font-display: var(--font-plus-jakarta, "Plus Jakarta Sans", "Inter", system-ui, sans-serif);
 
   --color-background: var(--background);
@@ -345,6 +345,12 @@
 
 .beaker-shake {
   animation: beaker-shake 0.6s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
 }
 
 /* Pour stream animation */

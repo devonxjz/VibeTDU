@@ -9,7 +9,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Toolbar } from "@/components/chemlab/Toolbar";
 import { PropertiesPanel } from "@/components/chemlab/PropertiesPanel";
 import { SearchPanel } from "@/components/chemlab/SearchPanel";
@@ -143,12 +143,14 @@ export function ChemLabShell() {
     targetVesselId: string;
   } | null>(null);
 
+  const pointerSensorOptions = useMemo(() => ({
+    activationConstraint: {
+      distance: 8,
+    },
+  }), []);
+
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
+    useSensor(PointerSensor, pointerSensorOptions)
   );
 
   const handleDragStart = useCallback((event: DragStartEvent) => {

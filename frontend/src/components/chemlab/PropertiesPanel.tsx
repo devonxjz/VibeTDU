@@ -17,6 +17,7 @@ import {
 import { useLabStore } from "@/stores/lab-store";
 import { ReactionFormula, Formula } from "./Formula";
 import { PresetSelector } from "./PresetSelector";
+import { ExplanationPanel } from "./panels/ExplanationPanel";
 import { ExperimentTimeline } from "./timeline/ExperimentTimeline";
 import { cn } from "@/utils/cn";
 
@@ -174,18 +175,8 @@ function ReactionResultPanel() {
           </div>
         )}
 
-        {/* Explanation — expandable */}
-        {reaction.explanationVi && (
-          <details className="group rounded-xl border border-border bg-card">
-            <summary className="flex cursor-pointer items-center justify-between px-3 py-2 text-xs font-semibold text-navy">
-              Giải thích chi tiết
-              <ChevronDown className="h-3.5 w-3.5 transition-transform group-open:rotate-180" />
-            </summary>
-            <p className="border-t border-border px-3 py-2 text-xs leading-relaxed text-navy-soft">
-              {reaction.explanationVi}
-            </p>
-          </details>
-        )}
+        {/* Explanation — expandable (replaced by ExplanationPanel) */}
+        <ExplanationPanel />
 
         {/* Safety note */}
         {reaction.safetyNoteVi && (

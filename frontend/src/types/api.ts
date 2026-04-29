@@ -53,6 +53,9 @@ export interface ReactionResult {
   explanationVi?: string;
   safetyNoteVi?: string;
   confidence?: number;
+  basicExplanation?: string;
+  intermediateExplanation?: string;
+  advancedExplanation?: string;
 }
 
 export interface ProductEntry {

@@ -359,8 +359,8 @@ advancedExplanation: "Phương trình ion rút gọn: H⁺(aq) + OH⁻(aq) → H
 ```
 
 **Verify:**
-- [ ] `getMockReaction(['HCl','NaOH']).basicExplanation` có giá trị
-- [ ] `npx tsc --noEmit` → 0 errors
+- [x] `getMockReaction(['HCl','NaOH']).basicExplanation` có giá trị
+- [x] `npx tsc --noEmit` → 0 errors
 
 ---
 
@@ -371,18 +371,18 @@ advancedExplanation: "Phương trình ion rút gọn: H⁺(aq) + OH⁻(aq) → H
 - `src/components/chemlab/PropertiesPanel.tsx` *(modify — tích hợp vào ReactionResultPanel)*
 
 **Checklist:**
-- [ ] 3 tabs: **Cơ bản** | **Trung cấp** | **Nâng cao**
-- [ ] Dùng Radix `<Tabs>` từ `src/components/ui/tabs.tsx`
-- [ ] Đọc `lastReaction` từ store
-- [ ] Mỗi tab hiển thị field tương ứng: `basicExplanation`, `intermediateExplanation`, `advancedExplanation`
-- [ ] Khi field đó là `undefined` → hiển thị placeholder "Không có giải thích cho cấp này"
-- [ ] Khi `lastReaction === null` → hiển thị "Chạy phản ứng để xem giải thích"
-- [ ] Integrate vào `PropertiesPanel`: thay thế block `<details>` "Giải thích chi tiết" hiện tại bằng `<ExplanationPanel />`
+- [x] 3 tabs: **Cơ bản** | **Trung cấp** | **Nâng cao**
+- [x] Dùng Radix `<Tabs>` từ `src/components/ui/tabs.tsx`
+- [x] Đọc `lastReaction` từ store
+- [x] Mỗi tab hiển thị field tương ứng: `basicExplanation`, `intermediateExplanation`, `advancedExplanation`
+- [x] Khi field đó là `undefined` → hiển thị placeholder "Không có giải thích cho cấp này"
+- [x] Khi `lastReaction === null` → hiển thị "Chạy phản ứng để xem giải thích"
+- [x] Integrate vào `PropertiesPanel`: thay thế block `<details>` "Giải thích chi tiết" hiện tại bằng `<ExplanationPanel />`
 
 **Verify:**
-- [ ] Chạy phản ứng HCl+NaOH → 3 tabs hiển thị đúng content
-- [ ] Switch tab không mất data
-- [ ] `npx tsc --noEmit` → 0 errors
+- [x] Chạy phản ứng HCl+NaOH → 3 tabs hiển thị đúng content
+- [x] Switch tab không mất data
+- [x] `npx tsc --noEmit` → 0 errors
 
 ---
 
@@ -393,35 +393,35 @@ advancedExplanation: "Phương trình ion rút gọn: H⁺(aq) + OH⁻(aq) → H
 - `src/app/layout.tsx` *(modify)*
 
 **Checklist:**
-- [ ] Thêm `DM_Sans` vào `layout.tsx`:
+- [x] Thêm `DM_Sans` vào `layout.tsx`:
   ```ts
   import { Inter, Plus_Jakarta_Sans, DM_Sans } from "next/font/google";
   const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-dm-sans", display: "swap" });
   // Thêm dmSans.variable vào className của <html>
   ```
-- [ ] Trong `globals.css`, đổi `--font-sans`:
+- [x] Trong `globals.css`, đổi `--font-sans`:
   ```css
   --font-sans: var(--font-dm-sans, "DM Sans", system-ui, sans-serif);
   ```
   (Giữ nguyên `--font-display` là Plus Jakarta Sans)
-- [ ] Kiểm tra `globals.css` có đủ `@keyframes` sau không, nếu thiếu thì thêm:
+- [x] Kiểm tra `globals.css` có đủ `@keyframes` sau không, nếu thiếu thì thêm:
   - `@keyframes shake` — dùng cho ExplosionEffect nếu cần CSS fallback
   - `@keyframes particle-fall` — dùng cho PrecipitateEffect nếu cần CSS fallback
-- [ ] Kiểm tra class `.thin-scroll` (đang dùng trong PropertiesPanel, SearchPanel) hoạt động đúng ở dark mode
+- [x] Kiểm tra class `.thin-scroll` (đang dùng trong PropertiesPanel, SearchPanel) hoạt động đúng ở dark mode
 
 **Verify:**
-- [ ] Font chữ body đổi sang DM Sans (inspect element confirm)
-- [ ] `npx tsc --noEmit` → 0 errors
+- [x] Font chữ body đổi sang DM Sans (inspect element confirm)
+- [x] `npx tsc --noEmit` → 0 errors
 
 ---
 
 ### ✅ Phase 5 — Acceptance Criteria
 
-- [ ] `npx tsc --noEmit` → 0 errors
-- [ ] Tab Cơ bản / Trung cấp / Nâng cao switch đúng content
-- [ ] Content khác nhau rõ rệt giữa 3 cấp
-- [ ] Font body đổi sang DM Sans
-- [ ] `Space` → reaction, `Z` → undo, `R` → reset (từ phase 4, vẫn phải pass)
+- [x] `npx tsc --noEmit` → 0 errors
+- [x] Tab Cơ bản / Trung cấp / Nâng cao switch đúng content
+- [x] Content khác nhau rõ rệt giữa 3 cấp
+- [x] Font body đổi sang DM Sans
+- [x] `Space` → reaction, `Z` → undo, `R` → reset (từ phase 4, vẫn phải pass)
 
 ---
 
@@ -445,9 +445,9 @@ advancedExplanation: "Phương trình ion rút gọn: H⁺(aq) + OH⁻(aq) → H
 - [x] Shortcuts không trigger khi focus vào search input
 
 ### Phase 5
-- [ ] 3 tabs explanation switch đúng
-- [ ] Content 3 cấp khác nhau rõ ràng
-- [ ] Font DM Sans active
+- [x] 3 tabs explanation switch đúng
+- [x] Content 3 cấp khác nhau rõ ràng
+- [x] Font DM Sans active
 
 ---
 
