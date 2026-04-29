@@ -64,14 +64,14 @@ public class LabMixService {
         // C. Resolve chemicals
         List<String> allFormulae = new ArrayList<>();
         for (VesselContentDTO v : request.getSourceContents()) {
-            var resolved = chemicalResolverService.resolve(
-                    v.getFormula() != null ? v.getFormula() : v.getInputName());
-            allFormulae.add(resolved.info().getCanonicalFormula());
+            String input = v.getFormula() != null ? v.getFormula() : v.getInputName();
+            chemicalResolverService.resolve(input);
+            allFormulae.add(input);
         }
         for (VesselContentDTO v : request.getTargetContents()) {
-            var resolved = chemicalResolverService.resolve(
-                    v.getFormula() != null ? v.getFormula() : v.getInputName());
-            allFormulae.add(resolved.info().getCanonicalFormula());
+            String input = v.getFormula() != null ? v.getFormula() : v.getInputName();
+            chemicalResolverService.resolve(input);
+            allFormulae.add(input);
         }
 
         // D. Build reaction key (already done inside ReactionPredictionService, but log here)

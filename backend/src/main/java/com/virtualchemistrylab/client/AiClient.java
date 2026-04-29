@@ -134,8 +134,8 @@ public class AiClient {
                     + "Please disable mock mode and configure AI_API_KEY to use Gemini.";
         }
 
-        String apiKey = appProperties.getAi().getApiKey();
-        if (apiKey == null || apiKey.isBlank()) {
+        List<String> apiKeys = appProperties.getAi().getApiKeys();
+        if (apiKeys == null || apiKeys.isEmpty()) {
             return "AI system is not configured. Please contact the administrator.";
         }
 
@@ -145,10 +145,12 @@ public class AiClient {
                 + "If the question relates to a reaction, base your answer on the reaction context below.\n"
                 + "Reaction context:\n" + (reactionContext == null ? "No reaction context." : reactionContext);
 
-        if (isGeminiKey(apiKey) || isGeminiUrl(appProperties.getAi().getApiUrl())) {
-            return callGeminiChat(systemText, cleaned, apiKey);
+        String firstKey = apiKeys.get(0).contains("#") ? apiKeys.get(0).split("#")[0].trim() : apiKeys.get(0).trim();
+
+        if (isGeminiKey(firstKey) || isGeminiUrl(appProperties.getAi().getApiUrl())) {
+            return callGeminiChat(systemText, cleaned);
         } else {
-            return callOpenAiChat(systemText, cleaned, apiKey);
+            return callOpenAiChat(systemText, cleaned, firstKey);
         }
     }
 
@@ -220,13 +222,11 @@ public class AiClient {
         return null;
     }
 
-    private String callGeminiChat(String systemInstruction, List<ChatMessage> history, String apiKey) {
+    private String callGeminiChat(String systemInstruction, List<ChatMessage> history) {
         String model = appProperties.getAi().getModel();
         if (model == null || model.isBlank() || model.startsWith("gpt-")) {
             model = "gemini-2.0-flash";
         }
-
-        String url = GEMINI_BASE_URL + "/" + model + ":generateContent?key=" + apiKey;
 
         String requestBody;
         try {
@@ -256,21 +256,42 @@ public class AiClient {
 
         log.info("[AI-Gemini] Calling Gemini chat model: {}", model);
 
-        try {
-            String response = webClient.post()
-                    .uri(url)
-                    .bodyValue(requestBody)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .timeout(TIMEOUT)
-                    .block();
+        List<String> apiKeys = appProperties.getAi().getApiKeys();
+        int totalKeys = apiKeys != null ? apiKeys.size() : 0;
 
-            return extractGeminiContent(response);
-        } catch (Exception e) {
-            log.error("[AI-Gemini] Chat call failed: {}", e.getMessage());
-            saveErrorLog("AI_GEMINI_CHAT", "(chat)", e.getMessage());
-            return null;
+        for (int i = 0; i < totalKeys; i++) {
+            int index = Math.abs(currentKeyIndex.getAndIncrement() % totalKeys);
+            String rawKey = apiKeys.get(index);
+            String apiKey = rawKey.contains("#") ? rawKey.split("#")[0].trim() : rawKey.trim();
+            String url = GEMINI_BASE_URL + "/" + model + ":generateContent?key=" + apiKey;
+
+            try {
+                String response = webClient.post()
+                        .uri(url)
+                        .bodyValue(requestBody)
+                        .retrieve()
+                        .bodyToMono(String.class)
+                        .timeout(TIMEOUT)
+                        .block();
+
+                return extractGeminiContent(response);
+            } catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
+                if (e.getStatusCode().value() == 429) {
+                    log.warn("[AI-Gemini] Key index {} exceeded quota (429). Rotating...", index);
+                    continue;
+                }
+                log.error("[AI-Gemini] Chat call failed (HTTP {}): {}", e.getStatusCode().value(), e.getMessage());
+                saveErrorLog("AI_GEMINI_CHAT", "(chat)", e.getMessage());
+                return null;
+            } catch (Exception e) {
+                log.error("[AI-Gemini] Chat call failed: {}", e.getMessage());
+                saveErrorLog("AI_GEMINI_CHAT", "(chat)", e.getMessage());
+                return null;
+            }
         }
+
+        log.error("[AI-Gemini] All {} keys have exceeded quota.", totalKeys);
+        return null;
     }
 
     /**
