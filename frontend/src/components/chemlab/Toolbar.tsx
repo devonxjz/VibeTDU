@@ -144,45 +144,72 @@ export function Toolbar() {
 
       {/* Reaction conditions */}
       <div className="flex items-center gap-2">
-        <SliderControl
-          icon={Thermometer}
-          label="T°"
-          value={temperature}
-          min={-20}
-          max={500}
-          unit="°C"
-          onChange={(v) => setEnvironment({ temperature: v })}
-        />
-        <SliderControl
-          icon={Gauge}
-          label="P"
-          value={pressure}
-          min={1}
-          max={10}
-          unit="atm"
-          onChange={(v) => setEnvironment({ pressure: v })}
-        />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-1.5 rounded-lg bg-muted/60 px-2.5 py-1.5 text-xs font-medium text-navy transition-colors hover:bg-muted data-[state=open]:bg-muted [&[data-state=open]>svg:last-child]:rotate-180">
-              <Sparkles className="h-4 w-4 text-navy-soft" />
-              <span className="text-[11px] text-navy-soft">Xúc tác</span>
-              <span className="font-semibold">{catalyst}</span>
-              <ChevronDown className="h-3 w-3 text-navy-soft transition-transform duration-200" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-32">
-            {["Không", "MnO₂", "Fe", "Pt", "Ni", "V₂O₅"].map((option) => (
-              <DropdownMenuItem
-                key={option}
-                onClick={() => setEnvironment({ catalyst: option })}
-                className={cn("cursor-pointer", catalyst === option && "font-bold text-mint")}
+        {/* Temperature */}
+        <div className="flex items-center gap-2 rounded-lg border border-border/40 bg-card/60 px-3 py-1.5 shadow-sm">
+          <Thermometer className="h-4 w-4 text-rose-400" />
+          <span className="text-[11px] font-semibold text-navy-soft">Nhiệt độ</span>
+          <input
+            type="range"
+            min={0}
+            max={500}
+            step={5}
+            value={temperature}
+            onChange={(e) => setEnvironment({ temperature: Number(e.target.value) })}
+            className="w-20 accent-rose-400"
+          />
+          <span className="rounded bg-card px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-navy shadow-sm min-w-[36px] text-center border border-border/50">
+            {temperature}°C
+          </span>
+        </div>
+
+        {/* Pressure */}
+        <div className="flex items-center gap-2 rounded-lg border border-border/40 bg-card/60 px-3 py-1.5 shadow-sm">
+          <Gauge className="h-4 w-4 text-blue-400" />
+          <span className="text-[11px] font-semibold text-navy-soft">Áp suất</span>
+          <div className="flex gap-1 ml-0.5">
+            {[
+              { value: 0.5, label: "0.5" },
+              { value: 1, label: "1" },
+              { value: 2, label: "2" },
+              { value: 5, label: "5atm" },
+            ].map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setEnvironment({ pressure: opt.value })}
+                className={cn(
+                  "rounded-md border px-1.5 py-0.5 text-[11px] font-semibold transition-all",
+                  pressure === opt.value
+                    ? "border-blue-300 bg-blue-50 text-blue-700 shadow-sm"
+                    : "border-border/60 bg-card/60 text-navy-soft hover:bg-card hover:text-navy"
+                )}
               >
-                {option}
-              </DropdownMenuItem>
+                {opt.label}
+              </button>
             ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </div>
+        </div>
+
+        {/* Catalyst */}
+        <div className="flex items-center gap-2 rounded-lg border border-border/40 bg-card/60 px-3 py-1.5 shadow-sm hidden xl:flex">
+          <Sparkles className="h-4 w-4 text-amber-500" />
+          <span className="text-[11px] font-semibold text-navy-soft">Xúc tác</span>
+          <div className="flex gap-1 ml-0.5">
+            {["Không", "MnO₂", "Fe", "Pt", "Ni", "V₂O₅"].map((opt) => (
+              <button
+                key={opt}
+                onClick={() => setEnvironment({ catalyst: opt })}
+                className={cn(
+                  "rounded-md border px-1.5 py-0.5 text-[11px] font-semibold transition-all",
+                  catalyst === opt
+                    ? "border-amber-300 bg-amber-50 text-amber-700 shadow-sm"
+                    : "border-border/60 bg-card/60 text-navy-soft hover:bg-card hover:text-navy"
+                )}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Spacer */}
