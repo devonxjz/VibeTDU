@@ -79,9 +79,9 @@ function DraggableChemicalCard({
     /* Card — static, not draggable */
     <div
       className={cn(
-        "group flex items-center gap-3 rounded-xl border border-border bg-card p-2.5",
+        "group flex items-center gap-3 rounded-xl border border-transparent bg-card p-2.5",
         "transition-all duration-200 ease-out",
-        "hover:border-transparent hover:shadow-[var(--shadow-card)]",
+        "hover:shadow-[var(--shadow-card)]",
       )}
     >
       {/* ── Bottle icon ── */}
@@ -120,7 +120,7 @@ function CategorySection({
   if (group.chemicals.length === 0) return null;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card/40">
+    <div className="overflow-hidden rounded-xl border border-transparent bg-card/40">
       <button
         onClick={() => setOpen((o) => !o)}
         className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left transition-colors hover:bg-muted/40"

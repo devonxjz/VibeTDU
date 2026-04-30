@@ -42,22 +42,30 @@ public class ReactionPredictionService {
 
     /**
      * Predict and return a reaction result for the given list of canonical formulae.
+     * Uses cache-first strategy: if Supabase already has the result, return it immediately.
      */
     public PredictResult predict(List<String> formulae, Double temperature, Double pressure, String catalyst) {
         String reactionKey = ReactionKeyUtil.buildKey(formulae);
         log.info("[reaction-predict] Key: {}", reactionKey);
 
+        // ── Step 1: Check cache ──
         var cached = cacheService.getReaction(reactionKey);
-        ReactionApiCache entityToSave = null;
-
         if (cached.isPresent()) {
-            log.info("[reaction-predict] Cache HIT for key: {}, but we are forcing refresh.", reactionKey);
-            entityToSave = cached.get();
+            ReactionApiCache hit = cached.get();
+            String normalizedJson = hit.getNormalizedResult();
+            if (normalizedJson != null && !normalizedJson.isBlank()) {
+                ReactionResultDTO dto = JsonUtil.fromJson(normalizedJson, ReactionResultDTO.class);
+                if (dto != null && dto.getConfidence() != null && dto.getConfidence() >= 0.5) {
+                    log.info("[reaction-predict] ✅ Cache HIT for key: {} (confidence={})", reactionKey, dto.getConfidence());
+                    cacheService.touchReactionCache(hit);
+                    return new PredictResult(dto, true, hit.getSource());
+                }
+            }
+            log.info("[reaction-predict] Cache entry found but invalid/low-confidence – re-predicting.");
         }
 
-        log.info("[reaction-predict] Calling AI/mock for: {}", formulae);
-
-        // Call AI client
+        // ── Step 2: Cache miss → call AI ──
+        log.info("[reaction-predict] Cache MISS for: {} – calling AI", formulae);
         String rawJson = aiClient.predictReaction(formulae, temperature, pressure, catalyst);
 
         // Validate
@@ -65,12 +73,13 @@ public class ReactionPredictionService {
 
         // Save cache
         String source = determineMockOrReal();
-        if (entityToSave != null) {
-            entityToSave.setRawPredictionResponse(rawJson);
-            entityToSave.setNormalizedResult(JsonUtil.toJson(dto));
-            entityToSave.setSource(source);
-            entityToSave.setConfidence(dto.getConfidence());
-            cacheService.saveReaction(entityToSave);
+        if (cached.isPresent()) {
+            ReactionApiCache existing = cached.get();
+            existing.setRawPredictionResponse(rawJson);
+            existing.setNormalizedResult(JsonUtil.toJson(dto));
+            existing.setSource(source);
+            existing.setConfidence(dto.getConfidence());
+            cacheService.saveReaction(existing);
         } else {
             saveCache(reactionKey, formulae, rawJson, dto, source);
         }
