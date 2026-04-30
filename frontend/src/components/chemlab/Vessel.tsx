@@ -1,6 +1,5 @@
 "use client";
 
-import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { cn } from "@/utils/cn";
@@ -22,27 +21,7 @@ export function VesselComponent({ vessel }: VesselProps) {
   const { selectVessel, selectedVesselId, removeVessel } = useLabStore();
   const isSelected = selectedVesselId === vessel.id;
 
-  const {
-    attributes,
-    listeners,
-    setNodeRef: setDragRef,
-    transform,
-    isDragging,
-  } = useDraggable({
-    id: vessel.id,
-    data: { type: "vessel", vesselId: vessel.id },
-  });
 
-  const { setNodeRef: setDropRef, isOver } = useDroppable({
-    id: `drop-${vessel.id}`,
-    data: { type: "vessel-target", vesselId: vessel.id },
-  });
-
-  const style = transform
-    ? {
-        transform: `translate(${transform.x}px, ${transform.y}px)`,
-      }
-    : undefined;
 
   const totalAmount = vessel.contents.reduce((sum, c) => sum + (c.amountMl || 10), 0);
   const fillRatio = Math.min(0.85, Math.max(0.15, totalAmount / 50));
@@ -57,19 +36,12 @@ export function VesselComponent({ vessel }: VesselProps) {
   return (
     <motion.div
       id={vessel.id}
-      ref={(node) => {
-        setDragRef(node);
-        setDropRef(node);
-      }}
       className={cn(
-        "group absolute flex cursor-grab flex-col items-center",
-        isDragging && "z-50 cursor-grabbing opacity-70",
-        isOver && "scale-105",
+        "group absolute flex flex-col items-center",
       )}
       style={{
         left: vessel.position.x,
         top: vessel.position.y,
-        ...style,
       }}
       initial={{ scale: 0, opacity: 0 }}
       animate={
@@ -83,8 +55,6 @@ export function VesselComponent({ vessel }: VesselProps) {
         e.stopPropagation();
         selectVessel(vessel.id);
       }}
-      {...attributes}
-      {...listeners}
     >
       {/* Delete button */}
       <button
@@ -102,7 +72,6 @@ export function VesselComponent({ vessel }: VesselProps) {
         className={cn(
           "relative transition-all duration-200",
           isSelected && "drop-shadow-[0_0_12px_oklch(0.85_0.15_170/0.4)]",
-          isOver && "drop-shadow-[0_0_8px_oklch(0.85_0.15_170/0.3)]",
         )}
       >
         <svg width="64" height="80" viewBox="0 0 64 80" fill="none">
@@ -172,19 +141,6 @@ export function VesselComponent({ vessel }: VesselProps) {
           <line x1="16" y1="15" x2="16" y2="60" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeLinecap="round" />
           <line x1="19" y1="20" x2="19" y2="55" stroke="rgba(255,255,255,0.2)" strokeWidth="0.8" strokeLinecap="round" />
         </svg>
-
-        {/* Glow when receiving drop */}
-        {isOver && (
-          <motion.div
-            className="absolute inset-0 rounded-xl"
-            style={{
-              background: "radial-gradient(ellipse at center, oklch(0.85 0.15 170 / 0.2), transparent 70%)",
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.2 }}
-          />
-        )}
       </div>
 
       {/* Label */}

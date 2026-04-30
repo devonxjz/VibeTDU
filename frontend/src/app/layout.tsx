@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans, DM_Sans } from "next/font/google";
 import "./globals.css";
 
 /* ─── Font Loading via next/font (avoids FOUT, auto-subsets) ───────── */
@@ -15,6 +15,12 @@ const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
   display: "swap",
   weight: ["400", "500", "600", "700", "800"],
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+  display: "swap",
 });
 
 /* ─── Page Metadata ─────────────────────────────────────────────────── */
@@ -33,7 +39,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className={`${inter.variable} ${plusJakarta.variable}`} suppressHydrationWarning>
+    <html lang="vi" className={`${inter.variable} ${plusJakarta.variable} ${dmSans.variable}`} suppressHydrationWarning>
       <body
         className="min-h-screen font-sans bg-background text-foreground antialiased selection:bg-primary/20"
         suppressHydrationWarning
