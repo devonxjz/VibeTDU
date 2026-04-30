@@ -61,7 +61,7 @@ function ToolButton({
 }
 
 function Divider() {
-  return <div className="mx-1 h-6 w-px bg-border" />;
+  return <div className="mx-1 h-6 w-px bg-white/8" />;
 }
 
 interface SliderControlProps {
@@ -117,7 +117,7 @@ export function Toolbar() {
   const isChatbotOpen = useChatbotStore((s) => s.isOpen);
 
   return (
-    <div className="flex h-14 w-full items-center gap-2 border-b border-white/10 bg-[#2C2C2C]/80 px-4 backdrop-blur-sm">
+    <div className="flex h-14 w-full items-center gap-2 bg-[#2C2C2C]/80 px-4 backdrop-blur-sm">
       {/* Brand */}
       <div className="flex items-center gap-2 pr-2">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-mint to-baby shadow-[var(--shadow-soft)]">
@@ -145,7 +145,7 @@ export function Toolbar() {
       {/* Reaction conditions */}
       <div className="flex items-center gap-2">
         {/* Temperature */}
-        <div className="flex items-center gap-2 rounded-lg border border-white/10/40 bg-[#2C2C2C]/60 px-3 py-1.5 shadow-sm">
+        <div className="flex items-center gap-2 rounded-lg bg-[#3C3C3C]/40 px-3 py-1.5">
           <Thermometer className="h-4 w-4 text-rose-400" />
           <span className="text-[11px] font-semibold text-gray-400">Nhiệt độ</span>
           <input
@@ -157,13 +157,13 @@ export function Toolbar() {
             onChange={(e) => setEnvironment({ temperature: Number(e.target.value) })}
             className="w-20 accent-rose-400"
           />
-          <span className="rounded bg-[#2C2C2C] px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-[#E0E0E0] shadow-sm min-w-[36px] text-center border border-white/10/50">
+          <span className="rounded bg-[#2C2C2C] px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-[#E0E0E0] min-w-[36px] text-center">
             {temperature}°C
           </span>
         </div>
 
         {/* Pressure */}
-        <div className="flex items-center gap-2 rounded-lg border border-white/10/40 bg-[#2C2C2C]/60 px-3 py-1.5 shadow-sm">
+        <div className="flex items-center gap-2 rounded-lg bg-[#3C3C3C]/40 px-3 py-1.5">
           <Gauge className="h-4 w-4 text-blue-400" />
           <span className="text-[11px] font-semibold text-gray-400">Áp suất</span>
           <div className="flex gap-1 ml-0.5">
@@ -177,10 +177,10 @@ export function Toolbar() {
                 key={opt.value}
                 onClick={() => setEnvironment({ pressure: opt.value })}
                 className={cn(
-                  "rounded-md border px-1.5 py-0.5 text-[11px] font-semibold transition-all",
+                  "rounded-md px-2 py-1 text-[11px] font-semibold transition-colors",
                   pressure === opt.value
-                    ? "border-blue-300 bg-blue-50 text-blue-700 shadow-sm"
-                    : "border-white/10/60 bg-[#2C2C2C]/60 text-gray-400 hover:bg-[#2C2C2C] hover:text-[#E0E0E0]"
+                    ? "bg-[#0066FF] text-white"
+                    : "bg-transparent text-gray-400 hover:bg-[#4C4C4C]/60 hover:text-[#E0E0E0]"
                 )}
               >
                 {opt.label}
@@ -190,7 +190,7 @@ export function Toolbar() {
         </div>
 
         {/* Catalyst */}
-        <div className="flex items-center gap-2 rounded-lg border border-white/10/40 bg-[#2C2C2C]/60 px-3 py-1.5 shadow-sm hidden xl:flex">
+        <div className="flex items-center gap-2 rounded-lg bg-[#3C3C3C]/40 px-3 py-1.5 hidden xl:flex">
           <Sparkles className="h-4 w-4 text-amber-500" />
           <span className="text-[11px] font-semibold text-gray-400">Xúc tác</span>
           <div className="flex gap-1 ml-0.5">
@@ -199,10 +199,10 @@ export function Toolbar() {
                 key={opt}
                 onClick={() => setEnvironment({ catalyst: opt })}
                 className={cn(
-                  "rounded-md border px-1.5 py-0.5 text-[11px] font-semibold transition-all",
+                  "rounded-md px-2 py-1 text-[11px] font-semibold transition-colors",
                   catalyst === opt
-                    ? "border-amber-300 bg-amber-50 text-amber-700 shadow-sm"
-                    : "border-white/10/60 bg-[#2C2C2C]/60 text-gray-400 hover:bg-[#2C2C2C] hover:text-[#E0E0E0]"
+                    ? "bg-[#0066FF] text-white"
+                    : "bg-transparent text-gray-400 hover:bg-[#4C4C4C]/60 hover:text-[#E0E0E0]"
                 )}
               >
                 {opt}

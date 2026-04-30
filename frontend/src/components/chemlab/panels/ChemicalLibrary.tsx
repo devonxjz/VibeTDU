@@ -104,7 +104,7 @@ function CategorySection({
   if (group.chemicals.length === 0) return null;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-white/10/60 bg-[#2C2C2C]/40">
+    <div className="overflow-hidden rounded-xl bg-[#2C2C2C]/40">
       <button
         onClick={() => setOpen((o) => !o)}
         className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left transition-colors hover:bg-[#3C3C3C]/40"
@@ -169,7 +169,7 @@ export function ChemicalLibrary() {
   return (
     <aside className="flex h-full w-full flex-col overflow-hidden">
       {/* Header */}
-      <div className="border-b border-white/10 bg-[#2C2C2C]/40 px-4 py-3.5">
+      <div className="bg-[#2C2C2C]/40 px-4 py-3.5">
         <div className="mb-2.5 flex items-center justify-between">
           <h2 className="font-display text-sm font-bold text-[#E0E0E0]">
             Thư viện hoá chất

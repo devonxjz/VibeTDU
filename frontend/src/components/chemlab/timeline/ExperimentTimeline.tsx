@@ -17,7 +17,7 @@ export function ExperimentTimeline() {
   }, [events.length]);
 
   return (
-    <section className="border-t border-border/60 bg-muted/20 px-4 py-3 shrink-0">
+    <section className="bg-[#1C1C1C]/60 px-4 py-3 shrink-0">
       <h3 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-navy-soft">
         Lịch sử thao tác
       </h3>

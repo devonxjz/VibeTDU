@@ -60,7 +60,7 @@ export function ConditionPanel() {
   return (
     <aside className="flex h-full w-full flex-col overflow-hidden">
       {/* Header */}
-      <div className="border-b border-white/10/60 px-4 py-3.5">
+      <div className="px-4 py-3.5">
         <h2 className="font-display text-sm font-bold text-[#E0E0E0]">
           Điều kiện thí nghiệm
         </h2>
@@ -85,7 +85,7 @@ export function ConditionPanel() {
           </h3>
 
           {contents.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-white/10/60 py-6 text-center">
+            <div className="flex flex-col items-center justify-center rounded-xl py-6 text-center">
               <FlaskConical className="mb-2 h-6 w-6 text-gray-400/40" />
               <p className="text-xs text-gray-400">Chưa có hoá chất</p>
               <p className="mt-0.5 text-[10px] text-gray-400/70">
@@ -132,7 +132,7 @@ export function ConditionPanel() {
           )}
         </section>
 
-        <div className="mx-4 h-px bg-border/40" />
+
 
         {/* ── Environment Conditions moved to Toolbar ── */}
 
@@ -141,7 +141,7 @@ export function ConditionPanel() {
       <ExperimentTimeline />
 
       {/* ── Bottom Action Bar ───────────────────────────────────────── */}
-      <div className="border-t border-white/10/60 px-4 py-3 space-y-2">
+      <div className="px-4 py-3 space-y-2">
         {/* Play button */}
         <button
           disabled={!canPlay}
@@ -170,10 +170,10 @@ export function ConditionPanel() {
             onClick={() => undoLastChemical()}
             disabled={contents.length === 0}
             className={cn(
-              "flex items-center justify-center gap-1.5 rounded-xl border py-2 text-xs font-semibold transition-all",
+              "flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-semibold transition-colors",
               contents.length > 0
-                ? "border-white/10 text-[#E0E0E0] hover:bg-[#3C3C3C]/40"
-                : "border-white/10/40 text-gray-400/50 cursor-not-allowed"
+                ? "bg-[#3C3C3C]/60 text-[#E0E0E0] hover:bg-[#4C4C4C]/80"
+                : "bg-[#2C2C2C]/40 text-gray-400/30 cursor-not-allowed"
             )}
           >
             <Undo2 className="h-3.5 w-3.5" />
@@ -183,10 +183,10 @@ export function ConditionPanel() {
             onClick={() => clearBeaker()}
             disabled={contents.length === 0}
             className={cn(
-              "flex items-center justify-center gap-1.5 rounded-xl border py-2 text-xs font-semibold transition-all",
+              "flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-semibold transition-colors",
               contents.length > 0
-                ? "border-white/10 text-rose-500 hover:bg-rose-50"
-                : "border-white/10/40 text-gray-400/50 cursor-not-allowed"
+                ? "bg-rose-500/10 text-rose-400 hover:bg-rose-500/20"
+                : "bg-[#2C2C2C]/40 text-gray-400/30 cursor-not-allowed"
             )}
           >
             <Trash2 className="h-3.5 w-3.5" />
