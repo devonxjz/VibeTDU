@@ -102,7 +102,7 @@ export function ChemLabShell() {
   return (
     <>
       {/* ── True 3-column layout — lab scene stays in center column ── */}
-      <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
+      <div className="flex h-screen w-screen flex-col overflow-hidden bg-[#121212] text-[#E0E0E0]">
         {/* Top toolbar */}
         <Toolbar />
 
@@ -111,7 +111,7 @@ export function ChemLabShell() {
           {/* ── Left panel — width controlled by drag ── */}
           <div
             ref={leftColRef}
-            className="hidden lg:flex flex-col shrink-0 bg-[#eef2f6] border-r border-[#0066FF] overflow-hidden shadow-[4px_0_12px_rgba(0,0,0,0.05)] z-10"
+            className="hidden lg:flex flex-col shrink-0 bg-[rgba(30,30,30,0.8)] backdrop-blur-[10px] border-r border-white/5 overflow-hidden z-10"
             style={{ width: LEFT_DEFAULT, minWidth: LEFT_MIN, maxWidth: LEFT_MAX }}
           >
             <ConditionPanel />
@@ -173,7 +173,7 @@ export function ChemLabShell() {
           </div>
 
           {/* Center — lab canvas & results */}
-          <div className="relative min-w-0 flex-1 bg-[#fdfcfb] flex flex-col h-full overflow-hidden">
+          <div className="relative min-w-0 flex-1 bg-gradient-to-b from-[#FDFDFD] to-[#F0F2F5] rounded-[24px] m-[15px] shadow-[inset_0_2px_10px_rgba(0,0,0,0.1)] flex flex-col h-full overflow-hidden">
             {/* Top Zone (The Stage) — Beaker focus */}
             <div className="flex-1 relative flex items-center justify-center min-h-[50%] transition-all duration-500">
               <Board />
@@ -184,7 +184,7 @@ export function ChemLabShell() {
           </div>
 
           {/* Right panel */}
-          <div className="hidden md:flex w-72 shrink-0 flex-col bg-[#eef2f6] border-l border-[#0066FF] overflow-y-auto shadow-[-4px_0_12px_rgba(0,0,0,0.05)] z-10">
+          <div className="hidden md:flex w-72 shrink-0 flex-col bg-[rgba(30,30,30,0.8)] backdrop-blur-[10px] border-l border-white/5 overflow-y-auto z-10">
             <ChemicalLibrary />
           </div>
         </div>

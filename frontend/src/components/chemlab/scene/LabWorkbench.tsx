@@ -17,7 +17,7 @@ export function LabWorkbench({ children }: LabWorkbenchProps) {
       className="absolute inset-0 overflow-hidden"
       aria-label="Bàn thí nghiệm hiện đại"
       style={{
-        background: "linear-gradient(180deg, #fdf8f4 0%, #f4e9e0 40%, #e8d5c4 100%)",
+        background: "transparent",
       }}
     >
       {/* Subtle warm dot grid */}
@@ -43,19 +43,19 @@ export function LabWorkbench({ children }: LabWorkbenchProps) {
         }}
       />
 
-      {/* Workbench surface — rich warm wood / bronze table */}
+      {/* Workbench surface — neutral grey/white table */}
       <div
         className="absolute left-[5%] right-[5%] rounded-t-[20px] rounded-b-lg"
         style={{
           top: "52%",
           bottom: "4%",
-          background: "linear-gradient(180deg, #c48b63 0%, #a36640 40%, #824726 100%)",
-          borderTop: "2px solid rgba(255,225,190,0.4)",
-          borderLeft: "1px solid rgba(255,225,190,0.2)",
-          borderRight: "1px solid rgba(255,225,190,0.2)",
+          background: "#E2E8F0",
+          borderBottom: "5px solid #CBD5E1",
+          borderTop: "2px solid rgba(255,255,255,0.4)",
+          borderLeft: "1px solid rgba(255,255,255,0.2)",
+          borderRight: "1px solid rgba(255,255,255,0.2)",
           boxShadow:
-            "0 -2px 10px rgba(168,102,64,0.3), " +
-            "0 12px 32px rgba(90,40,15,0.4), " +
+            "0 4px 16px rgba(0,0,0,0.08), " +
             "inset 0 1px 0 rgba(255,255,255,0.1)",
         }}
         aria-label="Mặt bàn thí nghiệm"

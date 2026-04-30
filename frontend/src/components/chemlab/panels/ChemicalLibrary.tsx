@@ -54,8 +54,8 @@ function ChemicalCard({
       className={cn(
         "group flex w-full items-center gap-3 rounded-xl border p-2.5 text-left transition-all duration-200 ease-out",
         isAdded
-          ? "border-transparent bg-card/40 opacity-60 cursor-not-allowed"
-          : "border-border/60 bg-card hover:border-transparent hover:shadow-[var(--shadow-card)] active:bg-muted/50"
+          ? "border-transparent bg-[#2C2C2C]/40 opacity-60 cursor-not-allowed"
+          : "border-white/10/60 bg-[#2C2C2C] hover:border-transparent hover:shadow-[var(--shadow-card)] active:bg-[#3C3C3C]/50"
       )}
     >
       {/* Color dot */}
@@ -71,14 +71,14 @@ function ChemicalCard({
         <div className="flex items-center justify-between gap-2">
           <Formula
             formula={chemical.formula}
-            className="truncate font-display text-xs font-bold text-navy"
+            className="truncate font-display text-xs font-bold text-[#E0E0E0]"
           />
           {/* Badge */}
-          <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-navy-soft">
+          <span className="shrink-0 rounded bg-[#3C3C3C] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-gray-400">
             {chemical.category}
           </span>
         </div>
-        <div className="truncate text-[10px] font-medium text-navy-soft">
+        <div className="truncate text-[10px] font-medium text-gray-400">
           {chemical.name}
         </div>
       </div>
@@ -104,21 +104,21 @@ function CategorySection({
   if (group.chemicals.length === 0) return null;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border/60 bg-card/40">
+    <div className="overflow-hidden rounded-xl border border-white/10/60 bg-[#2C2C2C]/40">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left transition-colors hover:bg-muted/40"
+        className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left transition-colors hover:bg-[#3C3C3C]/40"
       >
         <div className="flex items-center gap-2">
           <span className="text-base leading-none">{group.emoji}</span>
-          <span className="text-xs font-semibold text-navy">{group.label}</span>
-          <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-navy-soft">
+          <span className="text-xs font-semibold text-[#E0E0E0]">{group.label}</span>
+          <span className="rounded-full bg-[#3C3C3C] px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-gray-400">
             {group.chemicals.length}
           </span>
         </div>
         <ChevronDown
           className={cn(
-            "h-4 w-4 text-navy-soft transition-transform duration-300",
+            "h-4 w-4 text-gray-400 transition-transform duration-300",
             open && "rotate-180"
           )}
         />
@@ -169,25 +169,25 @@ export function ChemicalLibrary() {
   return (
     <aside className="flex h-full w-full flex-col overflow-hidden">
       {/* Header */}
-      <div className="border-b border-white/10 bg-card/40 px-4 py-3.5">
+      <div className="border-b border-white/10 bg-[#2C2C2C]/40 px-4 py-3.5">
         <div className="mb-2.5 flex items-center justify-between">
-          <h2 className="font-display text-sm font-bold text-navy">
+          <h2 className="font-display text-sm font-bold text-[#E0E0E0]">
             Thư viện hoá chất
           </h2>
-          <span className="text-[11px] text-navy-soft">
+          <span className="text-[11px] text-gray-400">
             {CATEGORY_GROUPS.reduce((s, g) => s + g.chemicals.length, 0)} chất
           </span>
         </div>
 
         {/* Search Input */}
         <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-navy-soft" />
+          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             placeholder="Tìm công thức, tên..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full rounded-xl border border-border bg-card py-2 pl-9 pr-3 text-xs text-navy outline-none transition-all placeholder:text-navy-soft/60 focus:border-mint focus:ring-2 focus:ring-mint/20"
+            className="w-full rounded-xl border border-white/10 bg-[#2C2C2C] py-2 pl-9 pr-3 text-xs text-[#E0E0E0] outline-none transition-all placeholder:text-gray-400/60 focus:border-mint focus:ring-2 focus:ring-mint/20"
           />
         </div>
 
@@ -198,8 +198,8 @@ export function ChemicalLibrary() {
             className={cn(
               "shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-colors",
               activeTab === "all"
-                ? "bg-[#0066FF] text-white"
-                : "bg-muted text-navy-soft hover:bg-muted/80 hover:text-navy"
+                ? "bg-[#FF8A65] text-white"
+                : "bg-[#3C3C3C] text-gray-400 hover:bg-[#3C3C3C]/80 hover:text-[#E0E0E0]"
             )}
           >
             Tất cả
@@ -211,8 +211,8 @@ export function ChemicalLibrary() {
               className={cn(
                 "shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-colors flex items-center gap-1",
                 activeTab === g.key
-                  ? "bg-[#0066FF] text-white"
-                  : "bg-muted text-navy-soft hover:bg-muted/80 hover:text-navy"
+                  ? "bg-[#FF8A65] text-white"
+                  : "bg-[#3C3C3C] text-gray-400 hover:bg-[#3C3C3C]/80 hover:text-[#E0E0E0]"
               )}
             >
               <span>{g.emoji}</span>
@@ -226,13 +226,13 @@ export function ChemicalLibrary() {
       <div className="thin-scroll flex-1 overflow-y-auto px-3 py-3">
         {!hasResults ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-muted/60">
-              <Search className="h-5 w-5 text-navy-soft/60" />
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#3C3C3C]/60">
+              <Search className="h-5 w-5 text-gray-400/60" />
             </div>
-            <p className="text-xs font-semibold text-navy">
+            <p className="text-xs font-semibold text-[#E0E0E0]">
               Không tìm thấy hoá chất
             </p>
-            <p className="mt-1 text-[11px] text-navy-soft">
+            <p className="mt-1 text-[11px] text-gray-400">
               Thử tìm với từ khóa khác
             </p>
           </div>

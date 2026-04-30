@@ -53,4 +53,9 @@ public class CacheService {
         entry.setLastUsedAt(LocalDateTime.now());
         reactionApiCacheRepository.save(entry);
     }
+
+    /** Count total cached reactions in Supabase. */
+    public long countReactions() {
+        return reactionApiCacheRepository.count();
+    }
 }

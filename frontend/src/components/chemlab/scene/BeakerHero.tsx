@@ -108,10 +108,10 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
           {/* Beaker body — glass outline */}
           <motion.path
             d="M24 18 L22 240 Q22 262 44 262 L156 262 Q178 262 178 240 L176 18"
-            fill="rgba(200,230,255,0.12)"
-            initial={{ stroke: "rgba(100,150,200,0.55)", strokeWidth: 2 }}
+            fill="rgba(200,230,255,0.05)"
+            initial={{ stroke: "rgba(176,190,197,0.5)", strokeWidth: 2 }}
             animate={{
-              stroke: "rgba(100,150,200,0.55)",
+              stroke: "rgba(176,190,197,0.5)",
               strokeWidth: 2,
             }}
             transition={{ duration: 0.2 }}
@@ -121,7 +121,7 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
           <motion.path
             d="M14 18 L186 18"
             animate={{
-              stroke: "rgba(100,150,200,0.55)",
+              stroke: "rgba(176,190,197,0.5)",
             }}
             transition={{ duration: 0.2 }}
             strokeWidth="3.5"
@@ -131,7 +131,7 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
           {/* Pour spout — left notch */}
           <path
             d="M14 18 L24 18 L18 8"
-            stroke="rgba(100,150,200,0.45)"
+            stroke="rgba(176,190,197,0.5)"
             strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -146,7 +146,7 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
             ry="10"
             fill="rgba(200,230,255,0.08)"
             animate={{
-              stroke: "rgba(100,150,200,0.3)",
+              stroke: "rgba(176,190,197,0.3)",
             }}
             transition={{ duration: 0.2 }}
             strokeWidth="1.5"
@@ -230,6 +230,7 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
               rx="70"
               ry="8"
               fill={precipitateColor}
+              style={{ filter: "drop-shadow(0 0 5px rgba(0,0,0,0.08)) drop-shadow(0 0 12px rgba(255,255,255,0.5))" }}
               initial={{ scaleX: 0, scaleY: 0.5, opacity: 0 }}
               animate={{ scaleX: 1, scaleY: 1, opacity: 0.88 }}
               transition={{ duration: 1.2, ease: "easeOut" }}
