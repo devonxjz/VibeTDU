@@ -5,11 +5,9 @@ import {
   Search,
   SlidersHorizontal,
   ChevronDown,
-  GripVertical,
   Loader2,
   Database
 } from "lucide-react";
-import { useDraggable } from "@dnd-kit/core";
 import {
   CATEGORY_GROUPS,
   getBottleColor,
@@ -73,18 +71,7 @@ function DraggableChemicalCard({
   chemical: Chemical;
   group: CategoryGroup;
 }) {
-  const { attributes, listeners, setNodeRef, isDragging } =
-    useDraggable({
-      id: `chemical-${chemical.id}`,
-      data: {
-        type: "chemical",
-        chemicalId: chemical.id,
-        name: chemical.name,
-        formula: chemical.formula,
-        category: chemical.category,
-        color: chemical.color,
-      },
-    });
+  // Not draggable anymore
 
   const bottleColor = getBottleColor(chemical.id, chemical.formula);
 
@@ -95,23 +82,15 @@ function DraggableChemicalCard({
         "group flex items-center gap-3 rounded-xl border border-border bg-card p-2.5",
         "transition-all duration-200 ease-out",
         "hover:border-transparent hover:shadow-[var(--shadow-card)]",
-        isDragging && "opacity-40",
       )}
     >
-      {/* ── Bottle icon — THIS is the drag handle ── */}
+      {/* ── Bottle icon ── */}
       <div
-        ref={setNodeRef}
-        {...attributes}
-        {...listeners}
         className={cn(
-          "flex h-11 w-11 shrink-0 cursor-grab items-center justify-center rounded-lg",
+          "flex h-11 w-11 shrink-0 items-center justify-center rounded-lg",
           "transition-all duration-150",
-          "hover:scale-110 hover:drop-shadow-[0_4px_12px_rgba(0,0,0,0.2)]",
-          "active:cursor-grabbing active:scale-95",
-          isDragging && "scale-95 opacity-70",
         )}
-        title={`Kéo ${chemical.name} vào bình phản ứng`}
-        style={{ touchAction: "none" }}
+        title={chemical.name}
       >
         <ChemicalBottleSVG liquidColor={bottleColor} size={44} />
       </div>
@@ -125,12 +104,6 @@ function DraggableChemicalCard({
           formula={chemical.formula}
           className="font-display text-[11px] font-medium text-navy-soft"
         />
-      </div>
-
-      {/* Drag hint icon */}
-      <div className="flex shrink-0 flex-col items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-60">
-        <div className="text-[9px] font-medium text-navy-soft">kéo</div>
-        <GripVertical className="h-3.5 w-3.5 text-navy-soft" />
       </div>
     </div>
   );
@@ -257,7 +230,7 @@ export function SearchPanel() {
       <div className="border-b border-white/10 px-4 py-3.5 bg-card/40">
         <div className="mb-2.5 flex items-center justify-between">
           <h2 className="font-display text-sm font-bold text-navy">
-            Thư viện hoá chất
+            Chemical Library
           </h2>
           <span className="text-[11px] text-navy-soft">
             {CATEGORY_GROUPS.reduce((s, g) => s + g.chemicals.length, 0) + dynamicChemicals.length} chất

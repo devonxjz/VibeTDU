@@ -17,13 +17,18 @@ export function ExplosionEffect() {
   });
 
   return (
-    <div className="absolute inset-0 overflow-hidden">
-      {/* White flash */}
-      <motion.div
-        className="absolute inset-0 bg-white"
-        initial={{ opacity: 0.9 }}
-        animate={{ opacity: [0.9, 0] }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
+    <div className="absolute inset-0 overflow-hidden z-50 pointer-events-none">
+      {/* Inject global screen shake while this component is mounted */}
+      <style>{`
+        body {
+          animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+      `}</style>
+
+      {/* White flash overlay using the flash keyframe */}
+      <div 
+        className="fixed inset-0 pointer-events-none"
+        style={{ animation: 'flash 0.8s ease-out forwards' }}
       />
 
       {/* Fireball */}
@@ -83,10 +88,10 @@ export function ExplosionEffect() {
       <motion.div
         className="absolute bottom-8 left-1/2 -translate-x-1/2 rounded-xl bg-red-500/90 px-4 py-2 text-sm font-bold text-white shadow-lg backdrop-blur-sm"
         initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.5, duration: 0.4 }}
+        animate={{ y: 0, opacity: [0, 1, 1, 0] }}
+        transition={{ duration: 2, times: [0, 0.2, 0.8, 1] }}
       >
-        ⚠️ Cảnh báo: Phản ứng nguy hiểm!
+        ⚠️ Phản ứng nguy hiểm!
       </motion.div>
     </div>
   );

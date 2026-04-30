@@ -93,6 +93,14 @@ interface LabStore {
   pressure: number;
   catalyst: string;
 
+  // PRO click-to-add state
+  beakerLiquidLevel: number;   // 0–100
+  isReacting: boolean;
+
+  // PRO computed getters (implemented as functions)
+  getCanPlay: () => boolean;
+  getEffectSpeed: () => number;
+
   // Actions
   setCenterBeaker: (id: string | null) => void;
   /** Create the center beaker vessel with EMPTY contents (used on Board init) */
@@ -116,6 +124,14 @@ interface LabStore {
   setEnvironment: (conditions: Partial<{ temperature: number; pressure: number; catalyst: string }>) => void;
   addTimelineEvent: (event: Omit<TimelineEvent, "id" | "timestamp">) => void;
   clearTimeline: () => void;
+
+  // PRO click-to-add actions
+  /** Click a chemical card → adds to center beaker (no dupes, +15 level) */
+  addToBeaker: (chemical: { name: string; formula: string; category?: string; chemicalId?: string }) => void;
+  /** Remove a specific chemical by formula from center beaker (-15 level) */
+  removeFromBeaker: (formula: string) => void;
+  /** Clear center beaker only (reset contents, level, reaction state) */
+  clearBeaker: () => void;
 }
 
 // ─── Effect Duration Map ────────────────────────────────────────────
@@ -144,6 +160,24 @@ export const useLabStore = create<LabStore>((set, get) => ({
   temperature: 25,
   pressure: 1,
   catalyst: "Không",
+
+  // PRO click-to-add state
+  beakerLiquidLevel: 0,
+  isReacting: false,
+
+  getCanPlay: () => {
+    const s = get();
+    if (!s.centerBeakerId || s.isLoading) return false;
+    const vessel = s.vessels[s.centerBeakerId];
+    if (!vessel) return false;
+    const contents = vessel.contents.filter(c => c.formula);
+    return contents.length >= 2;
+  },
+
+  getEffectSpeed: () => {
+    const t = get().temperature;
+    return Math.max(0.1, Math.min(t / 25, 10)); // Base 25°C = 1x speed
+  },
 
   addTimelineEvent: (event) => set((state) => ({
     timelineEvents: [
@@ -238,7 +272,7 @@ export const useLabStore = create<LabStore>((set, get) => ({
       return;
     }
 
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, isReacting: true, error: null });
 
     try {
       // Build a fake "source" with all chemicals except the first
@@ -281,6 +315,9 @@ export const useLabStore = create<LabStore>((set, get) => ({
         isLoading: false,
       });
 
+      // Auto-clear isReacting after 3000ms
+      setTimeout(() => set({ isReacting: false }), 3000);
+
       if (result?.hasReaction) {
         get().addTimelineEvent({
           type: "REACT",
@@ -322,6 +359,9 @@ export const useLabStore = create<LabStore>((set, get) => ({
         activeEffect: effectType !== "NONE" ? { type: effectType, vesselId, color: mockResult.effectColor, precipitateColor: mockResult.precipitateColor, gasFormula: mockResult.gasFormula } : null,
         isLoading: false,
       });
+
+      // Auto-clear isReacting after 3000ms
+      setTimeout(() => set({ isReacting: false }), 3000);
 
       if (mockResult.hasReaction) {
         get().addTimelineEvent({
@@ -735,4 +775,124 @@ export const useLabStore = create<LabStore>((set, get) => ({
   setError: (error) => set({ error }),
 
   setEnvironment: (conditions) => set((state) => ({ ...state, ...conditions })),
+
+  // ─── PRO click-to-add actions ─────────────────────────────────────
+
+  addToBeaker: (chemical) => {
+    const state = get();
+    let beakerId = state.centerBeakerId;
+
+    // Auto-init center beaker if needed
+    if (!beakerId) {
+      beakerId = get().initCenterBeaker();
+    }
+
+    const vessel = get().vessels[beakerId!];
+    if (!vessel) return;
+
+    // No dupes — skip if formula already exists
+    if (vessel.contents.some(c => c.formula === chemical.formula)) return;
+
+    // Add the chemical via existing addChemicalToVessel
+    get().addChemicalToVessel(
+      {
+        inputName: chemical.name,
+        formula: chemical.formula,
+        amountMl: 10,
+        category: chemical.category,
+        chemicalId: chemical.chemicalId,
+      },
+      beakerId!,
+    );
+
+    // Update liquid level (+15 per chemical, clamped 0-100)
+    set((s) => {
+      const v = s.vessels[beakerId!];
+      const realCount = v ? v.contents.filter(c => c.formula).length : 0;
+      return { beakerLiquidLevel: Math.min(100, realCount * 15) };
+    });
+  },
+
+  removeFromBeaker: (formula) => {
+    const state = get();
+    const beakerId = state.centerBeakerId;
+    if (!beakerId) return;
+    const vessel = state.vessels[beakerId];
+    if (!vessel) return;
+
+    // Find the index of the chemical with this formula
+    const idx = vessel.contents.findIndex(c => c.formula === formula);
+    if (idx === -1) return;
+
+    get().addTimelineEvent({
+      type: "UNDO",
+      description: `Bỏ ${formula}`,
+      formulaLabel: formula,
+    });
+
+    set((s) => {
+      const v = s.vessels[beakerId];
+      if (!v) return s;
+
+      const newContents = v.contents.filter((_, i) => i !== idx);
+      const realContents = newContents.filter(c => c.formula);
+
+      let newColor = "rgba(200,230,255,0.0)";
+      if (realContents.length > 0) {
+        const last = realContents[realContents.length - 1];
+        newColor = getDisplayColor("", last.formula, "");
+      }
+
+      const newLabel = realContents.length > 0
+        ? [...new Set(realContents.map(c => c.formula).filter(Boolean))].join(" + ")
+        : "";
+
+      return {
+        vessels: {
+          ...s.vessels,
+          [beakerId]: {
+            ...v,
+            contents: newContents,
+            displayColor: newColor,
+            label: newLabel,
+          },
+        },
+        beakerLiquidLevel: Math.min(100, Math.max(0, realContents.length * 15)),
+        lastReaction: null,
+        activeEffect: null,
+      };
+    });
+  },
+
+  clearBeaker: () => {
+    const state = get();
+    const beakerId = state.centerBeakerId;
+    if (!beakerId) return;
+
+    get().clearTimeline();
+    get().addTimelineEvent({
+      type: "RESET",
+      description: "Xóa tất cả hoá chất trong bình",
+    });
+
+    set((s) => {
+      const v = s.vessels[beakerId];
+      if (!v) return s;
+      return {
+        vessels: {
+          ...s.vessels,
+          [beakerId]: {
+            ...v,
+            contents: [],
+            displayColor: "rgba(200,230,255,0.0)",
+            label: "",
+          },
+        },
+        beakerLiquidLevel: 0,
+        lastReaction: null,
+        activeEffect: null,
+        isReacting: false,
+      };
+    });
+  },
 }));

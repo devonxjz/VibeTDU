@@ -126,16 +126,90 @@ Tạo file `frontend/.env.local`:
 NEXT_PUBLIC_API_URL=http://localhost:8080
 ```
 
-Tạo file `backend/src/main/resources/application-local.properties`:
+Tạo file `backend/.env` (không commit):
 
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/chemlab
-spring.datasource.username=postgres
-spring.datasource.password=your_password
-gemini.api.key=YOUR_GEMINI_API_KEY
+```env
+GEMINI_KEY_1=AIzaSy...
+GEMINI_KEY_2=AIzaSy...
+GEMINI_KEY_3=AIzaSy...
+GEMINI_KEY_4=AIzaSy...
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=eyJ...
+SUPABASE_PUBLISHABLE_KEY=sb_...
 ```
 
 > Để chạy offline (không cần backend): mock reactions trong `src/utils/reaction-mock.ts` hoạt động độc lập, không cần API.
+
+---
+
+## 🔗 Frontend ↔ Backend Connection
+
+### Cách FE gọi BE
+
+Tất cả API calls đi qua `frontend/src/api/client/http.ts`:
+
+```ts
+// http.ts tự động prepend NEXT_PUBLIC_API_URL
+// Ví dụ: post('/api/lab/mix', body) → POST http://localhost:8080/api/lab/mix
+```
+
+**File mapping FE → BE:**
+
+| Frontend file | Gọi endpoint | Backend handler |
+|---|---|---|
+| `src/api/client/lab.ts` → `mixChemicals()` | `POST /api/lab/mix` | `LabController` → `LabMixService` |
+| `src/api/client/lab.ts` → `resetSession()` | `POST /api/session/reset` | `LabController` |
+| `src/api/client/chemical.ts` → `resolveChemical()` | `GET /api/chemicals/resolve` | `ChemicalController` → `ChemicalResolverService` |
+| `src/api/client/ai.ts` → `askAi()` | `POST /api/ai/ask` | `AiController` → `AiClient` |
+| `src/api/client/ai.ts` → `chatAi()` | `POST /api/ai/chat` | `AiController` → `AiClient` |
+
+### Request/Response flow chính
+
+```
+FE: drag chemical → drop vào beaker
+    → addToBeaker(id)                    [Zustand store]
+    → user nhấn Play
+    → runReaction(vesselId)              [Zustand store]
+    → mixChemicals(MixRequest)           [src/api/client/lab.ts]
+    → POST /api/lab/mix                  [HTTP]
+    → LabMixService.mix()                [Spring Boot]
+        → RateLimitService (2s cooldown)
+        → ChemicalResolverService        (PubChem/Cactus/OPSIN)
+        → ReactionPredictionService      (Cache → Gemini AI)
+    → MixResponse                        [JSON]
+    → store.lastReaction = result        [Zustand]
+    → ReactionResultCard renders         [UI]
+```
+
+### Chạy cả hai cùng lúc
+
+```bash
+# Terminal 1 — Backend
+cd backend && ./mvnw spring-boot:run
+
+# Terminal 2 — Frontend
+cd frontend && npm run dev
+
+# Kiểm tra kết nối
+curl http://localhost:8080/api/health
+# → {"status":"ok","service":"virtual-chemistry-lab-backend"}
+```
+
+### Xử lý khi BE chưa chạy (offline mode)
+
+`src/stores/lab-store.ts` có fallback: nếu `mixChemicals()` throw error, store vẫn hoạt động bình thường. Reaction mock trong `src/utils/reaction-mock.ts` sẽ được dùng thay thế khi gọi `triggerReaction()` trực tiếp.
+
+### CORS
+
+Backend đang set `app.cors.allowed-origins=*` — ổn cho dev. Khi deploy production đổi thành domain cụ thể trong `application.properties`:
+
+```properties
+app.cors.allowed-origins=https://your-domain.com
+```
+
+### Rate limit
+
+BE giới hạn `2000ms` giữa 2 lần gọi `/api/lab/mix` cùng session. FE nên disable nút Play trong 2s sau mỗi reaction để tránh lỗi 429.
 
 ---
 

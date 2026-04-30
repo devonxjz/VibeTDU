@@ -11,7 +11,7 @@ interface PrecipitateEffectProps {
  * Particles drift downward and accumulate at the bottom.
  */
 export function PrecipitateEffect({ color }: PrecipitateEffectProps) {
-  const precipitateColor = color ?? "oklch(0.85 0.12 250)";
+  const precipitateColor = color ?? "#e0e0e0";
 
   const particles = Array.from({ length: 24 }, (_, i) => ({
     id: i,

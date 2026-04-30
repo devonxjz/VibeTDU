@@ -20,71 +20,58 @@ function getChemicalById(id: string) {
 }
 
 export function PresetSelector() {
-  const resetBoard = useLabStore((s) => s.resetBoard);
-  const initCenterBeaker = useLabStore((s) => s.initCenterBeaker);
-  const addChemicalToVessel = useLabStore((s) => s.addChemicalToVessel);
+  const clearBeaker = useLabStore((s) => s.clearBeaker);
+  const addToBeaker = useLabStore((s) => s.addToBeaker);
 
-  const handleLoadPreset = async (chemicalIds: string[]) => {
-    // 1. Clear board (await to ensure it's fully cleared)
-    await resetBoard();
+  const handleLoadPreset = (chemicalIds: string[]) => {
+    // 1. Clear beaker
+    clearBeaker();
 
-    // 2. Create beaker after 200ms
+    // 2. Add first chemical after 200ms
     setTimeout(() => {
-      const beakerId = initCenterBeaker();
+      const chem1 = getChemicalById(chemicalIds[0]);
+      if (chem1) {
+        addToBeaker({
+          name: chem1.name,
+          formula: chem1.formula,
+          category: chem1.category,
+          chemicalId: chem1.id,
+        });
+      }
 
-      // 3. Add first chemical after 400ms (200ms relative to beaker creation)
-      setTimeout(() => {
-        const chem1 = getChemicalById(chemicalIds[0]);
-        if (chem1) {
-          addChemicalToVessel(
-            {
-              inputName: chem1.name,
-              formula: chem1.formula,
-              amountMl: 10,
-              category: chem1.category,
-              chemicalId: chem1.id,
-            },
-            beakerId,
-          );
-        }
-      }, 200);
-
-      // 4. Add second chemical after 700ms (500ms relative to beaker creation)
+      // 3. Add second chemical after another 300ms (total 500ms)
       if (chemicalIds[1]) {
         setTimeout(() => {
           const chem2 = getChemicalById(chemicalIds[1]);
           if (chem2) {
-            addChemicalToVessel(
-              {
-                inputName: chem2.name,
-                formula: chem2.formula,
-                amountMl: 10,
-                category: chem2.category,
-                chemicalId: chem2.id,
-              },
-              beakerId,
-            );
+            addToBeaker({
+              name: chem2.name,
+              formula: chem2.formula,
+              category: chem2.category,
+              chemicalId: chem2.id,
+            });
           }
-        }, 500);
+        }, 300);
       }
     }, 200);
   };
 
   return (
-    <section className="px-4 py-3">
-      <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-wider text-navy-soft">
-        Thí nghiệm nhanh
-      </h3>
-      <div className="thin-scroll flex gap-2 overflow-x-auto pb-2">
+    <section className="px-4 py-2 border-b border-white/20 bg-white/30 backdrop-blur-sm">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-[10px] font-bold uppercase tracking-wider text-navy-soft">
+          Thí nghiệm nhanh
+        </h3>
+      </div>
+      <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
         {PRESETS.map((preset, i) => (
           <button
             key={i}
             onClick={() => handleLoadPreset(preset.chemicals)}
-            className="flex min-w-[120px] flex-col items-start gap-1 rounded-xl border border-border bg-card/50 p-2.5 text-left transition-all hover:bg-mint-soft/30 hover:border-mint/30"
+            className="flex items-center gap-1.5 px-3 py-1.5 whitespace-nowrap rounded-full border border-white/60 bg-white/60 text-xs font-semibold text-navy transition-all hover:bg-white hover:shadow-sm"
           >
-            <span className="text-base">{preset.icon}</span>
-            <span className="text-[11px] font-bold text-navy">{preset.name}</span>
-            <span className="text-[10px] text-navy-soft">{preset.desc}</span>
+            <span>{preset.icon}</span>
+            <span>{preset.name}</span>
           </button>
         ))}
       </div>
