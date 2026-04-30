@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import { useDroppable } from "@dnd-kit/core";
+
 import { motion, useSpring, useTransform } from "framer-motion";
 import { useLabStore } from "@/stores/lab-store";
 import { Formula } from "@/components/chemlab/Formula";
+import { blendColors } from "@/utils/color";
 
 /* ─── BeakerHero ────────────────────────────────────────────────────── */
 
@@ -19,12 +20,6 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
   );
   const lastReaction = useLabStore((s) => s.lastReaction);
   const activeEffect = useLabStore((s) => s.activeEffect);
-
-  /* ── DnD: droppable zone — re-uses same id pattern as Vessel.tsx ── */
-  const { setNodeRef, isOver } = useDroppable({
-    id: vesselId ? `drop-${vesselId}` : "drop-beaker-hero-empty",
-    data: { type: "vessel-target", vesselId },
-  });
 
   /* ── Liquid level — grows with each content added ─────────────────── */
   // Only count real chemicals (formula != "") so the init empty vessel shows nothing
@@ -94,19 +89,16 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
 
       {/* Beaker SVG */}
       <div
-        ref={setNodeRef}
         data-beaker-hero
         className="relative"
         style={{
-          filter: isOver
-            ? "drop-shadow(0 0 24px rgba(76,175,80,0.55))"
-            : "drop-shadow(0 8px 24px rgba(0,0,0,0.18))",
+          filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.18))",
           transition: "filter 0.2s ease",
         }}
       >
         <svg
-          width="180"
-          height="260"
+          width="220"
+          height="320"
           viewBox="0 0 200 280"
           fill="none"
           role="img"
@@ -119,8 +111,8 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
             fill="rgba(200,230,255,0.12)"
             initial={{ stroke: "rgba(100,150,200,0.55)", strokeWidth: 2 }}
             animate={{
-              stroke: isOver ? "#4CAF50" : "rgba(100,150,200,0.55)",
-              strokeWidth: isOver ? 3 : 2,
+              stroke: "rgba(100,150,200,0.55)",
+              strokeWidth: 2,
             }}
             transition={{ duration: 0.2 }}
           />
@@ -129,7 +121,7 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
           <motion.path
             d="M14 18 L186 18"
             animate={{
-              stroke: isOver ? "#4CAF50" : "rgba(100,150,200,0.55)",
+              stroke: "rgba(100,150,200,0.55)",
             }}
             transition={{ duration: 0.2 }}
             strokeWidth="3.5"
@@ -154,7 +146,7 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
             ry="10"
             fill="rgba(200,230,255,0.08)"
             animate={{
-              stroke: isOver ? "rgba(76,175,80,0.6)" : "rgba(100,150,200,0.3)",
+              stroke: "rgba(100,150,200,0.3)",
             }}
             transition={{ duration: 0.2 }}
             strokeWidth="1.5"
@@ -261,33 +253,18 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
             strokeWidth="1.2"
             strokeLinecap="round"
           />
-
-          {/* Drop zone glow overlay when dragging over */}
-          {isOver && (
-            <motion.rect
-              x="22"
-              y="16"
-              width="156"
-              height="246"
-              rx="12"
-              fill="rgba(76,175,80,0.07)"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.2 }}
-            />
-          )}
         </svg>
 
         {/* Drag hint — show when beaker has no real chemicals */}
-        {contentCount === 0 && !isOver && (
+        {contentCount === 0 && (
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center pb-8">
             <div className="flex flex-col items-center gap-1.5 opacity-50">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(100,150,200,0.8)" strokeWidth="1.5">
                 <path d="M12 5v14M5 12l7 7 7-7" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <span className="text-xs font-medium text-blue-400 text-center leading-snug px-6">
-                Kéo hoá chất
-                <br />vào đây
+                Thêm hoá chất
+                <br />từ thư viện bên phải
               </span>
             </div>
           </div>

@@ -408,3 +408,11 @@
   from { transform: scaleY(0); transform-origin: bottom; }
   to   { transform: scaleY(1); transform-origin: bottom; }
 }
+
+/* Flash animation for explosions */
+@keyframes flash {
+  0%   { opacity: 0; background-color: white; }
+  10%  { opacity: 1; background-color: white; }
+  100% { opacity: 0; background-color: transparent; }
+}
+

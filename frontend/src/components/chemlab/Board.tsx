@@ -2,13 +2,13 @@
 
 import { useRef, useEffect } from "react";
 import { Loader2 } from "lucide-react";
-import { useDroppable } from "@dnd-kit/core";
 import { AnimatePresence } from "framer-motion";
 import { useLabStore } from "@/stores/lab-store";
 import { VesselComponent } from "./Vessel";
 import { ReactionEffect } from "./effects/ReactionEffect";
-import { LabScene2D } from "./scene/LabScene2D";
+import { LabWorkbench } from "./scene/LabWorkbench";
 import { BeakerHero } from "./scene/BeakerHero";
+import { ReactionResultCard } from "./scene/ReactionResultCard";
 
 /* ─── Board — Main Canvas ────────────────────────────────────────────── */
 
@@ -30,26 +30,17 @@ export function Board() {
     }
   }, [centerBeakerId, initCenterBeaker]);
 
-  /* Board droppable zone (chemicals dragged from SearchPanel land here) */
-  const { setNodeRef, isOver } = useDroppable({
-    id: "board-drop-zone",
-    data: { type: "board" },
-  });
-
   return (
     /* Fill the center column completely */
     <div
-      ref={setNodeRef}
-      className={`relative h-full w-full overflow-hidden transition-colors duration-200 ${
-        isOver ? "ring-2 ring-inset ring-green-400/40" : ""
-      }`}
+      className={`relative h-full w-full overflow-hidden transition-colors duration-200`}
       onClick={() => selectVessel(null)}
     >
-      {/* ── 2.5D Lab Scene (background, kệ, bàn, equipment) */}
-      <LabScene2D>
-        {/* BeakerHero is placed via LabScene2D's children slot (center bottom) */}
+      {/* ── Modern workbench (no shelves) */}
+      <LabWorkbench>
+        {/* BeakerHero — center of the workbench */}
         <BeakerHero vesselId={centerBeakerId} />
-      </LabScene2D>
+      </LabWorkbench>
 
       {/* ── Free-floating vessels (non-center) */}
       <AnimatePresence>
@@ -59,6 +50,8 @@ export function Board() {
             <VesselComponent key={vessel.id} vessel={vessel} />
           ))}
       </AnimatePresence>
+
+
 
       {/* ── Reaction Effect overlay */}
       <ReactionEffect effect={activeEffect} />

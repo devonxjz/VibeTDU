@@ -1,6 +1,5 @@
 "use client";
 
-import { useDraggable } from "@dnd-kit/core";
 import { ChemicalBottle2D, type BottleCategory } from "./ChemicalBottle2D";
 import { LabEquipment2D } from "./LabEquipment2D";
 
@@ -140,24 +139,9 @@ const BOTTOM_SHELF_GROUPS: ShelfGroup[] = [
 /* ─── Draggable Shelf Bottle ────────────────────────────────────────── */
 
 function DraggableShelfBottle({ bottle, category }: { bottle: ShelfBottle; category: BottleCategory }) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: `shelf-${bottle.chemicalId}`,
-    data: {
-      type: "chemical",
-      name: bottle.name,
-      formula: bottle.formula,
-      category: category as string,
-      chemicalId: bottle.chemicalId,
-    },
-  });
-
   return (
     <div
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
-      style={{ opacity: isDragging ? 0.4 : 1, cursor: "grab", touchAction: "none" }}
-      title={`Kéo ${bottle.name} vào bình phản ứng`}
+      title={bottle.name}
     >
       <ChemicalBottle2D
         formula={bottle.formula}
@@ -245,12 +229,6 @@ export function LabScene2D({ children }: LabScene2DProps) {
   return (
     <div className="lab-scene-2d absolute inset-0 overflow-hidden" aria-label="Phòng thí nghiệm ảo">
       <SafetyPoster />
-
-      {/* Top shelf */}
-      <WoodenShelf groups={TOP_SHELF_GROUPS} top="3%" height={118} />
-
-      {/* Bottom shelf */}
-      <WoodenShelf groups={BOTTOM_SHELF_GROUPS} top="33%" height={108} />
 
       {/* Counter surface — warm dark wood to make beaker pop */}
       <div

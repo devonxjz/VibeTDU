@@ -2,6 +2,13 @@ import type { ReactionResult } from "@/types/api";
 
 export const NO_REACTION: ReactionResult = {
   hasReaction: false,
+  effectType: "NONE",
+  messageVi: "Không quan sát thấy hiện tượng gì.",
+  explanationVi: "Các chất này không phản ứng với nhau trong điều kiện hiện tại.",
+  safetyNoteVi: "",
+  basicExplanation: "Chưa có phản ứng xảy ra.",
+  intermediateExplanation: "Hai chất trộn vào nhau nhưng không có biến đổi hóa học.",
+  advancedExplanation: "Không đủ động lực nhiệt động hoặc động học để xảy ra phản ứng.",
 };
 
 export function getMockReaction(reactants: string[]): ReactionResult {
