@@ -198,7 +198,7 @@ export function ChemicalLibrary() {
             className={cn(
               "shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-colors",
               activeTab === "all"
-                ? "bg-navy text-white"
+                ? "bg-[#0066FF] text-white"
                 : "bg-muted text-navy-soft hover:bg-muted/80 hover:text-navy"
             )}
           >
@@ -211,7 +211,7 @@ export function ChemicalLibrary() {
               className={cn(
                 "shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-colors flex items-center gap-1",
                 activeTab === g.key
-                  ? "bg-navy text-white"
+                  ? "bg-[#0066FF] text-white"
                   : "bg-muted text-navy-soft hover:bg-muted/80 hover:text-navy"
               )}
             >

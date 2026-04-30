@@ -58,10 +58,18 @@ export function Board() {
 
       {/* ── Loading spinner */}
       {isLoading && (
-        <div className="absolute inset-0 z-[110] flex items-center justify-center bg-white/20 backdrop-blur-[2px]">
-          <div className="flex items-center gap-2.5 rounded-2xl bg-white/90 px-5 py-3 shadow-xl backdrop-blur-sm border border-white/60">
-            <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
-            <span className="text-sm font-semibold text-gray-700">
+        <div className="absolute inset-0 z-[110] flex items-center justify-center"
+          style={{ background: "rgba(6,13,26,0.6)", backdropFilter: "blur(4px)" }}
+        >
+          <div className="flex items-center gap-2.5 rounded-2xl px-5 py-3"
+            style={{
+              background: "rgba(30,41,59,0.9)",
+              border: "1px solid rgba(34,211,238,0.2)",
+              boxShadow: "0 0 24px rgba(34,211,238,0.1), 0 8px 32px rgba(0,0,0,0.5)",
+            }}
+          >
+            <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#22d3ee" }} />
+            <span className="text-sm font-semibold" style={{ color: "#e2e8f0" }}>
               Đang mô phỏng phản ứng…
             </span>
           </div>
