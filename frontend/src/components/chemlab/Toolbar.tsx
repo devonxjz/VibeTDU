@@ -48,11 +48,11 @@ function ToolButton({
         "hover:scale-[1.04]",
         disabled && "cursor-not-allowed opacity-40",
         variant === "primary" &&
-          "h-10 w-10 bg-mint text-navy shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-lift)]",
+          "h-10 w-10 bg-mint text-[#E0E0E0] shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-lift)]",
         variant === "default" &&
           (active
-            ? "bg-mint-soft text-navy ring-1 ring-mint"
-            : "text-navy-soft hover:bg-mint-soft/60 hover:text-navy"),
+            ? "bg-mint-soft text-[#E0E0E0] ring-1 ring-mint"
+            : "text-gray-400 hover:bg-mint-soft/60 hover:text-[#E0E0E0]"),
       )}
     >
       <Icon className={cn(variant === "primary" ? "h-5 w-5" : "h-[18px] w-[18px]")} />
@@ -61,7 +61,7 @@ function ToolButton({
 }
 
 function Divider() {
-  return <div className="mx-1 h-6 w-px bg-border" />;
+  return <div className="mx-1 h-6 w-px bg-white/8" />;
 }
 
 interface SliderControlProps {
@@ -84,9 +84,9 @@ function SliderControl({
   onChange,
 }: SliderControlProps) {
   return (
-    <div className="flex items-center gap-2 rounded-lg bg-muted/60 px-2.5 py-1.5">
-      <Icon className="h-4 w-4 text-navy-soft" />
-      <span className="text-[11px] font-medium text-navy-soft">{label}</span>
+    <div className="flex items-center gap-2 rounded-lg bg-[#3C3C3C]/60 px-2.5 py-1.5">
+      <Icon className="h-4 w-4 text-gray-400" />
+      <span className="text-[11px] font-medium text-gray-400">{label}</span>
       <input
         type="range"
         min={min}
@@ -95,9 +95,9 @@ function SliderControl({
         onChange={(e) => onChange(Number(e.target.value))}
         className="h-1 w-16 cursor-pointer appearance-none rounded-full bg-border accent-mint"
       />
-      <span className="min-w-[38px] text-right text-xs font-semibold tabular-nums text-navy">
+      <span className="min-w-[38px] text-right text-xs font-semibold tabular-nums text-[#E0E0E0]">
         {value}
-        <span className="ml-0.5 text-[10px] font-normal text-navy-soft">
+        <span className="ml-0.5 text-[10px] font-normal text-gray-400">
           {unit}
         </span>
       </span>
@@ -117,13 +117,13 @@ export function Toolbar() {
   const isChatbotOpen = useChatbotStore((s) => s.isOpen);
 
   return (
-    <div className="flex h-14 w-full items-center gap-2 border-b border-border bg-card/80 px-4 backdrop-blur-sm">
+    <div className="flex h-14 w-full items-center gap-2 bg-[#2C2C2C]/80 px-4 backdrop-blur-sm">
       {/* Brand */}
       <div className="flex items-center gap-2 pr-2">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-mint to-baby shadow-[var(--shadow-soft)]">
-          <FlaskConical className="h-4.5 w-4.5 text-navy" strokeWidth={2.2} />
+          <FlaskConical className="h-4.5 w-4.5 text-[#E0E0E0]" strokeWidth={2.2} />
         </div>
-        <div className="font-display text-base font-bold tracking-tight text-navy">
+        <div className="font-display text-base font-bold tracking-tight text-[#E0E0E0]">
           ChemLab
         </div>
       </div>
@@ -145,9 +145,9 @@ export function Toolbar() {
       {/* Reaction conditions */}
       <div className="flex items-center gap-2">
         {/* Temperature */}
-        <div className="flex items-center gap-2 rounded-lg border border-border/40 bg-card/60 px-3 py-1.5 shadow-sm">
+        <div className="flex items-center gap-2 rounded-lg bg-[#3C3C3C]/40 px-3 py-1.5">
           <Thermometer className="h-4 w-4 text-rose-400" />
-          <span className="text-[11px] font-semibold text-navy-soft">Nhiệt độ</span>
+          <span className="text-[11px] font-semibold text-gray-400">Nhiệt độ</span>
           <input
             type="range"
             min={0}
@@ -157,15 +157,15 @@ export function Toolbar() {
             onChange={(e) => setEnvironment({ temperature: Number(e.target.value) })}
             className="w-20 accent-rose-400"
           />
-          <span className="rounded bg-card px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-navy shadow-sm min-w-[36px] text-center border border-border/50">
+          <span className="rounded bg-[#2C2C2C] px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-[#E0E0E0] min-w-[36px] text-center">
             {temperature}°C
           </span>
         </div>
 
         {/* Pressure */}
-        <div className="flex items-center gap-2 rounded-lg border border-border/40 bg-card/60 px-3 py-1.5 shadow-sm">
+        <div className="flex items-center gap-2 rounded-lg bg-[#3C3C3C]/40 px-3 py-1.5">
           <Gauge className="h-4 w-4 text-blue-400" />
-          <span className="text-[11px] font-semibold text-navy-soft">Áp suất</span>
+          <span className="text-[11px] font-semibold text-gray-400">Áp suất</span>
           <div className="flex gap-1 ml-0.5">
             {[
               { value: 0.5, label: "0.5" },
@@ -177,10 +177,10 @@ export function Toolbar() {
                 key={opt.value}
                 onClick={() => setEnvironment({ pressure: opt.value })}
                 className={cn(
-                  "rounded-md border px-1.5 py-0.5 text-[11px] font-semibold transition-all",
+                  "rounded-md px-2 py-1 text-[11px] font-semibold transition-colors",
                   pressure === opt.value
-                    ? "border-blue-300 bg-blue-50 text-blue-700 shadow-sm"
-                    : "border-border/60 bg-card/60 text-navy-soft hover:bg-card hover:text-navy"
+                    ? "bg-[#0066FF] text-white"
+                    : "bg-transparent text-gray-400 hover:bg-[#4C4C4C]/60 hover:text-[#E0E0E0]"
                 )}
               >
                 {opt.label}
@@ -190,19 +190,19 @@ export function Toolbar() {
         </div>
 
         {/* Catalyst */}
-        <div className="flex items-center gap-2 rounded-lg border border-border/40 bg-card/60 px-3 py-1.5 shadow-sm hidden xl:flex">
+        <div className="flex items-center gap-2 rounded-lg bg-[#3C3C3C]/40 px-3 py-1.5 hidden xl:flex">
           <Sparkles className="h-4 w-4 text-amber-500" />
-          <span className="text-[11px] font-semibold text-navy-soft">Xúc tác</span>
+          <span className="text-[11px] font-semibold text-gray-400">Xúc tác</span>
           <div className="flex gap-1 ml-0.5">
             {["Không", "MnO₂", "Fe", "Pt", "Ni", "V₂O₅"].map((opt) => (
               <button
                 key={opt}
                 onClick={() => setEnvironment({ catalyst: opt })}
                 className={cn(
-                  "rounded-md border px-1.5 py-0.5 text-[11px] font-semibold transition-all",
+                  "rounded-md px-2 py-1 text-[11px] font-semibold transition-colors",
                   catalyst === opt
-                    ? "border-amber-300 bg-amber-50 text-amber-700 shadow-sm"
-                    : "border-border/60 bg-card/60 text-navy-soft hover:bg-card hover:text-navy"
+                    ? "bg-[#0066FF] text-white"
+                    : "bg-transparent text-gray-400 hover:bg-[#4C4C4C]/60 hover:text-[#E0E0E0]"
                 )}
               >
                 {opt}

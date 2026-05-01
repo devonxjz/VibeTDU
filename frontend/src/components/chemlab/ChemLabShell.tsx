@@ -102,7 +102,7 @@ export function ChemLabShell() {
   return (
     <>
       {/* ── True 3-column layout — lab scene stays in center column ── */}
-      <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
+      <div className="flex h-screen w-screen flex-col overflow-hidden bg-[#121212] text-[#E0E0E0]">
         {/* Top toolbar */}
         <Toolbar />
 
@@ -111,7 +111,7 @@ export function ChemLabShell() {
           {/* ── Left panel — width controlled by drag ── */}
           <div
             ref={leftColRef}
-            className="hidden lg:flex flex-col shrink-0 bg-[#eef2f6] border-r border-[#0066FF] overflow-hidden shadow-[4px_0_12px_rgba(0,0,0,0.05)] z-10"
+            className="hidden lg:flex flex-col shrink-0 bg-[rgba(22,24,28,0.92)] backdrop-blur-[12px] overflow-hidden z-10"
             style={{ width: LEFT_DEFAULT, minWidth: LEFT_MIN, maxWidth: LEFT_MAX }}
           >
             <ConditionPanel />
@@ -173,7 +173,21 @@ export function ChemLabShell() {
           </div>
 
           {/* Center — lab canvas & results */}
-          <div className="relative min-w-0 flex-1 bg-[#fdfcfb] flex flex-col h-full overflow-hidden">
+          <div
+            className="relative min-w-0 flex-1 flex flex-col h-full overflow-hidden"
+            style={{
+              margin: 10,
+              borderRadius: 20,
+              background: "linear-gradient(180deg, #12141D 0%, #0E1017 100%)",
+              border: "1.5px solid rgba(0, 102, 255, 0.3)",
+              boxShadow:
+                "0 0 0 1px rgba(0,0,0,0.4), " +
+                "0 8px 32px rgba(0,0,0,0.6), " +
+                "0 2px 8px rgba(0,0,0,0.3), " +
+                "inset 0 1px 0 rgba(255,255,255,0.05), " +
+                "inset 0 -2px 6px rgba(0,0,0,0.2)",
+            }}
+          >
             {/* Top Zone (The Stage) — Beaker focus */}
             <div className="flex-1 relative flex items-center justify-center min-h-[50%] transition-all duration-500">
               <Board />
@@ -184,7 +198,7 @@ export function ChemLabShell() {
           </div>
 
           {/* Right panel */}
-          <div className="hidden md:flex w-72 shrink-0 flex-col bg-[#eef2f6] border-l border-[#0066FF] overflow-y-auto shadow-[-4px_0_12px_rgba(0,0,0,0.05)] z-10">
+          <div className="hidden md:flex w-72 shrink-0 flex-col bg-[rgba(22,24,28,0.92)] backdrop-blur-[12px] overflow-y-auto z-10">
             <ChemicalLibrary />
           </div>
         </div>

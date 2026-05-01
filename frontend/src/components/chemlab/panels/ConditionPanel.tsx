@@ -60,11 +60,11 @@ export function ConditionPanel() {
   return (
     <aside className="flex h-full w-full flex-col overflow-hidden">
       {/* Header */}
-      <div className="border-b border-border/60 px-4 py-3.5">
-        <h2 className="font-display text-sm font-bold text-navy">
+      <div className="px-4 py-3.5">
+        <h2 className="font-display text-sm font-bold text-[#E0E0E0]">
           Điều kiện thí nghiệm
         </h2>
-        <p className="text-[11px] text-navy-soft">
+        <p className="text-[11px] text-gray-400">
           Thiết lập và kiểm soát phản ứng
         </p>
       </div>
@@ -74,21 +74,21 @@ export function ConditionPanel() {
 
         {/* ── Beaker Contents ────────────────────────────────────────── */}
         <section className="px-4 py-3">
-          <h3 className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-navy-soft">
+          <h3 className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
             <FlaskConical className="h-3.5 w-3.5" />
             Hoá chất trong bình
             {contents.length > 0 && (
-              <span className="ml-auto rounded-full bg-mint-soft px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-navy">
+              <span className="ml-auto rounded-full bg-mint-soft px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-[#E0E0E0]">
                 {contents.length}
               </span>
             )}
           </h3>
 
           {contents.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/60 py-6 text-center">
-              <FlaskConical className="mb-2 h-6 w-6 text-navy-soft/40" />
-              <p className="text-xs text-navy-soft">Chưa có hoá chất</p>
-              <p className="mt-0.5 text-[10px] text-navy-soft/70">
+            <div className="flex flex-col items-center justify-center rounded-xl py-6 text-center">
+              <FlaskConical className="mb-2 h-6 w-6 text-gray-400/40" />
+              <p className="text-xs text-gray-400">Chưa có hoá chất</p>
+              <p className="mt-0.5 text-[10px] text-gray-400/70">
                 Chọn từ thư viện bên phải
               </p>
             </div>
@@ -97,7 +97,7 @@ export function ConditionPanel() {
               {contents.map((c, i) => (
                 <div
                   key={`${c.formula}-${i}`}
-                  className="group flex items-center gap-2.5 rounded-lg border border-border/40 bg-card/60 px-3 py-2 transition-colors hover:bg-card"
+                  className="group flex items-center gap-2.5 rounded-lg border border-white/10/40 bg-[#2C2C2C]/60 px-3 py-2 transition-colors hover:bg-[#2C2C2C]"
                 >
                   {/* Color dot */}
                   <span
@@ -112,16 +112,16 @@ export function ConditionPanel() {
                   {/* Formula */}
                   <Formula
                     formula={c.formula}
-                    className="flex-1 text-xs font-semibold text-navy"
+                    className="flex-1 text-xs font-semibold text-[#E0E0E0]"
                   />
                   {/* Amount */}
-                  <span className="text-[10px] tabular-nums text-navy-soft">
+                  <span className="text-[10px] tabular-nums text-gray-400">
                     {c.amountMl ?? 10} mL
                   </span>
                   {/* Delete */}
                   <button
                     onClick={() => removeFromBeaker(c.formula)}
-                    className="flex h-5 w-5 items-center justify-center rounded-md text-navy-soft/50 opacity-0 transition-all hover:bg-rose-50 hover:text-rose-500 group-hover:opacity-100"
+                    className="flex h-5 w-5 items-center justify-center rounded-md text-gray-400/50 opacity-0 transition-all hover:bg-rose-50 hover:text-rose-500 group-hover:opacity-100"
                     title={`Bỏ ${c.formula}`}
                   >
                     <X className="h-3 w-3" />
@@ -132,7 +132,7 @@ export function ConditionPanel() {
           )}
         </section>
 
-        <div className="mx-4 h-px bg-border/40" />
+
 
         {/* ── Environment Conditions moved to Toolbar ── */}
 
@@ -141,7 +141,7 @@ export function ConditionPanel() {
       <ExperimentTimeline />
 
       {/* ── Bottom Action Bar ───────────────────────────────────────── */}
-      <div className="border-t border-border/60 px-4 py-3 space-y-2">
+      <div className="px-4 py-3 space-y-2">
         {/* Play button */}
         <button
           disabled={!canPlay}
@@ -153,7 +153,7 @@ export function ConditionPanel() {
             "flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold transition-all duration-200",
             canPlay
               ? "bg-emerald-500 text-white shadow-md hover:bg-emerald-600 hover:shadow-lg active:scale-[0.98]"
-              : "bg-muted/60 text-navy-soft cursor-not-allowed"
+              : "bg-[#3C3C3C]/60 text-gray-400 cursor-not-allowed"
           )}
         >
           {isLoading ? (
@@ -170,10 +170,10 @@ export function ConditionPanel() {
             onClick={() => undoLastChemical()}
             disabled={contents.length === 0}
             className={cn(
-              "flex items-center justify-center gap-1.5 rounded-xl border py-2 text-xs font-semibold transition-all",
+              "flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-semibold transition-colors",
               contents.length > 0
-                ? "border-border text-navy hover:bg-muted/40"
-                : "border-border/40 text-navy-soft/50 cursor-not-allowed"
+                ? "bg-[#3C3C3C]/60 text-[#E0E0E0] hover:bg-[#4C4C4C]/80"
+                : "bg-[#2C2C2C]/40 text-gray-400/30 cursor-not-allowed"
             )}
           >
             <Undo2 className="h-3.5 w-3.5" />
@@ -183,10 +183,10 @@ export function ConditionPanel() {
             onClick={() => clearBeaker()}
             disabled={contents.length === 0}
             className={cn(
-              "flex items-center justify-center gap-1.5 rounded-xl border py-2 text-xs font-semibold transition-all",
+              "flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-semibold transition-colors",
               contents.length > 0
-                ? "border-border text-rose-500 hover:bg-rose-50"
-                : "border-border/40 text-navy-soft/50 cursor-not-allowed"
+                ? "bg-rose-500/10 text-rose-400 hover:bg-rose-500/20"
+                : "bg-[#2C2C2C]/40 text-gray-400/30 cursor-not-allowed"
             )}
           >
             <Trash2 className="h-3.5 w-3.5" />
