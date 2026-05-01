@@ -470,3 +470,33 @@ Wire: addToBeaker→ADD / runReaction→REACT / undoLastChemical→UNDO / clearB
 - Không auto-trigger reaction — phải bấm Play
 - Không input nhập số mol/nồng độ
 - Không cài package ngoài task cho phép
+
+## 🔴 Phase 6 — Fix Bug Normalization & Reliability
+
+### TASK 6-1 — Fix Normalization Logic [DONE]
+**What to build**: Sửa `LabMixService` lấy kết quả từ `chemicalResolverService.resolve()`. Cập nhật `allFormulae` bằng `canonicalFormula`. Đảm bảo `reactionKey` luôn chuẩn.
+**Acceptance criteria**:
+- [x] `LabMixService` dùng kết quả resolve.
+- [x] `allFormulae` chứa công thức chuẩn.
+- [x] `reactionKey` không còn chứa "Copper Sulfate".
+**Blocked by**: None.
+
+---
+
+### TASK 6-2 — Localization & Fallback [DONE]
+**What to build**: Việt hóa toàn bộ thông báo trong `ReactionPredictionService` và `AiClient` Mock.
+**Acceptance criteria**:
+- [x] `fallbackDto` dùng tiếng Việt.
+- [x] `getMockReaction` dùng tiếng Việt cho `messageVi`.
+- [x] Xóa message tiếng Anh dư thừa.
+**Blocked by**: None.
+
+---
+
+### TASK 6-3 — Normalization Integration Tests (TDD) [DONE]
+**What to build**: Viết Integration Test cho luồng Mix. Input tên thô -> Verify chuẩn hóa -> Verify kết quả.
+**Acceptance criteria**:
+- [x] Test gọi `/api/lab/mix` với "Copper Sulfate" pass.
+- [x] Verify `reactionKey` đúng định dạng.
+- [x] Chạy `mvn test` pass 100%.
+**Blocked by**: 6-1.

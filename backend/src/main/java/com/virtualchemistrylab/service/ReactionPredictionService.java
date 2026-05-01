@@ -127,9 +127,9 @@ public class ReactionPredictionService {
         return ReactionResultDTO.builder()
                 .hasReaction(false)
                 .effectType("NONE")
-                .confidence(0.0)
-                .messageVi("These two substances do not react with each other under current conditions.")
-                .explanationVi("Reaction conditions are not suitable or this pair of substances does not react within the simulation scope.")
+                .confidence(1.0)
+                .messageVi("Không có phản ứng nào được phát hiện.")
+                .explanationVi("Hệ thống không tìm thấy phản ứng cho cặp chất này trong cơ sở dữ liệu hoặc AI dự đoán không có phản ứng.")
                 .safetyNoteVi(null)
                 .build();
     }

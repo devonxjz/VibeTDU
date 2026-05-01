@@ -539,28 +539,28 @@ public class AiClient {
                 .map(String::trim).map(String::toUpperCase)
                 .sorted().reduce("", (a, b) -> a.isBlank() ? b : a + "__" + b);
 
-        if (key.equals("CACO3__HCL")) {
+        if (key.equals("CACO3__HCL") || key.equals("CCAO3__CLH")) {
             return """
-                    {"hasReaction":true,"equation":"2HCl + CaCO3 -> CaCl2 + CO2 + H2O","productFormula":"CaCl2 + CO2 + H2O","effectType":"GAS_BUBBLE","effectColor":"#FFFFFF","gasFormula":"CO2","precipitateFormula":null,"precipitateColor":null,"messageVi":"CO2 gas is released, bubbling is observed.","explanationVi":"Acid HCl reacts with carbonate salt CaCO3 to produce CaCl2 salt, water and CO2 gas.","safetyNoteVi":"This is an educational simulation; do not perform the real reaction without safety guidance.","confidence":0.97}""";
+                    {"hasReaction":true,"equation":"2HCl + CaCO3 -> CaCl2 + CO2 + H2O","productFormula":"CaCl2 + CO2 + H2O","effectType":"GAS_BUBBLE","effectColor":"#FFFFFF","gasFormula":"CO2","precipitateFormula":null,"precipitateColor":null,"messageVi":"Khí CO2 thoát ra, sủi bọt khí mạnh.","explanationVi":"Axit HCl tác dụng với muối cacbonat CaCO3 tạo thành muối CaCl2, nước và khí CO2.","safetyNoteVi":"Đây là mô phỏng giáo dục; không thực hiện ngoài đời thực khi không có hướng dẫn an toàn.","confidence":0.97}""";
         }
-        if (key.equals("CUSO4__NAOH")) {
+        if (key.equals("CUSO4__NAOH") || key.equals("CUSO4__HNAO")) {
             return """
-                    {"hasReaction":true,"equation":"CuSO4 + 2NaOH -> Cu(OH)2 + Na2SO4","productFormula":"Cu(OH)2 + Na2SO4","effectType":"PRECIPITATE","effectColor":"#1E90FF","gasFormula":null,"precipitateFormula":"Cu(OH)2","precipitateColor":"#1565C0","messageVi":"Blue precipitate Cu(OH)2 appears.","explanationVi":"Cu2+ ions from CuSO4 react with OH- ions from NaOH to form blue Cu(OH)2 precipitate.","safetyNoteVi":"This is an educational simulation.","confidence":0.98}""";
+                    {"hasReaction":true,"equation":"CuSO4 + 2NaOH -> Cu(OH)2 + Na2SO4","productFormula":"Cu(OH)2 + Na2SO4","effectType":"PRECIPITATE","effectColor":"#1E90FF","gasFormula":null,"precipitateFormula":"Cu(OH)2","precipitateColor":"#1565C0","messageVi":"Kết tủa màu xanh lam Cu(OH)2 xuất hiện.","explanationVi":"Ion Cu2+ từ CuSO4 kết hợp với ion OH- từ NaOH tạo thành kết tủa Cu(OH)2 không tan.","safetyNoteVi":"Mô phỏng giáo dục.","confidence":0.98}""";
         }
-        if (key.equals("AGNO3__NACL")) {
+        if (key.equals("AGNO3__NACL") || key.equals("AGNO3__CLNA")) {
             return """
-                    {"hasReaction":true,"equation":"AgNO3 + NaCl -> AgCl + NaNO3","productFormula":"AgCl + NaNO3","effectType":"PRECIPITATE","effectColor":"#F5F5F5","gasFormula":null,"precipitateFormula":"AgCl","precipitateColor":"#EEEEEE","messageVi":"White precipitate AgCl appears.","explanationVi":"Ag+ ions from AgNO3 combine with Cl- ions from NaCl to form white AgCl precipitate, insoluble in water.","safetyNoteVi":"This is an educational simulation.","confidence":0.98}""";
+                    {"hasReaction":true,"equation":"AgNO3 + NaCl -> AgCl + NaNO3","productFormula":"AgCl + NaNO3","effectType":"PRECIPITATE","effectColor":"#F5F5F5","gasFormula":null,"precipitateFormula":"AgCl","precipitateColor":"#EEEEEE","messageVi":"Kết tủa trắng AgCl xuất hiện.","explanationVi":"Ion Ag+ kết hợp với ion Cl- tạo thành kết tủa trắng AgCl không tan trong nước.","safetyNoteVi":"Mô phỏng giáo dục.","confidence":0.98}""";
         }
-        if (key.equals("HCL__NAOH")) {
+        if (key.equals("HCL__NAOH") || key.equals("CLH__HNAO")) {
             return """
-                    {"hasReaction":true,"equation":"HCl + NaOH -> NaCl + H2O","productFormula":"NaCl + H2O","effectType":"HEAT","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Neutralization reaction, slight heat release, solution becomes neutral.","explanationVi":"Strong acid HCl reacts with strong base NaOH in a neutralization reaction to form NaCl salt and water, releasing heat.","safetyNoteVi":"This is an educational simulation.","confidence":0.96}""";
+                    {"hasReaction":true,"equation":"HCl + NaOH -> NaCl + H2O","productFormula":"NaCl + H2O","effectType":"HEAT","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Phản ứng trung hòa tỏa nhiệt, dung dịch trở nên trung tính.","explanationVi":"Axit mạnh HCl phản ứng với bazơ mạnh NaOH tạo ra muối NaCl và nước, có tỏa nhiệt.","safetyNoteVi":"Mô phỏng giáo dục.","confidence":0.96}""";
         }
-        if (key.equals("HCL__NA")) {
+        if (key.equals("HCL__NA") || key.equals("CLH__NA")) {
             return """
-                    {"hasReaction":true,"equation":"2Na + 2HCl -> 2NaCl + H2","productFormula":"NaCl + H2","effectType":"EXPLOSION","effectColor":null,"gasFormula":"H2","precipitateFormula":null,"precipitateColor":null,"messageVi":"Violent reaction, H2 gas is released and may cause a small explosion.","explanationVi":"Alkali metal Na reacts very strongly with HCl acid to produce NaCl salt and Hydrogen gas (H2). The reaction releases a lot of heat which can ignite H2.","safetyNoteVi":"WARNING: Extremely violent and dangerous reaction. Never attempt in real life without professional protective equipment.","confidence":0.99}""";
+                    {"hasReaction":true,"equation":"2Na + 2HCl -> 2NaCl + H2","productFormula":"NaCl + H2","effectType":"EXPLOSION","effectColor":null,"gasFormula":"H2","precipitateFormula":null,"precipitateColor":null,"messageVi":"Phản ứng mãnh liệt, khí H2 thoát ra có thể gây nổ nhỏ.","explanationVi":"Kim loại kiềm Na phản ứng rất mạnh với axit HCl tạo ra muối NaCl và khí Hydro. Nhiệt lượng tỏa ra có thể làm cháy H2.","safetyNoteVi":"CẢNH BÁO: Phản ứng cực kỳ nguy hiểm, không thực hiện ngoài đời thực.","confidence":0.99}""";
         }
         // Unknown pair
         return """
-                {"hasReaction":false,"equation":null,"productFormula":null,"effectType":"NONE","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"These two substances do not react with each other under current conditions.","explanationVi":"Reaction conditions are not suitable or this pair does not react within the simulation scope.","safetyNoteVi":null,"confidence":1.0}""";
+                {"hasReaction":false,"equation":null,"productFormula":null,"effectType":"NONE","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Hai chất này không phản ứng với nhau trong điều kiện hiện tại.","explanationVi":"Điều kiện phản ứng không phù hợp hoặc cặp chất này không nằm trong phạm vi mô phỏng.","safetyNoteVi":null,"confidence":1.0}""";
     }
 }
