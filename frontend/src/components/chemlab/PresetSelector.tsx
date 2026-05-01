@@ -63,7 +63,7 @@ export function PresetSelector() {
           Thí nghiệm nhanh
         </h3>
       </div>
-      <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
+      <div className="flex gap-2 overflow-x-auto pb-1 thin-scroll">
         {PRESETS.map((preset, i) => (
           <button
             key={i}

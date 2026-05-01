@@ -97,7 +97,7 @@ export function ConditionPanel() {
               {contents.map((c, i) => (
                 <div
                   key={`${c.formula}-${i}`}
-                  className="group flex items-center gap-2.5 rounded-lg border border-white/10/40 bg-[#2C2C2C]/60 px-3 py-2 transition-colors hover:bg-[#2C2C2C]"
+                  className="group flex items-center gap-2.5 rounded-lg bg-[#2C2C2C]/60 px-3 py-2 transition-colors hover:bg-[#2C2C2C]"
                 >
                   {/* Color dot */}
                   <span

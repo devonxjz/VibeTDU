@@ -37,28 +37,28 @@ export function ExperimentTimeline() {
             switch (event.type) {
               case "ADD":
                 Icon = FlaskConical;
-                iconClass = "text-mint";
-                bgClass = "bg-mint-soft/30 border-mint/20";
+                iconClass = "text-emerald-400";
+                bgClass = "bg-emerald-500/10 border-emerald-500/20";
                 break;
               case "REACT":
                 Icon = Zap;
-                iconClass = "text-amber-500";
-                bgClass = "bg-amber-50 border-amber-200/50";
+                iconClass = "text-amber-400";
+                bgClass = "bg-amber-500/10 border-amber-500/20";
                 break;
               case "UNDO":
                 Icon = Undo2;
-                iconClass = "text-slate-400";
-                bgClass = "bg-slate-50 border-slate-200";
+                iconClass = "text-slate-300";
+                bgClass = "bg-slate-500/10 border-slate-500/20";
                 break;
               case "RESET":
                 Icon = RotateCcw;
                 iconClass = "text-rose-400";
-                bgClass = "bg-rose-50 border-rose-200/50";
+                bgClass = "bg-rose-500/10 border-rose-500/20";
                 break;
               case "PRESET":
                 Icon = Sparkles;
-                iconClass = "text-purple-500";
-                bgClass = "bg-purple-50 border-purple-200/50";
+                iconClass = "text-purple-400";
+                bgClass = "bg-purple-500/10 border-purple-500/20";
                 break;
             }
 
@@ -70,14 +70,14 @@ export function ExperimentTimeline() {
                   bgClass
                 )}
               >
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white shadow-sm">
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#2C2C2C] shadow-sm">
                   <Icon className={cn("h-3.5 w-3.5", iconClass)} />
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className="truncate text-[11px] font-semibold text-navy" title={event.description}>
+                  <span className="truncate text-[11px] font-semibold text-[#E0E0E0]" title={event.description}>
                     {event.description}
                   </span>
-                  <span className="text-[9px] text-navy-soft">{event.timestamp}</span>
+                  <span className="text-[9px] text-gray-400">{event.timestamp}</span>
                 </div>
               </div>
             );
