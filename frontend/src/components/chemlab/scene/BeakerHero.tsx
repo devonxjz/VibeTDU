@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-import { motion, useSpring, useTransform } from "framer-motion";
+import { motion, useSpring, useTransform, AnimatePresence } from "framer-motion";
 import { useLabStore } from "@/stores/lab-store";
 import { Formula } from "@/components/chemlab/Formula";
 import { blendColors } from "@/utils/color";
@@ -46,6 +46,9 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
   const showPrecipitate =
     activeEffect?.type === "PRECIPITATE" && activeEffect.vesselId === vesselId;
   const precipitateColor = activeEffect?.precipitateColor ?? "#e0e0e0";
+
+  const showHeat =
+    activeEffect?.type === "HEAT" && activeEffect.vesselId === vesselId;
 
   /* ── Product label ─────────────────────────────────────────────────── */
   const showLabel =
@@ -111,11 +114,36 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
             fill="rgba(200,230,255,0.05)"
             initial={{ stroke: "rgba(176,190,197,0.5)", strokeWidth: 2 }}
             animate={{
-              stroke: "rgba(176,190,197,0.5)",
-              strokeWidth: 2,
+              stroke: showHeat ? "rgba(255, 100, 50, 0.8)" : "rgba(176,190,197,0.5)",
+              strokeWidth: showHeat ? 4 : 2,
+              filter: showHeat ? "drop-shadow(0 0 12px rgba(255, 80, 0, 0.6))" : "none",
             }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.5 }}
           />
+
+          {/* Heat Glow Inner */}
+          <AnimatePresence>
+            {showHeat && (
+              <motion.path
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0.1, 0.4, 0.1] }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 2, repeat: Infinity }}
+                d="M30 30 L28 236 Q28 256 48 256 L152 256 Q172 256 172 236 L170 30"
+                fill="url(#heat-glow-gradient)"
+              />
+            )}
+          </AnimatePresence>
+
+          <defs>
+            <radialGradient id="heat-glow-gradient" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="rgba(255, 100, 0, 0.4)" />
+              <stop offset="100%" stopColor="rgba(255, 50, 0, 0)" />
+            </radialGradient>
+            <clipPath id="beaker-hero-clip">
+              <path d="M23 20 L21 240 Q21 260 44 260 L156 260 Q179 260 179 240 L177 20 Z" />
+            </clipPath>
+          </defs>
 
           {/* Rim — top horizontal bar */}
           <motion.path
@@ -175,11 +203,7 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
           ))}
 
           {/* ── Liquid fill area ── */}
-          <defs>
-            <clipPath id="beaker-hero-clip">
-              <path d="M23 20 L21 240 Q21 260 44 260 L156 260 Q179 260 179 240 L177 20 Z" />
-            </clipPath>
-          </defs>
+
 
           <g clipPath="url(#beaker-hero-clip)">
             {/* Liquid body */}

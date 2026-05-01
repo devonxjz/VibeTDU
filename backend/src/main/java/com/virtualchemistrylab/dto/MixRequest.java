@@ -22,11 +22,9 @@ public class MixRequest {
     @NotBlank(message = "targetVesselId must not be blank")
     private String targetVesselId;
 
-    @NotEmpty(message = "sourceContents must not be empty")
     @Valid
     private List<VesselContentDTO> sourceContents;
 
-    @NotEmpty(message = "targetContents must not be empty")
     @Valid
     private List<VesselContentDTO> targetContents;
 

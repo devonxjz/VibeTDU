@@ -171,7 +171,7 @@ export const useLabStore = create<LabStore>((set, get) => ({
     const vessel = s.vessels[s.centerBeakerId];
     if (!vessel) return false;
     const contents = vessel.contents.filter(c => c.formula);
-    return contents.length >= 2;
+    return contents.length >= 1;
   },
 
   getEffectSpeed: () => {
@@ -266,8 +266,8 @@ export const useLabStore = create<LabStore>((set, get) => ({
   runReaction: async (vesselId) => {
     const state = get();
     const vessel = state.vessels[vesselId];
-    if (!vessel || vessel.contents.length < 2) {
-      set({ error: "Cần ít nhất 2 hóa chất trong bình để chạy phản ứng" });
+    if (!vessel || vessel.contents.filter(c => c.formula).length < 1) {
+      set({ error: "Cần ít nhất 1 hóa chất trong bình để chạy phản ứng" });
       setTimeout(() => get().setError(null), 3000);
       return;
     }
@@ -310,9 +310,11 @@ export const useLabStore = create<LabStore>((set, get) => ({
             contents: response.newTargetVesselState?.contents?.map((p) => ({ inputName: p.formula, formula: p.formula })) as VesselContent[] ?? vessel.contents,
           },
         },
+        // Always update lastReaction (even no-reaction) so UI can show feedback
         lastReaction: result ?? null,
         activeEffect: effectType !== "NONE" ? { type: effectType, vesselId, color: result?.effectColor, precipitateColor: result?.precipitateColor, gasFormula: result?.gasFormula } : null,
         isLoading: false,
+        error: (!result?.hasReaction) ? null : null, // clear any previous errors on success
       });
 
       // Auto-clear isReacting after 3000ms
@@ -792,6 +794,9 @@ export const useLabStore = create<LabStore>((set, get) => ({
 
     // No dupes — skip if formula already exists
     if (vessel.contents.some(c => c.formula === chemical.formula)) return;
+
+    // Count existing real chemicals BEFORE adding
+    const existingCount = vessel.contents.filter(c => c.formula).length;
 
     // Add the chemical via existing addChemicalToVessel
     get().addChemicalToVessel(
