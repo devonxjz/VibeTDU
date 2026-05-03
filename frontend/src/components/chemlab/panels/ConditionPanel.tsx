@@ -1,13 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import {
   Play,
   Undo2,
   Trash2,
   X,
-  Thermometer,
-  Gauge,
   FlaskConical,
   RotateCcw,
 } from "lucide-react";
@@ -18,24 +15,6 @@ import { getBottleColor } from "@/constants/chemicals";
 import { PresetSelector } from "@/components/chemlab/PresetSelector";
 import { ExperimentTimeline } from "@/components/chemlab/timeline/ExperimentTimeline";
 
-/* ─── Constants ─────────────────────────────────────────────────────── */
-
-const PRESSURE_OPTIONS = [
-  { value: 0.5, label: "0.5 atm" },
-  { value: 1, label: "1 atm" },
-  { value: 2, label: "2 atm" },
-  { value: 5, label: "5 atm" },
-];
-
-const CATALYST_OPTIONS = [
-  { value: "Không", label: "Không" },
-  { value: "MnO₂", label: "MnO₂" },
-  { value: "Fe", label: "Fe" },
-  { value: "Pt", label: "Pt" },
-  { value: "Ni", label: "Ni" },
-  { value: "V₂O₅", label: "V₂O₅" },
-];
-
 /* ─── ConditionPanel ────────────────────────────────────────────────── */
 
 export function ConditionPanel() {
@@ -44,10 +23,6 @@ export function ConditionPanel() {
     s.centerBeakerId ? s.vessels[s.centerBeakerId] : null
   );
   const isLoading = useLabStore((s) => s.isLoading);
-  const temperature = useLabStore((s) => s.temperature);
-  const pressure = useLabStore((s) => s.pressure);
-  const catalyst = useLabStore((s) => s.catalyst);
-  const setEnvironment = useLabStore((s) => s.setEnvironment);
   const removeFromBeaker = useLabStore((s) => s.removeFromBeaker);
   const undoLastChemical = useLabStore((s) => s.undoLastChemical);
   const clearBeaker = useLabStore((s) => s.clearBeaker);
@@ -64,7 +39,7 @@ export function ConditionPanel() {
         <h2 className="font-display text-sm font-bold text-foreground">
           Điều kiện thí nghiệm
         </h2>
-        <p className="text-[11px] text-gray-400">
+        <p className="text-xs font-medium text-muted-foreground">
           Thiết lập và kiểm soát phản ứng
         </p>
       </div>
@@ -74,7 +49,7 @@ export function ConditionPanel() {
 
         {/* ── Beaker Contents ────────────────────────────────────────── */}
         <section className="px-4 py-3">
-          <h3 className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+          <h3 className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-muted-foreground">
             <FlaskConical className="h-3.5 w-3.5" />
             Hoá chất trong bình
             {contents.length > 0 && (
@@ -86,9 +61,9 @@ export function ConditionPanel() {
 
           {contents.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-xl py-6 text-center">
-              <FlaskConical className="mb-2 h-6 w-6 text-gray-400/40" />
-              <p className="text-xs text-gray-400">Chưa có hoá chất</p>
-              <p className="mt-0.5 text-[10px] text-gray-400/70">
+              <FlaskConical className="mb-2 h-6 w-6 text-muted-foreground/70" />
+              <p className="text-sm font-semibold text-foreground">Chưa có hoá chất</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 Chọn từ thư viện bên phải
               </p>
             </div>
@@ -97,7 +72,7 @@ export function ConditionPanel() {
               {contents.map((c, i) => (
                 <div
                   key={`${c.formula}-${i}`}
-                  className="group flex items-center gap-2.5 rounded-lg bg-control-bg px-3 py-2 transition-colors hover:bg-control-bg-hover"
+                  className="group flex items-center gap-2.5 rounded-lg border border-border/70 bg-control-bg px-3 py-2 transition-colors hover:bg-control-bg-hover"
                 >
                   {/* Color dot */}
                   <span
@@ -112,10 +87,10 @@ export function ConditionPanel() {
                   {/* Formula */}
                   <Formula
                     formula={c.formula}
-                    className="flex-1 text-xs font-semibold text-foreground"
+                    className="min-w-0 flex-1 break-words text-sm font-bold text-foreground"
                   />
                   {/* Amount */}
-                  <span className="text-[10px] tabular-nums text-gray-400">
+                  <span className="text-xs font-semibold tabular-nums text-muted-foreground">
                     {c.amountMl ?? 10} mL
                   </span>
                   {/* Delete */}

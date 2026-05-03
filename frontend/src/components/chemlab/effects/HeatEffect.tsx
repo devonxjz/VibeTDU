@@ -2,17 +2,17 @@
 
 import { motion } from "framer-motion";
 
+const HEAT_WAVES = Array.from({ length: 8 }, (_, i) => ({
+  id: i,
+  x: 30 + ((i * 19) % 41),
+  delay: i * 0.3,
+}));
+
 /**
  * HEAT — Toả nhiệt: hơi nóng bốc lên, ánh sáng cam đỏ.
  * Heat distortion waves + warm glow overlay.
  */
 export function HeatEffect() {
-  const waves = Array.from({ length: 8 }, (_, i) => ({
-    id: i,
-    x: 30 + Math.random() * 40,
-    delay: i * 0.3,
-  }));
-
   return (
     <div className="absolute inset-0 overflow-hidden">
       {/* Warm glow */}
@@ -26,7 +26,7 @@ export function HeatEffect() {
         transition={{ duration: 1.5, repeat: Infinity }}
       />
       {/* Rising heat waves */}
-      {waves.map((w) => (
+      {HEAT_WAVES.map((w) => (
         <motion.div
           key={w.id}
           className="absolute"

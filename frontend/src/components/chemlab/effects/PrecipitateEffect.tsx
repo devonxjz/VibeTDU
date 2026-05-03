@@ -6,6 +6,16 @@ interface PrecipitateEffectProps {
   color?: string;
 }
 
+const PARTICLES = Array.from({ length: 24 }, (_, i) => ({
+  id: i,
+  x: 25 + ((i * 23) % 51),
+  size: 3 + (i % 6),
+  delay: (i % 10) * 0.18,
+  duration: 1.5 + (i % 5) * 0.28,
+  driftA: ((i * 11) % 21) - 10,
+  driftB: ((i * 7) % 13) - 6,
+}));
+
 /**
  * PRECIPITATE — Hạt kết tủa rơi xuống đáy dung dịch.
  * Particles drift downward and accumulate at the bottom.
@@ -13,17 +23,9 @@ interface PrecipitateEffectProps {
 export function PrecipitateEffect({ color }: PrecipitateEffectProps) {
   const precipitateColor = color ?? "#e0e0e0";
 
-  const particles = Array.from({ length: 24 }, (_, i) => ({
-    id: i,
-    x: 25 + Math.random() * 50,
-    size: 3 + Math.random() * 6,
-    delay: Math.random() * 2,
-    duration: 1.5 + Math.random() * 1.5,
-  }));
-
   return (
     <div className="absolute inset-0 overflow-hidden">
-      {particles.map((p) => (
+      {PARTICLES.map((p) => (
         <motion.div
           key={p.id}
           className="absolute rounded-full"
@@ -39,7 +41,7 @@ export function PrecipitateEffect({ color }: PrecipitateEffectProps) {
           animate={{
             y: [0, 80, 160],
             opacity: [0, 0.8, 0.5],
-            x: [0, (Math.random() - 0.5) * 20, (Math.random() - 0.5) * 10],
+            x: [0, p.driftA, p.driftB],
           }}
           transition={{
             duration: p.duration,

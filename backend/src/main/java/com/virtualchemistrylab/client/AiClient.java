@@ -147,11 +147,19 @@ public class AiClient {
 
         String firstKey = apiKeys.get(0).contains("#") ? apiKeys.get(0).split("#")[0].trim() : apiKeys.get(0).trim();
 
+        String result;
         if (isGeminiKey(firstKey) || isGeminiUrl(appProperties.getAi().getApiUrl())) {
-            return callGeminiChat(systemText, cleaned);
+            result = callGeminiChat(systemText, cleaned);
         } else {
-            return callOpenAiChat(systemText, cleaned, firstKey);
+            result = callOpenAiChat(systemText, cleaned, firstKey);
         }
+        
+        if (result == null) {
+            log.warn("[AI] Chat call failed or all keys exhausted.");
+            return "Xin lỗi, hệ thống AI đang quá tải hoặc cấu hình chưa đúng. Vui lòng thử lại sau vài phút.";
+        }
+        
+        return result;
     }
 
     // ─── Google Gemini ──────────────────────────────────────────────────────────

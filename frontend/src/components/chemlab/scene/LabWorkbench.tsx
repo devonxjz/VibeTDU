@@ -17,12 +17,13 @@ export function LabWorkbench({ children }: LabWorkbenchProps) {
       className="absolute inset-0 overflow-hidden"
       aria-label="Bàn thí nghiệm hiện đại"
       style={{
-        background: "var(--lab-bg)",
+        background:
+          "linear-gradient(180deg, var(--lab-bg) 0%, color-mix(in oklch, var(--lab-bg), black 4%) 55%, color-mix(in oklch, var(--lab-table-top), black 2%) 100%)",
       }}
     >
       {/* Background Grid */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-20"
+        className="absolute inset-0 pointer-events-none opacity-16"
         style={{
           backgroundImage: "radial-gradient(circle, var(--toolbar-muted) 1px, transparent 1px)",
           backgroundSize: "24px 24px",
@@ -30,14 +31,15 @@ export function LabWorkbench({ children }: LabWorkbenchProps) {
         }}
       />
       
-      {/* Subtle blue ambient light behind beaker */}
+      {/* Controlled ambient light behind beaker */}
       <div
         className="absolute left-1/2 top-[40%] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
         style={{
-          width: 600,
-          height: 600,
+          width: 560,
+          height: 560,
           borderRadius: "50%",
-          background: "radial-gradient(circle, var(--lab-glow) 0%, transparent 60%)",
+          background: "radial-gradient(circle, var(--lab-glow) 0%, transparent 58%)",
+          filter: "saturate(0.9)",
         }}
       />
 
@@ -59,7 +61,7 @@ export function LabWorkbench({ children }: LabWorkbenchProps) {
           bottom: "3%",
           background: "linear-gradient(180deg, var(--lab-table-top) 0%, var(--lab-table) 100%)",
           borderTop: "1px solid var(--lab-border)",
-          boxShadow: "0 -4px 20px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.15)",
+          boxShadow: "0 -6px 24px rgba(15,23,42,0.18), inset 0 1px 0 rgba(255,255,255,0.16)",
         }}
         aria-label="Mặt bàn thí nghiệm"
       >
