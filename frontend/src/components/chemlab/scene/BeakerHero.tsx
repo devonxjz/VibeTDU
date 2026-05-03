@@ -112,9 +112,9 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
           <motion.path
             d="M24 18 L22 240 Q22 262 44 262 L156 262 Q178 262 178 240 L176 18"
             fill="rgba(200,230,255,0.05)"
-            initial={{ stroke: "rgba(176,190,197,0.5)", strokeWidth: 2 }}
+            initial={{ stroke: "var(--beaker-glass)", strokeWidth: 2 }}
             animate={{
-              stroke: showHeat ? "rgba(255, 100, 50, 0.8)" : "rgba(176,190,197,0.5)",
+              stroke: showHeat ? "rgba(255, 100, 50, 0.8)" : "var(--beaker-glass)",
               strokeWidth: showHeat ? 4 : 2,
               filter: showHeat ? "drop-shadow(0 0 12px rgba(255, 80, 0, 0.6))" : "none",
             }}
@@ -149,7 +149,7 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
           <motion.path
             d="M14 18 L186 18"
             animate={{
-              stroke: "rgba(176,190,197,0.5)",
+              stroke: "var(--beaker-glass)",
             }}
             transition={{ duration: 0.2 }}
             strokeWidth="3.5"
@@ -159,7 +159,7 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
           {/* Pour spout — left notch */}
           <path
             d="M14 18 L24 18 L18 8"
-            stroke="rgba(176,190,197,0.5)"
+            stroke="var(--beaker-glass)"
             strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -172,9 +172,9 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
             cy="18"
             rx="86"
             ry="10"
-            fill="rgba(200,230,255,0.08)"
+            fill="rgba(200,230,255,0.02)"
             animate={{
-              stroke: "rgba(176,190,197,0.3)",
+              stroke: "var(--beaker-glass)",
             }}
             transition={{ duration: 0.2 }}
             strokeWidth="1.5"
@@ -254,11 +254,13 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
               rx="70"
               ry="8"
               fill={precipitateColor}
-              style={{ filter: "drop-shadow(0 0 5px rgba(0,0,0,0.08)) drop-shadow(0 0 12px rgba(255,255,255,0.5))" }}
               initial={{ scaleX: 0, scaleY: 0.5, opacity: 0 }}
               animate={{ scaleX: 1, scaleY: 1, opacity: 0.88 }}
               transition={{ duration: 1.2, ease: "easeOut" }}
-              style={{ transformOrigin: "100px 252px" }}
+              style={{
+                filter: "drop-shadow(0 0 5px rgba(0,0,0,0.08)) drop-shadow(0 0 12px rgba(255,255,255,0.5))",
+                transformOrigin: "100px 252px",
+              }}
             />
           )}
 

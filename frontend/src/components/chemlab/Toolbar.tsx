@@ -19,6 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 interface ToolButtonProps {
   icon: React.ComponentType<{ className?: string }>;
@@ -48,11 +49,11 @@ function ToolButton({
         "hover:scale-[1.04]",
         disabled && "cursor-not-allowed opacity-40",
         variant === "primary" &&
-          "h-10 w-10 bg-mint text-[#E0E0E0] shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-lift)]",
+          "h-10 w-10 bg-mint text-white shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-lift)]",
         variant === "default" &&
           (active
-            ? "bg-mint-soft text-[#E0E0E0] ring-1 ring-mint"
-            : "text-gray-400 hover:bg-mint-soft/60 hover:text-[#E0E0E0]"),
+            ? "bg-mint-soft text-foreground ring-1 ring-mint"
+            : "text-toolbar-muted hover:bg-control-bg hover:text-toolbar-foreground"),
       )}
     >
       <Icon className={cn(variant === "primary" ? "h-5 w-5" : "h-[18px] w-[18px]")} />
@@ -84,9 +85,9 @@ function SliderControl({
   onChange,
 }: SliderControlProps) {
   return (
-    <div className="flex items-center gap-2 rounded-lg bg-[#3C3C3C]/60 px-2.5 py-1.5">
-      <Icon className="h-4 w-4 text-gray-400" />
-      <span className="text-[11px] font-medium text-gray-400">{label}</span>
+    <div className="flex items-center gap-2 rounded-lg bg-control-bg px-2.5 py-1.5">
+      <Icon className="h-4 w-4 text-toolbar-muted" />
+      <span className="text-[11px] font-medium text-toolbar-muted">{label}</span>
       <input
         type="range"
         min={min}
@@ -95,9 +96,9 @@ function SliderControl({
         onChange={(e) => onChange(Number(e.target.value))}
         className="h-1 w-16 cursor-pointer appearance-none rounded-full bg-border accent-mint"
       />
-      <span className="min-w-[38px] text-right text-xs font-semibold tabular-nums text-[#E0E0E0]">
+      <span className="min-w-[38px] text-right text-xs font-semibold tabular-nums text-foreground">
         {value}
-        <span className="ml-0.5 text-[10px] font-normal text-gray-400">
+        <span className="ml-0.5 text-[10px] font-normal text-toolbar-muted">
           {unit}
         </span>
       </span>
@@ -117,13 +118,13 @@ export function Toolbar() {
   const isChatbotOpen = useChatbotStore((s) => s.isOpen);
 
   return (
-    <div className="flex h-14 w-full items-center gap-2 bg-[#2C2C2C]/80 px-4 backdrop-blur-sm">
+    <div className="flex h-14 w-full items-center gap-2 bg-toolbar px-4 backdrop-blur-sm border-b">
       {/* Brand */}
       <div className="flex items-center gap-2 pr-2">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-mint to-baby shadow-[var(--shadow-soft)]">
-          <FlaskConical className="h-4.5 w-4.5 text-[#E0E0E0]" strokeWidth={2.2} />
+          <FlaskConical className="h-4.5 w-4.5 text-white" strokeWidth={2.2} />
         </div>
-        <div className="font-display text-base font-bold tracking-tight text-[#E0E0E0]">
+        <div className="font-display text-base font-bold tracking-tight text-toolbar-foreground">
           ChemLab
         </div>
       </div>
@@ -145,9 +146,9 @@ export function Toolbar() {
       {/* Reaction conditions */}
       <div className="flex items-center gap-2">
         {/* Temperature */}
-        <div className="flex items-center gap-2 rounded-lg bg-[#3C3C3C]/40 px-3 py-1.5">
-          <Thermometer className="h-4 w-4 text-rose-400" />
-          <span className="text-[11px] font-semibold text-gray-400">Nhiệt độ</span>
+        <div className="flex items-center gap-2 rounded-lg bg-control-bg px-3 py-1.5">
+          <Thermometer className="h-4 w-4 text-rose-500 dark:text-rose-400" />
+          <span className="text-[11px] font-semibold text-toolbar-muted">Nhiệt độ</span>
           <input
             type="range"
             min={0}
@@ -155,17 +156,17 @@ export function Toolbar() {
             step={5}
             value={temperature}
             onChange={(e) => setEnvironment({ temperature: Number(e.target.value) })}
-            className="w-20 accent-rose-400"
+            className="w-20 accent-rose-500 dark:accent-rose-400"
           />
-          <span className="rounded bg-[#2C2C2C] px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-[#E0E0E0] min-w-[36px] text-center">
+          <span className="rounded bg-surface-elevated border px-1.5 py-0.5 text-[11px] font-bold tabular-nums text-foreground min-w-[36px] text-center">
             {temperature}°C
           </span>
         </div>
 
         {/* Pressure */}
-        <div className="flex items-center gap-2 rounded-lg bg-[#3C3C3C]/40 px-3 py-1.5">
-          <Gauge className="h-4 w-4 text-blue-400" />
-          <span className="text-[11px] font-semibold text-gray-400">Áp suất</span>
+        <div className="flex items-center gap-2 rounded-lg bg-control-bg px-3 py-1.5">
+          <Gauge className="h-4 w-4 text-blue-500 dark:text-blue-400" />
+          <span className="text-[11px] font-semibold text-toolbar-muted">Áp suất</span>
           <div className="flex gap-1 ml-0.5">
             {[
               { value: 0.5, label: "0.5" },
@@ -179,8 +180,8 @@ export function Toolbar() {
                 className={cn(
                   "rounded-md px-2 py-1 text-[11px] font-semibold transition-colors",
                   pressure === opt.value
-                    ? "bg-[#0066FF] text-white"
-                    : "bg-transparent text-gray-400 hover:bg-[#4C4C4C]/60 hover:text-[#E0E0E0]"
+                    ? "bg-control-active text-white"
+                    : "bg-transparent text-toolbar-muted hover:bg-control-bg-hover hover:text-foreground"
                 )}
               >
                 {opt.label}
@@ -190,9 +191,9 @@ export function Toolbar() {
         </div>
 
         {/* Catalyst */}
-        <div className="flex items-center gap-2 rounded-lg bg-[#3C3C3C]/40 px-3 py-1.5 hidden xl:flex">
+        <div className="flex items-center gap-2 rounded-lg bg-control-bg px-3 py-1.5 hidden xl:flex">
           <Sparkles className="h-4 w-4 text-amber-500" />
-          <span className="text-[11px] font-semibold text-gray-400">Xúc tác</span>
+          <span className="text-[11px] font-semibold text-toolbar-muted">Xúc tác</span>
           <div className="flex gap-1 ml-0.5">
             {["Không", "MnO₂", "Fe", "Pt", "Ni", "V₂O₅"].map((opt) => (
               <button
@@ -201,8 +202,8 @@ export function Toolbar() {
                 className={cn(
                   "rounded-md px-2 py-1 text-[11px] font-semibold transition-colors",
                   catalyst === opt
-                    ? "bg-[#0066FF] text-white"
-                    : "bg-transparent text-gray-400 hover:bg-[#4C4C4C]/60 hover:text-[#E0E0E0]"
+                    ? "bg-control-active text-white"
+                    : "bg-transparent text-toolbar-muted hover:bg-control-bg-hover hover:text-foreground"
                 )}
               >
                 {opt}
@@ -217,6 +218,7 @@ export function Toolbar() {
 
       {/* Right side — Chatbot + User */}
       <div className="flex items-center gap-1.5">
+        <ThemeToggle />
         <ToolButton
           icon={Bot}
           label="Trợ lý hoá học"

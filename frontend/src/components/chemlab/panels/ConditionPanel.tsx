@@ -61,7 +61,7 @@ export function ConditionPanel() {
     <aside className="flex h-full w-full flex-col overflow-hidden">
       {/* Header */}
       <div className="px-4 py-3.5">
-        <h2 className="font-display text-sm font-bold text-[#E0E0E0]">
+        <h2 className="font-display text-sm font-bold text-foreground">
           Điều kiện thí nghiệm
         </h2>
         <p className="text-[11px] text-gray-400">
@@ -78,7 +78,7 @@ export function ConditionPanel() {
             <FlaskConical className="h-3.5 w-3.5" />
             Hoá chất trong bình
             {contents.length > 0 && (
-              <span className="ml-auto rounded-full bg-mint-soft px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-[#E0E0E0]">
+              <span className="ml-auto rounded-full bg-mint-soft px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-foreground">
                 {contents.length}
               </span>
             )}
@@ -97,7 +97,7 @@ export function ConditionPanel() {
               {contents.map((c, i) => (
                 <div
                   key={`${c.formula}-${i}`}
-                  className="group flex items-center gap-2.5 rounded-lg bg-[#2C2C2C]/60 px-3 py-2 transition-colors hover:bg-[#2C2C2C]"
+                  className="group flex items-center gap-2.5 rounded-lg bg-control-bg px-3 py-2 transition-colors hover:bg-control-bg-hover"
                 >
                   {/* Color dot */}
                   <span
@@ -112,7 +112,7 @@ export function ConditionPanel() {
                   {/* Formula */}
                   <Formula
                     formula={c.formula}
-                    className="flex-1 text-xs font-semibold text-[#E0E0E0]"
+                    className="flex-1 text-xs font-semibold text-foreground"
                   />
                   {/* Amount */}
                   <span className="text-[10px] tabular-nums text-gray-400">
@@ -153,7 +153,7 @@ export function ConditionPanel() {
             "flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold transition-all duration-200",
             canPlay
               ? "bg-emerald-500 text-white shadow-md hover:bg-emerald-600 hover:shadow-lg active:scale-[0.98]"
-              : "bg-[#3C3C3C]/60 text-gray-400 cursor-not-allowed"
+              : "bg-control-bg text-gray-400 cursor-not-allowed"
           )}
         >
           {isLoading ? (
@@ -172,8 +172,8 @@ export function ConditionPanel() {
             className={cn(
               "flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-semibold transition-colors",
               contents.length > 0
-                ? "bg-[#3C3C3C]/60 text-[#E0E0E0] hover:bg-[#4C4C4C]/80"
-                : "bg-[#2C2C2C]/40 text-gray-400/30 cursor-not-allowed"
+                ? "bg-control-bg text-foreground hover:bg-control-bg-hover"
+                : "bg-surface text-gray-400/30 cursor-not-allowed"
             )}
           >
             <Undo2 className="h-3.5 w-3.5" />
@@ -185,8 +185,8 @@ export function ConditionPanel() {
             className={cn(
               "flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-semibold transition-colors",
               contents.length > 0
-                ? "bg-rose-500/10 text-rose-400 hover:bg-rose-500/20"
-                : "bg-[#2C2C2C]/40 text-gray-400/30 cursor-not-allowed"
+                ? "bg-rose-500/10 text-rose-500 hover:bg-rose-500/20"
+                : "bg-surface text-gray-400/30 cursor-not-allowed"
             )}
           >
             <Trash2 className="h-3.5 w-3.5" />

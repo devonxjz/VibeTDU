@@ -102,7 +102,7 @@ export function ChemLabShell() {
   return (
     <>
       {/* ── True 3-column layout — lab scene stays in center column ── */}
-      <div className="flex h-screen w-screen flex-col overflow-hidden bg-[#121212] text-[#E0E0E0]">
+      <div className="flex h-screen w-screen flex-col overflow-hidden bg-background text-foreground">
         {/* Top toolbar */}
         <Toolbar />
 
@@ -111,7 +111,7 @@ export function ChemLabShell() {
           {/* ── Left panel — width controlled by drag ── */}
           <div
             ref={leftColRef}
-            className="hidden lg:flex flex-col shrink-0 bg-[rgba(22,24,28,0.92)] backdrop-blur-[12px] overflow-hidden z-10"
+            className="hidden lg:flex flex-col shrink-0 bg-panel border-r border-panel-border overflow-hidden z-10"
             style={{ width: LEFT_DEFAULT, minWidth: LEFT_MIN, maxWidth: LEFT_MAX }}
           >
             <ConditionPanel />
@@ -136,11 +136,14 @@ export function ChemLabShell() {
               transition: "background 0.15s",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = "oklch(0.84 0.09 175 / 0.22)";
+              e.currentTarget.style.background = "var(--color-control-active)";
+              e.currentTarget.style.opacity = "0.2";
             }}
             onMouseLeave={(e) => {
-              if (!dragging.current)
+              if (!dragging.current) {
                 e.currentTarget.style.background = "transparent";
+                e.currentTarget.style.opacity = "1";
+              }
             }}
           >
             {/* Vertical line */}
@@ -150,7 +153,7 @@ export function ChemLabShell() {
               left: "50%",
               width: 1,
               transform: "translateX(-50%)",
-              background: "oklch(0.78 0.04 250 / 0.35)",
+              background: "var(--color-panel-border)",
             }} />
             {/* Grip dots */}
             <div style={{
@@ -166,7 +169,7 @@ export function ChemLabShell() {
                 <div key={i} style={{
                   width: 3, height: 3,
                   borderRadius: "50%",
-                  background: "oklch(0.65 0.04 250 / 0.55)",
+                  background: "var(--color-toolbar-muted)",
                 }} />
               ))}
             </div>
@@ -178,14 +181,9 @@ export function ChemLabShell() {
             style={{
               margin: 10,
               borderRadius: 20,
-              background: "linear-gradient(180deg, #12141D 0%, #0E1017 100%)",
-              border: "1.5px solid rgba(0, 102, 255, 0.3)",
-              boxShadow:
-                "0 0 0 1px rgba(0,0,0,0.4), " +
-                "0 8px 32px rgba(0,0,0,0.6), " +
-                "0 2px 8px rgba(0,0,0,0.3), " +
-                "inset 0 1px 0 rgba(255,255,255,0.05), " +
-                "inset 0 -2px 6px rgba(0,0,0,0.2)",
+              background: "var(--lab-bg)",
+              border: "1.5px solid var(--lab-border)",
+              boxShadow: "var(--shadow-inset-board)",
             }}
           >
             {/* Top Zone (The Stage) — Beaker focus */}
@@ -198,7 +196,7 @@ export function ChemLabShell() {
           </div>
 
           {/* Right panel */}
-          <div className="hidden md:flex w-72 shrink-0 flex-col bg-[rgba(22,24,28,0.92)] backdrop-blur-[12px] overflow-y-auto z-10">
+          <div className="hidden md:flex w-72 shrink-0 flex-col bg-panel border-l border-panel-border overflow-y-auto z-10">
             <ChemicalLibrary />
           </div>
         </div>

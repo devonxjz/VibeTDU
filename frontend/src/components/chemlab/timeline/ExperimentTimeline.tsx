@@ -17,13 +17,13 @@ export function ExperimentTimeline() {
   }, [events.length]);
 
   return (
-    <section className="bg-[#1C1C1C]/60 px-4 py-3 shrink-0">
-      <h3 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-navy-soft">
+    <section className="bg-surface-overlay border-b px-4 py-3 shrink-0">
+      <h3 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
         Lịch sử thao tác
       </h3>
       
       {events.length === 0 ? (
-        <p className="text-xs italic text-navy-soft">Chưa có thao tác nào</p>
+        <p className="text-xs italic text-muted-foreground">Chưa có thao tác nào</p>
       ) : (
         <div 
           ref={scrollRef}
@@ -70,14 +70,14 @@ export function ExperimentTimeline() {
                   bgClass
                 )}
               >
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#2C2C2C] shadow-sm">
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-card shadow-sm border">
                   <Icon className={cn("h-3.5 w-3.5", iconClass)} />
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className="truncate text-[11px] font-semibold text-[#E0E0E0]" title={event.description}>
+                  <span className="truncate text-[11px] font-semibold text-foreground" title={event.description}>
                     {event.description}
                   </span>
-                  <span className="text-[9px] text-gray-400">{event.timestamp}</span>
+                  <span className="text-[9px] text-muted-foreground">{event.timestamp}</span>
                 </div>
               </div>
             );

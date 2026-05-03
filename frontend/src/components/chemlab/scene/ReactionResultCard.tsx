@@ -26,22 +26,22 @@ export function ReactionResultCard() {
           animate={{ height: "auto", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
           transition={{ type: "spring", damping: 25, stiffness: 120 }}
-          className="w-full bg-white border-t border-slate-200 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] shrink-0 max-h-[45%] overflow-hidden flex flex-col"
+          className="w-full bg-card border-t border-border shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.2)] shrink-0 max-h-[45%] overflow-hidden flex flex-col"
         >
           <div className="overflow-y-auto p-4 sm:p-6">
             {/* No-reaction state */}
             {!reaction.hasReaction ? (
-              <div className="flex items-start gap-3 rounded-xl bg-slate-50 border border-slate-200 p-4">
-                <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-slate-400" />
+              <div className="flex items-start gap-3 rounded-xl bg-surface border border-border p-4">
+                <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
                     Không có phản ứng
                   </p>
-                  <p className="text-sm leading-relaxed text-slate-700">
+                  <p className="text-sm leading-relaxed text-foreground">
                     {reaction.messageVi || "Các chất này không phản ứng với nhau trong điều kiện hiện tại."}
                   </p>
                   {reaction.explanationVi && (
-                    <p className="mt-1.5 text-xs text-slate-500 leading-relaxed">
+                    <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">
                       {reaction.explanationVi}
                     </p>
                   )}
@@ -54,11 +54,11 @@ export function ReactionResultCard() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <Zap className="h-4 w-4 text-amber-500" />
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-navy-soft">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                         Kết quả phản ứng
                       </span>
                       {reaction.effectType && reaction.effectType !== "NONE" && (
-                        <span className="ml-2 rounded-full bg-mint-soft px-2 py-0.5 text-[10px] font-bold text-navy">
+                        <span className="ml-2 rounded-full bg-mint-soft px-2 py-0.5 text-[10px] font-bold text-foreground">
                           {reactionTypeName[reaction.effectType] ?? reaction.effectType}
                         </span>
                       )}
@@ -66,7 +66,7 @@ export function ReactionResultCard() {
                     {reaction.equation && (
                       <ReactionFormula
                         formula={reaction.equation}
-                        className="text-base font-bold text-navy"
+                        className="text-base font-bold text-foreground"
                       />
                     )}
                   </div>
@@ -76,13 +76,13 @@ export function ReactionResultCard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   {/* Observation */}
                   {reaction.messageVi && (
-                    <div className="flex items-start gap-2.5 rounded-xl bg-baby-soft/30 p-3 border border-baby-soft/50">
-                      <Info className="mt-0.5 h-4 w-4 shrink-0 text-navy-soft" />
+                    <div className="flex items-start gap-2.5 rounded-xl bg-surface p-3 border border-border">
+                      <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                       <div>
-                        <p className="mb-1 text-[9px] font-bold uppercase tracking-wider text-navy-soft/70">
+                        <p className="mb-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
                           Hiện tượng
                         </p>
-                        <p className="text-sm leading-relaxed text-navy">
+                        <p className="text-sm leading-relaxed text-foreground">
                           {reaction.messageVi}
                         </p>
                       </div>
@@ -91,13 +91,13 @@ export function ReactionResultCard() {
                   
                   {/* Safety */}
                   {reaction.safetyNoteVi && (
-                    <div className="flex items-start gap-2.5 rounded-xl bg-rose-50/50 p-3 border border-rose-100/50">
-                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
+                    <div className="flex items-start gap-2.5 rounded-xl bg-destructive/10 p-3 border border-destructive/20">
+                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive-foreground" />
                       <div>
-                        <p className="mb-1 text-[9px] font-bold uppercase tracking-wider text-rose-600/70">
+                        <p className="mb-1 text-[9px] font-bold uppercase tracking-wider text-destructive-foreground/70">
                           An toàn
                         </p>
-                        <p className="text-sm leading-relaxed text-rose-700">
+                        <p className="text-sm leading-relaxed text-foreground">
                           {reaction.safetyNoteVi}
                         </p>
                       </div>
@@ -106,7 +106,7 @@ export function ReactionResultCard() {
                 </div>
 
                 {/* Divider */}
-                <div className="h-px bg-slate-100 w-full mb-4" />
+                <div className="h-px bg-border w-full mb-4" />
 
                 {/* Integrated Explanation Panel */}
                 <ExplanationPanel />

@@ -18,6 +18,7 @@ public class ChatMessage {
     private String role;
 
     @NotBlank(message = "content must not be blank")
+    @jakarta.validation.constraints.Size(max = 2000, message = "content must not exceed 2000 characters") // Fix: 2
     private String content;
 }
 

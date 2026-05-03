@@ -29,19 +29,19 @@ export function ExplanationPanel() {
         
         <div className="min-h-[100px] overflow-y-auto px-1">
           <TabsContent value="basic" className="mt-0 focus-visible:outline-none">
-            <p className="text-[11px] leading-relaxed text-navy-soft">
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
               {lastReaction.basicExplanation || "Không có giải thích cơ bản."}
             </p>
           </TabsContent>
           
           <TabsContent value="intermediate" className="mt-0 focus-visible:outline-none">
-            <p className="text-[11px] leading-relaxed text-navy-soft">
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
               {lastReaction.intermediateExplanation || "Không có giải thích trung cấp."}
             </p>
           </TabsContent>
           
           <TabsContent value="advanced" className="mt-0 focus-visible:outline-none">
-            <p className="text-[11px] leading-relaxed text-navy-soft">
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
               {lastReaction.advancedExplanation || "Không có giải thích nâng cao."}
             </p>
           </TabsContent>

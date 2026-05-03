@@ -54,13 +54,13 @@ function ChemicalCard({
       className={cn(
         "group flex w-full items-center gap-3 rounded-xl p-2.5 text-left transition-all duration-200 ease-out",
         isAdded
-          ? "bg-[#2C2C2C]/40 opacity-60 cursor-not-allowed"
-          : "bg-[#2C2C2C] hover:bg-[#3C3C3C]/80 hover:shadow-[var(--shadow-card)] active:bg-[#3C3C3C]/50"
+          ? "bg-surface opacity-60 cursor-not-allowed"
+          : "bg-card hover:bg-control-bg hover:shadow-[var(--shadow-card)] active:bg-control-bg-hover"
       )}
     >
       {/* Color dot */}
       <span
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#1C1C1C] shadow-inner"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface shadow-inner"
       >
         <FlaskConical className="h-4 w-4" style={{ color: dotColor }} />
       </span>
@@ -70,10 +70,10 @@ function ChemicalCard({
         <div className="flex items-center justify-between gap-2">
           <Formula
             formula={chemical.formula}
-            className="truncate font-display text-xs font-bold text-[#E0E0E0]"
+            className="truncate font-display text-xs font-bold text-foreground"
           />
           {/* Badge */}
-          <span className="shrink-0 rounded bg-[#3C3C3C] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-gray-400">
+          <span className="shrink-0 rounded bg-surface px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-gray-500">
             {chemical.category}
           </span>
         </div>
@@ -103,15 +103,15 @@ function CategorySection({
   if (group.chemicals.length === 0) return null;
 
   return (
-    <div className="overflow-hidden rounded-xl bg-[#2C2C2C]/40">
+    <div className="overflow-hidden rounded-xl bg-surface-overlay">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left transition-colors hover:bg-[#3C3C3C]/40"
+        className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left transition-colors hover:bg-control-bg"
       >
         <div className="flex items-center gap-2">
           <span className="text-base leading-none">{group.emoji}</span>
-          <span className="text-xs font-semibold text-[#E0E0E0]">{group.label}</span>
-          <span className="rounded-full bg-[#3C3C3C] px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-gray-400">
+          <span className="text-xs font-semibold text-foreground">{group.label}</span>
+          <span className="rounded-full bg-surface px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-gray-500">
             {group.chemicals.length}
           </span>
         </div>
@@ -168,9 +168,9 @@ export function ChemicalLibrary() {
   return (
     <aside className="flex h-full w-full flex-col overflow-hidden">
       {/* Header */}
-      <div className="bg-[#2C2C2C]/40 px-4 py-3.5">
+      <div className="bg-surface-overlay px-4 py-3.5 border-b">
         <div className="mb-2.5 flex items-center justify-between">
-          <h2 className="font-display text-sm font-bold text-[#E0E0E0]">
+          <h2 className="font-display text-sm font-bold text-foreground">
             Thư viện hoá chất
           </h2>
           <span className="text-[11px] text-gray-400">
@@ -186,7 +186,7 @@ export function ChemicalLibrary() {
             placeholder="Tìm công thức, tên..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-[#2C2C2C] py-2 pl-9 pr-3 text-xs text-[#E0E0E0] outline-none transition-all placeholder:text-gray-400/60 focus:border-mint focus:ring-2 focus:ring-mint/20"
+            className="w-full rounded-xl border border-border bg-card py-2 pl-9 pr-3 text-xs text-foreground outline-none transition-all placeholder:text-gray-400 focus:border-mint focus:ring-2 focus:ring-mint/20"
           />
         </div>
 
@@ -198,7 +198,7 @@ export function ChemicalLibrary() {
               "shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-colors",
               activeTab === "all"
                 ? "bg-[#FF8A65] text-white"
-                : "bg-[#3C3C3C] text-gray-400 hover:bg-[#3C3C3C]/80 hover:text-[#E0E0E0]"
+                : "bg-surface text-muted-foreground hover:bg-control-bg hover:text-foreground"
             )}
           >
             Tất cả
@@ -211,7 +211,7 @@ export function ChemicalLibrary() {
                 "shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-colors flex items-center gap-1",
                 activeTab === g.key
                   ? "bg-[#FF8A65] text-white"
-                  : "bg-[#3C3C3C] text-gray-400 hover:bg-[#3C3C3C]/80 hover:text-[#E0E0E0]"
+                  : "bg-surface text-muted-foreground hover:bg-control-bg hover:text-foreground"
               )}
             >
               <span>{g.emoji}</span>
@@ -225,10 +225,10 @@ export function ChemicalLibrary() {
       <div className="thin-scroll flex-1 overflow-y-auto px-3 py-3">
         {!hasResults ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#3C3C3C]/60">
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-surface">
               <Search className="h-5 w-5 text-gray-400/60" />
             </div>
-            <p className="text-xs font-semibold text-[#E0E0E0]">
+            <p className="text-xs font-semibold text-foreground">
               Không tìm thấy hoá chất
             </p>
             <p className="mt-1 text-[11px] text-gray-400">

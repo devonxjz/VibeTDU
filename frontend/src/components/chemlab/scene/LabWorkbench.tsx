@@ -17,14 +17,14 @@ export function LabWorkbench({ children }: LabWorkbenchProps) {
       className="absolute inset-0 overflow-hidden"
       aria-label="Bàn thí nghiệm hiện đại"
       style={{
-        background: "linear-gradient(180deg, #12141D 0%, #0E1017 100%)",
+        background: "var(--lab-bg)",
       }}
     >
       {/* Background Grid */}
       <div
         className="absolute inset-0 pointer-events-none opacity-20"
         style={{
-          backgroundImage: "radial-gradient(circle, #4A5568 1px, transparent 1px)",
+          backgroundImage: "radial-gradient(circle, var(--toolbar-muted) 1px, transparent 1px)",
           backgroundSize: "24px 24px",
           maskImage: "linear-gradient(180deg, rgba(0,0,0,1) 0%, transparent 80%)",
         }}
@@ -37,7 +37,7 @@ export function LabWorkbench({ children }: LabWorkbenchProps) {
           width: 600,
           height: 600,
           borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(0,102,255,0.08) 0%, transparent 60%)",
+          background: "radial-gradient(circle, var(--lab-glow) 0%, transparent 60%)",
         }}
       />
 
@@ -47,7 +47,7 @@ export function LabWorkbench({ children }: LabWorkbenchProps) {
         style={{
           top: "60%",
           height: 1,
-          background: "linear-gradient(90deg, transparent 3%, rgba(0,102,255,0.2) 15%, rgba(0,102,255,0.4) 50%, rgba(0,102,255,0.2) 85%, transparent 97%)",
+          background: "linear-gradient(90deg, transparent 3%, var(--lab-border) 15%, var(--lab-border) 85%, transparent 97%)",
         }}
       />
 
@@ -57,19 +57,16 @@ export function LabWorkbench({ children }: LabWorkbenchProps) {
         style={{
           top: "60%",
           bottom: "3%",
-          background: "linear-gradient(180deg, #1C2130 0%, #151824 100%)",
-          borderTop: "1px solid rgba(0,102,255,0.3)",
-          borderLeft: "1px solid rgba(255,255,255,0.05)",
-          borderRight: "1px solid rgba(255,255,255,0.05)",
-          borderBottom: "4px solid #11141E",
-          boxShadow: "0 -4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
+          background: "linear-gradient(180deg, var(--lab-table-top) 0%, var(--lab-table) 100%)",
+          borderTop: "1px solid var(--lab-border)",
+          boxShadow: "0 -4px 20px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.15)",
         }}
         aria-label="Mặt bàn thí nghiệm"
       >
         <div
           className="absolute inset-x-0 top-0 h-1 rounded-t-[16px] pointer-events-none"
           style={{
-            background: "linear-gradient(90deg, transparent, rgba(0,102,255,0.4), transparent)",
+            background: "linear-gradient(90deg, transparent, var(--lab-glow), transparent)",
           }}
         />
         {/* Subtle high-tech surface texture */}
@@ -91,7 +88,7 @@ export function LabWorkbench({ children }: LabWorkbenchProps) {
         className="absolute inset-0 flex items-center justify-center"
         style={{ zIndex: 10 }}
       >
-        <div className="my-auto min-h-[200px] flex items-center justify-center filter drop-shadow-[0_0_30px_rgba(0,102,255,0.1)]">
+        <div className="my-auto min-h-[200px] flex items-center justify-center">
           {children}
         </div>
       </div>
