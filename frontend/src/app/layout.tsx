@@ -43,14 +43,14 @@ export default function RootLayout({
   return (
     <html
       lang="vi"
-      className={`dark ${inter.variable} ${plusJakarta.variable} ${dmSans.variable}`}
+      className={`${inter.variable} ${plusJakarta.variable} ${dmSans.variable}`}
       suppressHydrationWarning
     >
       <body
         className="min-h-screen font-sans bg-background text-foreground antialiased selection:bg-primary/20"
         suppressHydrationWarning
       >
-        <ThemeProvider defaultTheme="dark">
+        <ThemeProvider defaultTheme="light">
           {children}
         </ThemeProvider>
       </body>

@@ -19,7 +19,7 @@ type ThemeContextValue = {
 };
 
 const STORAGE_KEY = "vibetdu-theme";
-const DEFAULT_THEME: Theme = "dark";
+const DEFAULT_THEME: Theme = "light";
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 const listeners = new Set<() => void>();
 

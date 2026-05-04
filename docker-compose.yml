@@ -16,7 +16,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost/api
+      - NEXT_PUBLIC_API_URL=/api
     networks:
       - vibetdu-network
 
