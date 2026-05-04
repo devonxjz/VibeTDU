@@ -27,13 +27,14 @@ public class DataSourceConfig {
     private static final Logger log = LoggerFactory.getLogger(DataSourceConfig.class);
 
     // ── Supabase Connection Pooler (IPv4 - aws-1) ───────────────────────────
-    private static final String JDBC_URL = "jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require";
+    @org.springframework.beans.factory.annotation.Value("${SPRING_DATASOURCE_URL:jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require}")
+    private String jdbcUrl;
     
-    // Pooler requires tenant ref in the username
-    private static final String DB_USER = "postgres.yesykibnglunqlspikin";
+    @org.springframework.beans.factory.annotation.Value("${SPRING_DATASOURCE_USERNAME:postgres.yesykibnglunqlspikin}")
+    private String dbUser;
     
-    // Password with special characters - hardcoded to avoid .properties escape issue
-    private static final String DB_PASS = "MSK&7%BX3FfSjN6";
+    @org.springframework.beans.factory.annotation.Value("${SPRING_DATASOURCE_PASSWORD:MSK&7%BX3FfSjN6}")
+    private String dbPass;
 
     @Bean
     @Primary
@@ -41,9 +42,9 @@ public class DataSourceConfig {
         log.info("Configuring HikariCP -> Supabase PostgreSQL (Session Pooler)...");
 
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(JDBC_URL);
-        config.setUsername(DB_USER);
-        config.setPassword(DB_PASS);
+        config.setJdbcUrl(jdbcUrl);
+        config.setUsername(dbUser);
+        config.setPassword(dbPass);
         config.setDriverClassName("org.postgresql.Driver");
 
         // Pool settings - Supabase free tier allows max ~15 concurrent connections
@@ -57,7 +58,7 @@ public class DataSourceConfig {
         config.addDataSourceProperty("prepareThreshold", "0");
         config.setConnectionTestQuery("SELECT 1");
         
-        log.info("HikariCP bean created successfully. URL: {}", JDBC_URL);
+        log.info("HikariCP bean created successfully. URL: {}", jdbcUrl);
 
         return new HikariDataSource(config);
     }
