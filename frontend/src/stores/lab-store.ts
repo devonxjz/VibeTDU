@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { nanoid } from "nanoid";
 import type { Vessel, ActiveEffect, Position, TimelineEvent } from "@/types/lab";
-import type { MixResponse, ReactionResult, VesselContent } from "@/types/api";
+import type { MixResponse, ReactionResult, VesselContent, AutoAppliedConditions, ReactionStep } from "@/types/api";
 import { mixChemicals } from "@/api/client/lab";
 import { resetSession as apiResetSession } from "@/api/client/lab";
 import { CHEMICAL_COLORS, getBottleColor } from "@/constants/chemicals";
@@ -88,6 +88,8 @@ interface LabStore {
   error: string | null;
   timelineEvents: TimelineEvent[];
   unlockedReactions: string[];
+  reactionSteps: ReactionStep[];
+  appliedConditions: AutoAppliedConditions | null;
 
   // Environment conditions
   temperature: number;
@@ -159,6 +161,8 @@ export const useLabStore = create<LabStore>((set, get) => ({
   error: null,
   timelineEvents: [],
   unlockedReactions: [],
+  reactionSteps: [],
+  appliedConditions: null,
 
   temperature: 25,
   pressure: 1,
@@ -316,11 +320,15 @@ export const useLabStore = create<LabStore>((set, get) => ({
             ...vessel,
             displayColor: newColor,
             label: newLabel,
-            contents: response.newTargetVesselState?.contents?.map((p) => ({ inputName: p.formula, formula: p.formula })) as VesselContent[] ?? vessel.contents,
+            contents: response.finalContents?.map(p => ({ inputName: p.formula, formula: p.formula })) as VesselContent[] ??
+                      response.newTargetVesselState?.contents?.map((p) => ({ inputName: p.formula, formula: p.formula })) as VesselContent[] ?? 
+                      vessel.contents,
           },
         },
         // Always update lastReaction (even no-reaction) so UI can show feedback
         lastReaction: result ?? null,
+        reactionSteps: response.steps ?? [],
+        appliedConditions: response.appliedConditions ?? null,
         activeEffect: effectType !== "NONE" ? { type: effectType, vesselId, color: result?.effectColor, precipitateColor: result?.precipitateColor, gasFormula: result?.gasFormula } : null,
         isLoading: false,
         error: (!result?.hasReaction) ? null : null, // clear any previous errors on success
@@ -329,7 +337,18 @@ export const useLabStore = create<LabStore>((set, get) => ({
       // Auto-clear isReacting after 3000ms
       setTimeout(() => set({ isReacting: false }), 3000);
 
-      if (result?.hasReaction) {
+      if (response.steps && response.steps.length > 0) {
+        // Sequential mode: Add an event for each step
+        response.steps.forEach(step => {
+           get().addTimelineEvent({
+             type: "REACT",
+             description: `Bước ${step.stepNumber}: ${step.equation || "Phản ứng"}`,
+           });
+           const reactionKey = step.reactants.map(r => r.toLowerCase()).sort().join("+");
+           get().unlockReaction(reactionKey);
+        });
+      } else if (result?.hasReaction) {
+        // Fallback for mock/cache
         const formulas = vessel.contents.map(c => c.formula).filter(Boolean);
         const reactionKey = formulas.map(r => r.toLowerCase()).sort().join("+");
         get().unlockReaction(reactionKey);

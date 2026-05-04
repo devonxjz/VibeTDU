@@ -4,6 +4,7 @@ import com.virtualchemistrylab.dto.*;
 import com.virtualchemistrylab.entity.ExperimentSession;
 import com.virtualchemistrylab.repository.ExperimentSessionRepository;
 import com.virtualchemistrylab.util.ReactionKeyUtil;
+import com.virtualchemistrylab.util.ReactionProductParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -34,18 +35,18 @@ public class LabMixService {
 
     private final RateLimitService rateLimitService;
     private final ChemicalResolverService chemicalResolverService;
-    private final ReactionPredictionService reactionPredictionService;
+    private final SequentialReactionService sequentialReactionService;
     private final ExperimentLogService experimentLogService;
     private final ExperimentSessionRepository sessionRepository;
 
     public LabMixService(RateLimitService rateLimitService,
                          ChemicalResolverService chemicalResolverService,
-                         ReactionPredictionService reactionPredictionService,
+                         SequentialReactionService sequentialReactionService,
                          ExperimentLogService experimentLogService,
                          ExperimentSessionRepository sessionRepository) {
         this.rateLimitService = rateLimitService;
         this.chemicalResolverService = chemicalResolverService;
-        this.reactionPredictionService = reactionPredictionService;
+        this.sequentialReactionService = sequentialReactionService;
         this.experimentLogService = experimentLogService;
         this.sessionRepository = sessionRepository;
     }
@@ -74,31 +75,69 @@ public class LabMixService {
             allFormulae.add(resolved.info().getCanonicalFormula());
         }
 
-        // D. Build reaction key (already done inside ReactionPredictionService, but log here)
-        String key = ReactionKeyUtil.buildKey(allFormulae);
-        log.info("[lab-mix] Reaction key: {}", key);
-
-        // E–H. Predict (cache-aware)
-        var prediction = reactionPredictionService.predict(
-            allFormulae, 
-            request.getTemperature(), 
-            request.getPressure(), 
-            request.getCatalyst()
+        // D. Delegate to sequential reaction orchestrator
+        MixResponse response = sequentialReactionService.process(
+                allFormulae, 
+                request.getTemperature(), 
+                request.getPressure(), 
+                request.getCatalyst()
         );
-        ReactionResultDTO result = prediction.result();
 
-        // Build vessel state from result
-        MixResponse.NewVesselState vesselState = buildVesselState(
-                request.getTargetVesselId(), result);
+        // Map session to vessel (frontend needs this inside newTargetVesselState)
+        if (response.getFinalContents() != null && !response.getFinalContents().isEmpty()) {
+            MixResponse.NewVesselState vesselState = new MixResponse.NewVesselState();
+            vesselState.setVesselId(request.getTargetVesselId());
+            vesselState.setContents(response.getFinalContents().stream()
+                .map(fc -> MixResponse.ProductEntry.builder().formula(fc.getFormula()).state(fc.getState()).build())
+                .toList());
+            
+            // Extract display color from last step if available, else default
+            if (response.getSteps() != null && !response.getSteps().isEmpty()) {
+                ReactionStepDTO lastStep = response.getSteps().get(response.getSteps().size() - 1);
+                vesselState.setDisplayColor(getDisplayColorFromStep(lastStep));
+                
+                // Add released gas if any from the steps
+                response.getSteps().stream()
+                    .filter(s -> s.getEffectType() != null && s.getEffectType().equals("GAS_BUBBLE"))
+                    .reduce((first, second) -> second) // findLast equivalent
+                    .ifPresent(s -> {
+                        // find gas formula from products
+                        List<String> prods = ReactionProductParser.parse(s.getProductFormula());
+                        for (String p : prods) {
+                            if (p.endsWith("(g)") || p.equalsIgnoreCase("CO2") || p.equalsIgnoreCase("H2")) {
+                                vesselState.setReleasedGas(MixResponse.GasEntry.builder().formula(p).build());
+                                break;
+                            }
+                        }
+                    });
+            } else {
+                vesselState.setDisplayColor("#CCCCCC");
+            }
+            response.setNewTargetVesselState(vesselState);
+        } else {
+            // No contents
+            MixResponse.NewVesselState emptyState = new MixResponse.NewVesselState();
+            emptyState.setVesselId(request.getTargetVesselId());
+            emptyState.setDisplayColor("#CCCCCC");
+            response.setNewTargetVesselState(emptyState);
+        }
 
-        MixResponse response = MixResponse.builder()
-                .status("success")
-                .source(prediction.source())
-                .cached(prediction.cached())
-                .confidence(result.getConfidence())
-                .result(result)
-                .newTargetVesselState(vesselState)
-                .build();
+        // Backward compatibility: Set legacy result field
+        if (response.getSteps() != null && !response.getSteps().isEmpty()) {
+            ReactionStepDTO firstStep = response.getSteps().get(0);
+            response.setResult(com.virtualchemistrylab.dto.ReactionResultDTO.builder()
+                    .hasReaction(firstStep.isHasReaction())
+                    .equation(firstStep.getEquation())
+                    .productFormula(firstStep.getProductFormula())
+                    .effectType(firstStep.getEffectType())
+                    .messageVi(firstStep.getMessageVi())
+                    .build());
+        } else {
+            response.setResult(com.virtualchemistrylab.dto.ReactionResultDTO.builder()
+                    .hasReaction(false)
+                    .messageVi("Không có phản ứng.")
+                    .build());
+        }
 
         // I. Log experiment
         experimentLogService.log(request.getSessionCode(), "MIX_CHEMICALS", request, response);
@@ -125,56 +164,11 @@ public class LabMixService {
         }
     }
 
-    /**
-     * Build the new vessel state for frontend animation from the reaction result.
-     */
-    private MixResponse.NewVesselState buildVesselState(String vesselId, ReactionResultDTO result) {
-        List<MixResponse.ProductEntry> contents = new ArrayList<>();
-        MixResponse.GasEntry gasEntry = null;
-
-        if (Boolean.TRUE.equals(result.getHasReaction()) && result.getProductFormula() != null) {
-            // Parse product formula string, e.g. "CaCl2 + CO2 + H2O"
-            String[] products = result.getProductFormula().split("\\+");
-            for (String p : products) {
-                String formula = p.trim();
-                // Skip gas products from the contents list – they go to releasedGas
-                if (formula.equals(result.getGasFormula())) continue;
-
-                String state = inferState(formula, result);
-                contents.add(MixResponse.ProductEntry.builder()
-                        .formula(formula)
-                        .state(state)
-                        .build());
-            }
-
-            if (result.getGasFormula() != null && !result.getGasFormula().isBlank()) {
-                gasEntry = MixResponse.GasEntry.builder()
-                        .formula(result.getGasFormula())
-                        .build();
-            }
+    private String getDisplayColorFromStep(ReactionStepDTO step) {
+        // Fallback or explicit colors could be added here
+        if ("PRECIPITATE".equals(step.getEffectType())) {
+            return "#DDDDDD";
         }
-
-        String displayColor = result.getEffectColor();
-        if (displayColor == null) {
-            if ("PRECIPITATE".equals(result.getEffectType()) && result.getPrecipitateColor() != null) {
-                displayColor = result.getPrecipitateColor();
-            } else {
-                displayColor = "#CCCCCC"; // neutral
-            }
-        }
-
-        return MixResponse.NewVesselState.builder()
-                .vesselId(vesselId)
-                .displayColor(displayColor)
-                .contents(contents.isEmpty() ? null : contents)
-                .releasedGas(gasEntry)
-                .build();
-    }
-
-    private String inferState(String formula, ReactionResultDTO result) {
-        if (formula.equals(result.getPrecipitateFormula())) return "SOLID";
-        if ("GAS_BUBBLE".equals(result.getEffectType()) && formula.equals(result.getGasFormula())) return "GAS";
-        if (formula.equalsIgnoreCase("H2O")) return "LIQUID";
-        return "AQUEOUS";
+        return "#CCCCCC";
     }
 }
