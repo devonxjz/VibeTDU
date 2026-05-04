@@ -154,11 +154,11 @@ export function Toolbar() {
           tone="card"
           className="flex min-h-[56px] items-center gap-3 rounded-[var(--clay-rounded-lg)] px-3 py-2"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-clay-primary text-clay-on-primary">
-            <FlaskConical className="h-5 w-5" strokeWidth={2.1} />
+          <div className="relative flex h-14 w-16 -ml-2 items-center justify-center">
+            <img src="/logo.png" alt="VibeTDU Logo" className="absolute h-full w-full object-contain scale-[1.7] drop-shadow-sm" />
           </div>
           <div>
-            <div className="clay-title-md text-clay-ink">ChemLab</div>
+            <div className="clay-title-md text-clay-ink">VibeTDU</div>
             <div className="clay-caption text-clay-muted">
               Bàn thí nghiệm tương tác
             </div>

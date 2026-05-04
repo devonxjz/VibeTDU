@@ -123,7 +123,6 @@ export const useChatbotStore = create<ChatbotStore>()(
       name: "chatbot:v1",
       partialize: (s) => ({
         position: s.position,
-        messages: s.messages.slice(-MAX_PERSISTED_MESSAGES),
       }),
     },
   ),
