@@ -163,6 +163,9 @@ public class LabController {
 
     // ─── Session logs ────────────────────────────────────────────────────────────
 
+    // Fix: 3 (Create ExperimentLogDTO and stop exposing JPA entities)
+    public record ExperimentLogDTO(Long id, String actionType, java.time.LocalDateTime createdAt) {}
+
     @Operation(
         summary = "Get experiment history",
         description = "Retrieve all action logs for an experiment session, sorted by most recent first."
@@ -171,10 +174,12 @@ public class LabController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "List of logs (may be empty for new sessions)")
     })
     @GetMapping("/session/{sessionCode}/logs")
-    public ResponseEntity<ApiResponse<List<ExperimentLog>>> getLogs(
+    public ResponseEntity<ApiResponse<List<ExperimentLogDTO>>> getLogs(
             @Parameter(description = "User's session code", example = "demo-001")
             @PathVariable String sessionCode) {
-        List<ExperimentLog> logs = experimentLogService.getLogsForSession(sessionCode);
+        List<ExperimentLogDTO> logs = experimentLogService.getLogsForSession(sessionCode).stream()
+                .map(log -> new ExperimentLogDTO(log.getId(), log.getActionType(), log.getCreatedAt()))
+                .toList(); // Fix: 3
         return ResponseEntity.ok(ApiResponse.success(logs));
     }
 

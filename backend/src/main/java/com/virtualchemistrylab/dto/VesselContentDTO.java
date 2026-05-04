@@ -18,5 +18,6 @@ public class VesselContentDTO {
 
     /** Optional – amount in mL; must be positive if provided */
     @Positive(message = "amountMl must be positive")
+    @jakarta.validation.constraints.Max(value = 10000, message = "amountMl must not exceed 10000") // Fix: 4
     private Double amountMl;
 }

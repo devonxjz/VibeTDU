@@ -24,6 +24,70 @@ export interface CategoryGroup {
   chemicals: Chemical[];
 }
 
+export interface CategoryUiColor {
+  accent: string;
+  bg: string;
+  softBg: string;
+  border: string;
+  text: string;
+}
+
+/**
+ * UI identification colors.
+ * Keep these saturated for scanning; realistic substance colors stay in CHEMICAL_COLORS.
+ */
+export const CATEGORY_UI_COLORS: Record<ChemicalCategory, CategoryUiColor> = {
+  acid: {
+    accent: "#e73512",
+    bg: "#fff1ec",
+    softBg: "#fff7f4",
+    border: "#ffc2b3",
+    text: "#8f1d08",
+  },
+  base: {
+    accent: "#0877c9",
+    bg: "#eaf6ff",
+    softBg: "#f4fbff",
+    border: "#acd9ff",
+    text: "#064c83",
+  },
+  salt: {
+    accent: "#7c3aed",
+    bg: "#f3ecff",
+    softBg: "#faf7ff",
+    border: "#d8c4ff",
+    text: "#4c1d95",
+  },
+  metal: {
+    accent: "#52616f",
+    bg: "#eef2f5",
+    softBg: "#f8fafc",
+    border: "#cbd5df",
+    text: "#26323f",
+  },
+  nonmetal: {
+    accent: "#0f9f7a",
+    bg: "#e9fbf6",
+    softBg: "#f5fdfa",
+    border: "#a7eadb",
+    text: "#08604c",
+  },
+  organic: {
+    accent: "#7a5a00",
+    bg: "#fff7d8",
+    softBg: "#fffbee",
+    border: "#f1d878",
+    text: "#5a4100",
+  },
+  api: {
+    accent: "#2563eb",
+    bg: "#eef4ff",
+    softBg: "#f7faff",
+    border: "#bfd4ff",
+    text: "#1e3a8a",
+  },
+};
+
 /**
  * Realistic color map for common chemicals.
  * Based on actual appearance of the substances.

@@ -59,7 +59,7 @@ public class AiInterpretationService {
 
         if (answer == null || answer.isBlank()) {
             log.warn("[ai-interpret] AI returned empty chat answer");
-            return "Sorry, the AI system cannot answer this question right now. Please try again later.";
+            return "Xin lỗi, hệ thống AI không thể trả lời câu hỏi này lúc này. Vui lòng thử lại sau.";
         }
 
         return answer;
