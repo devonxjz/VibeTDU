@@ -32,6 +32,7 @@ export function ConditionPanel() {
   const clearBeaker = useLabStore((state) => state.clearBeaker);
   const runReaction = useLabStore((state) => state.runReaction);
   const getCanPlay = useLabStore((state) => state.getCanPlay);
+  const appliedConditions = useLabStore((state) => state.appliedConditions);
 
   const contents = vessel?.contents.filter((content) => content.formula) ?? [];
   const canPlay = getCanPlay();
@@ -110,6 +111,13 @@ export function ConditionPanel() {
         </ClaySectionCard>
 
         <ExperimentTimeline />
+
+        {appliedConditions?.autoAdjusted && (
+          <div className="mt-3 rounded-[var(--clay-rounded-lg)] bg-amber-50 border border-amber-200 p-3">
+             <div className="clay-title-sm text-amber-800">Tự động áp dụng điều kiện</div>
+             <div className="clay-body-sm text-amber-700">{appliedConditions.reasonVi}</div>
+          </div>
+        )}
       </div>
 
       <ClaySectionCard className="mt-4 space-y-3 p-4">

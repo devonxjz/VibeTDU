@@ -56,6 +56,38 @@ export interface ReactionResult {
   basicExplanation?: string;
   intermediateExplanation?: string;
   advancedExplanation?: string;
+  requiredTemperatureMin?: number;
+  requiredTemperatureLabel?: string;
+  requiredCatalyst?: string;
+  requiredPressureMin?: number;
+}
+
+export interface AutoAppliedConditions {
+  temperature?: number;
+  pressure?: number;
+  catalyst?: string;
+  autoAdjusted: boolean;
+  reasonVi?: string;
+}
+
+export interface ReactionStep {
+  stepNumber: number;
+  reactants: string[];
+  reactionKey: string;
+  hasReaction: boolean;
+  equation?: string;
+  productFormula?: string;
+  effectType?: EffectType;
+  messageVi?: string;
+  appliedConditions?: AutoAppliedConditions;
+  consumed: string[];
+  produced: string[];
+  resultingContents: string[];
+}
+
+export interface FinalContent {
+  formula: string;
+  state: ProductState;
 }
 
 export interface ProductEntry {
@@ -81,6 +113,14 @@ export interface MixResponse {
   confidence?: number;
   result?: ReactionResult;
   newTargetVesselState?: NewVesselState;
+  
+  // Sequential reaction fields
+  reactionMode?: "DIRECT_PAIR" | "SEQUENTIAL_MULTI";
+  stepCount?: number;
+  steps?: ReactionStep[];
+  appliedConditions?: AutoAppliedConditions;
+  finalContents?: FinalContent[];
+  ambiguityNoteVi?: string;
 }
 
 // ─── Chemical Resolve ───────────────────────────────────────────────
