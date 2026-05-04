@@ -46,8 +46,8 @@ export function VesselComponent({ vessel }: VesselProps) {
       initial={{ scale: 0, opacity: 0 }}
       animate={
         isReacting 
-          ? { x: [-3, 3, -3, 3, 0], transition: { repeat: Infinity, duration: 0.4 } } 
-          : { scale: 1, opacity: 1 }
+          ? { x: [-3, 3, -3, 3, 0], scale: 1, opacity: 1, transition: { repeat: Infinity, duration: 0.4 } } 
+          : { x: 0, scale: 1, opacity: 1 }
       }
       exit={{ scale: 0, opacity: 0 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}

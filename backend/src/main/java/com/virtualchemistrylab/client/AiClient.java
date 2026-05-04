@@ -203,6 +203,7 @@ public class AiClient {
             try {
                 String response = webClient.post()
                         .uri(url)
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                         .bodyValue(requestBody)
                         .retrieve()
                         .bodyToMono(String.class)
@@ -276,6 +277,7 @@ public class AiClient {
             try {
                 String response = webClient.post()
                         .uri(url)
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                         .bodyValue(requestBody)
                         .retrieve()
                         .bodyToMono(String.class)
@@ -350,6 +352,7 @@ public class AiClient {
             String response = webClient.post()
                     .uri(appProperties.getAi().getApiUrl())
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
+                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                     .bodyValue(requestBody)
                     .retrieve()
                     .bodyToMono(String.class)
@@ -394,6 +397,7 @@ public class AiClient {
             String response = webClient.post()
                     .uri(appProperties.getAi().getApiUrl())
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
+                    .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                     .bodyValue(requestBody)
                     .retrieve()
                     .bodyToMono(String.class)
