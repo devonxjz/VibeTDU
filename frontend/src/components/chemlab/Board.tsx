@@ -8,8 +8,6 @@ import { VesselComponent } from "./Vessel";
 import { ReactionEffect } from "./effects/ReactionEffect";
 import { LabWorkbench } from "./scene/LabWorkbench";
 import { BeakerHero } from "./scene/BeakerHero";
-import { ReactionResultCard } from "./scene/ReactionResultCard";
-
 /* ─── Board — Main Canvas ────────────────────────────────────────────── */
 
 export function Board() {
@@ -58,18 +56,12 @@ export function Board() {
 
       {/* ── Loading spinner */}
       {isLoading && (
-        <div className="absolute inset-0 z-[110] flex items-center justify-center"
-          style={{ background: "rgba(6,13,26,0.6)", backdropFilter: "blur(4px)" }}
+        <div
+          className="absolute inset-0 z-[110] flex items-center justify-center bg-black/25 backdrop-blur-[3px] dark:bg-black/45"
         >
-          <div className="flex items-center gap-2.5 rounded-2xl px-5 py-3"
-            style={{
-              background: "rgba(30,41,59,0.9)",
-              border: "1px solid rgba(34,211,238,0.2)",
-              boxShadow: "0 0 24px rgba(34,211,238,0.1), 0 8px 32px rgba(0,0,0,0.5)",
-            }}
-          >
-            <Loader2 className="h-5 w-5 animate-spin" style={{ color: "#22d3ee" }} />
-            <span className="text-sm font-semibold" style={{ color: "#e2e8f0" }}>
+          <div className="flex items-center gap-2.5 rounded-[18px] border border-clay-hairline bg-clay-surface-card px-5 py-3">
+            <Loader2 className="h-5 w-5 animate-spin text-clay-brand-teal" />
+            <span className="clay-title-sm text-clay-ink">
               Đang mô phỏng phản ứng…
             </span>
           </div>

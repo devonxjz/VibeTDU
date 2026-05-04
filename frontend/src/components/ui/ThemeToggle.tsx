@@ -1,41 +1,27 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import { Sun, Moon } from "lucide-react";
-import { useEffect, useState } from "react";
-import { cn } from "@/utils/cn";
+
+import { useTheme } from "@/components/providers/ThemeProvider";
+import { ClayActionButton } from "@/components/ui/clay-primitives";
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
-
-  if (!mounted) {
-    return (
-      <div className="group relative inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-400">
-        <div className="h-[18px] w-[18px]" />
-      </div>
-    );
-  }
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
 
   return (
-    <button
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      title="Chuyển giao diện (Sáng/Tối)"
-      className={cn(
-        "group relative inline-flex h-9 w-9 items-center justify-center rounded-lg",
-        "transition-all duration-200 ease-out",
-        "hover:scale-[1.04]",
-        "text-toolbar-muted hover:bg-control-bg hover:text-toolbar-foreground"
-      )}
-      aria-label="Chuyển theme"
+    <ClayActionButton
+      variant="secondary"
+      size="icon"
+      onClick={toggleTheme}
+      title="Chuyển giao diện"
+      aria-label="Chuyển giao diện"
     >
-      {theme === "dark" ? (
-        <Sun className="h-[18px] w-[18px]" />
+      {isDark ? (
+        <Sun className="h-4.5 w-4.5" />
       ) : (
-        <Moon className="h-[18px] w-[18px]" />
+        <Moon className="h-4.5 w-4.5" />
       )}
-    </button>
+    </ClayActionButton>
   );
 }

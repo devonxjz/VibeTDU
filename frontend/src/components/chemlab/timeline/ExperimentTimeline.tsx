@@ -3,13 +3,42 @@
 import { useEffect, useRef } from "react";
 import { useLabStore } from "@/stores/lab-store";
 import { FlaskConical, Zap, Undo2, RotateCcw, Sparkles } from "lucide-react";
+
 import { cn } from "@/utils/cn";
+import { ClayPill, ClaySectionCard } from "@/components/ui/clay-primitives";
+
+const EVENT_STYLE = {
+  ADD: {
+    Icon: FlaskConical,
+    card: "bg-clay-brand-teal/10 text-clay-ink",
+    icon: "bg-clay-brand-teal text-clay-on-primary",
+  },
+  REACT: {
+    Icon: Zap,
+    card: "bg-clay-brand-ochre/18 text-clay-ink",
+    icon: "bg-clay-brand-ochre text-clay-ink",
+  },
+  UNDO: {
+    Icon: Undo2,
+    card: "bg-clay-surface-soft text-clay-ink",
+    icon: "bg-clay-primary text-clay-on-primary",
+  },
+  RESET: {
+    Icon: RotateCcw,
+    card: "bg-clay-brand-pink/12 text-clay-ink",
+    icon: "bg-clay-brand-pink text-clay-on-primary",
+  },
+  PRESET: {
+    Icon: Sparkles,
+    card: "bg-clay-brand-lavender/22 text-clay-ink",
+    icon: "bg-clay-brand-lavender text-clay-ink",
+  },
+} as const;
 
 export function ExperimentTimeline() {
-  const events = useLabStore((s) => s.timelineEvents);
+  const events = useLabStore((state) => state.timelineEvents);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Auto scroll to right when new events arrive
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollLeft = scrollRef.current.scrollWidth;
@@ -17,73 +46,52 @@ export function ExperimentTimeline() {
   }, [events.length]);
 
   return (
-    <section className="bg-surface-overlay border-b px-4 py-3 shrink-0">
-      <h3 className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-        Lịch sử thao tác
-      </h3>
-      
+    <ClaySectionCard className="p-4">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <div>
+          <div className="clay-caption-uppercase text-clay-muted">Lịch sử thao tác</div>
+          <div className="clay-body-sm text-clay-muted">Theo dõi các bước vừa thực hiện</div>
+        </div>
+        <ClayPill tone="neutral">{events.length} bước</ClayPill>
+      </div>
+
       {events.length === 0 ? (
-        <p className="text-xs italic text-muted-foreground">Chưa có thao tác nào</p>
+        <div className="rounded-[var(--clay-rounded-lg)] border border-dashed border-clay-hairline bg-clay-canvas px-4 py-5 text-center">
+          <div className="clay-body-sm text-clay-muted">Chưa có thao tác nào</div>
+        </div>
       ) : (
-        <div 
-          ref={scrollRef}
-          className="thin-scroll flex gap-2 overflow-x-auto pb-1 scroll-smooth"
-        >
+        <div ref={scrollRef} className="thin-scroll flex gap-2 overflow-x-auto pb-1 scroll-smooth">
           {events.map((event) => {
-            let Icon = FlaskConical;
-            let iconClass = "";
-            let bgClass = "bg-card";
-            
-            switch (event.type) {
-              case "ADD":
-                Icon = FlaskConical;
-                iconClass = "text-emerald-400";
-                bgClass = "bg-emerald-500/10 border-emerald-500/20";
-                break;
-              case "REACT":
-                Icon = Zap;
-                iconClass = "text-amber-400";
-                bgClass = "bg-amber-500/10 border-amber-500/20";
-                break;
-              case "UNDO":
-                Icon = Undo2;
-                iconClass = "text-slate-300";
-                bgClass = "bg-slate-500/10 border-slate-500/20";
-                break;
-              case "RESET":
-                Icon = RotateCcw;
-                iconClass = "text-rose-400";
-                bgClass = "bg-rose-500/10 border-rose-500/20";
-                break;
-              case "PRESET":
-                Icon = Sparkles;
-                iconClass = "text-purple-400";
-                bgClass = "bg-purple-500/10 border-purple-500/20";
-                break;
-            }
+            const style = EVENT_STYLE[event.type];
+            const Icon = style.Icon;
 
             return (
-              <div 
+              <div
                 key={event.id}
                 className={cn(
-                  "flex min-w-[140px] shrink-0 items-center gap-2 rounded-lg border p-2",
-                  bgClass
+                  "min-w-[156px] shrink-0 rounded-[var(--clay-rounded-lg)] border border-clay-hairline p-3",
+                  style.card,
                 )}
               >
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-card shadow-sm border">
-                  <Icon className={cn("h-3.5 w-3.5", iconClass)} />
+                <div className="mb-2 flex items-center gap-2">
+                  <div
+                    className={cn(
+                      "flex h-8 w-8 items-center justify-center rounded-[12px]",
+                      style.icon,
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <div className="clay-caption text-clay-muted">{event.timestamp}</div>
                 </div>
-                <div className="flex flex-col min-w-0">
-                  <span className="truncate text-[11px] font-semibold text-foreground" title={event.description}>
-                    {event.description}
-                  </span>
-                  <span className="text-[9px] text-muted-foreground">{event.timestamp}</span>
+                <div className="clay-body-sm text-clay-ink" title={event.description}>
+                  {event.description}
                 </div>
               </div>
             );
           })}
         </div>
       )}
-    </section>
+    </ClaySectionCard>
   );
 }

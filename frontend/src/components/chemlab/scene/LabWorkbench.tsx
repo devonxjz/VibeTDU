@@ -1,98 +1,75 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { LabEquipment2D } from "./LabEquipment2D";
 
-/* ─── LabWorkbench ─────────────────────────────────────────────────────
- * High-tech Dark Workbench — deep slate wall, dark tech table surface.
- * Makes the beaker and chemical reactions visually pop.
- * ──────────────────────────────────────────────────────────────────── */
-
 interface LabWorkbenchProps {
-  children?: React.ReactNode;
+  children?: ReactNode;
 }
 
 export function LabWorkbench({ children }: LabWorkbenchProps) {
   return (
     <div
       className="absolute inset-0 overflow-hidden"
-      aria-label="Bàn thí nghiệm hiện đại"
+      aria-label="Bàn thí nghiệm"
       style={{
-        background:
-          "linear-gradient(180deg, var(--lab-bg) 0%, color-mix(in oklch, var(--lab-bg), black 4%) 55%, color-mix(in oklch, var(--lab-table-top), black 2%) 100%)",
+        background: `
+          radial-gradient(circle at 50% 18%, color-mix(in srgb, var(--clay-brand-lavender) 10%, transparent) 0%, transparent 34%),
+          radial-gradient(circle at 50% 38%, var(--lab-glow) 0%, transparent 42%),
+          linear-gradient(180deg, color-mix(in srgb, var(--clay-canvas) 88%, var(--lab-bg)) 0%, var(--lab-bg) 62%, color-mix(in srgb, var(--lab-table-top) 78%, var(--lab-bg)) 100%)
+        `,
       }}
     >
-      {/* Background Grid */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-16"
+        className="pointer-events-none absolute inset-0 opacity-25"
         style={{
-          backgroundImage: "radial-gradient(circle, var(--toolbar-muted) 1px, transparent 1px)",
-          backgroundSize: "24px 24px",
-          maskImage: "linear-gradient(180deg, rgba(0,0,0,1) 0%, transparent 80%)",
-        }}
-      />
-      
-      {/* Controlled ambient light behind beaker */}
-      <div
-        className="absolute left-1/2 top-[40%] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-        style={{
-          width: 560,
-          height: 560,
-          borderRadius: "50%",
-          background: "radial-gradient(circle, var(--lab-glow) 0%, transparent 58%)",
-          filter: "saturate(0.9)",
+          backgroundImage:
+            "radial-gradient(circle, color-mix(in srgb, var(--clay-muted-soft) 45%, transparent) 0.8px, transparent 0.8px)",
+          backgroundSize: "28px 28px",
+          maskImage: "linear-gradient(180deg, rgba(0,0,0,0.55) 0%, transparent 78%)",
         }}
       />
 
-      {/* Horizontal line where wall meets table */}
       <div
-        className="absolute left-0 right-0 pointer-events-none"
+        className="pointer-events-none absolute left-0 right-0"
         style={{
-          top: "60%",
+          top: "61%",
           height: 1,
-          background: "linear-gradient(90deg, transparent 3%, var(--lab-border) 15%, var(--lab-border) 85%, transparent 97%)",
+          background:
+            "linear-gradient(90deg, transparent 4%, color-mix(in srgb, var(--clay-hairline) 80%, var(--lab-border)) 18%, color-mix(in srgb, var(--clay-hairline) 80%, var(--lab-border)) 82%, transparent 96%)",
         }}
       />
 
-      {/* Workbench surface — dark tech table */}
       <div
-        className="absolute left-[4%] right-[4%] rounded-t-[16px] rounded-b-lg"
+        className="absolute left-[4%] right-[4%] rounded-t-[24px] rounded-b-[18px]"
         style={{
-          top: "60%",
-          bottom: "3%",
-          background: "linear-gradient(180deg, var(--lab-table-top) 0%, var(--lab-table) 100%)",
-          borderTop: "1px solid var(--lab-border)",
-          boxShadow: "0 -6px 24px rgba(15,23,42,0.18), inset 0 1px 0 rgba(255,255,255,0.16)",
+          top: "61%",
+          bottom: "4%",
+          background: `linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--lab-table-top) 84%, var(--clay-surface-card)) 0%,
+            color-mix(in srgb, var(--lab-table) 90%, var(--clay-surface-soft)) 100%
+          )`,
+          borderTop: "1px solid color-mix(in srgb, var(--clay-hairline) 65%, var(--lab-border))",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)",
         }}
         aria-label="Mặt bàn thí nghiệm"
       >
         <div
-          className="absolute inset-x-0 top-0 h-1 rounded-t-[16px] pointer-events-none"
+          className="pointer-events-none absolute inset-x-0 top-0 h-1 rounded-t-[24px]"
           style={{
-            background: "linear-gradient(90deg, transparent, var(--lab-glow), transparent)",
-          }}
-        />
-        {/* Subtle high-tech surface texture */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-10 rounded-t-[16px]"
-          style={{
-            backgroundImage: "repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(255,255,255,0.03) 10px, rgba(255,255,255,0.03) 11px)",
+            background:
+              "linear-gradient(90deg, transparent, color-mix(in srgb, var(--clay-brand-teal) 22%, transparent), transparent)",
           }}
         />
       </div>
 
-      {/* Lab equipment — left side */}
-      <div className="absolute" style={{ bottom: "5%", left: "5%", zIndex: 6 }}>
+      <div className="absolute bottom-[5%] left-[5%] z-[6] scale-[0.98] opacity-90">
         <LabEquipment2D />
       </div>
 
-      {/* Main content slot (BeakerHero) */}
-      <div
-        className="absolute inset-0 flex items-center justify-center"
-        style={{ zIndex: 10 }}
-      >
-        <div className="my-auto min-h-[200px] flex items-center justify-center">
-          {children}
-        </div>
+      <div className="absolute inset-0 z-10 flex items-center justify-center px-6">
+        <div className="my-auto flex min-h-[240px] items-center justify-center">{children}</div>
       </div>
     </div>
   );
