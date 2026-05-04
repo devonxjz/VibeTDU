@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "../styles/clay-typography.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -10,6 +11,29 @@
  */
 
 @theme inline {
+  /* ─── Clay Design System Tokens ─── */
+  --color-clay-primary: var(--clay-primary);
+  --color-clay-brand-pink: var(--clay-brand-pink);
+  --color-clay-brand-teal: var(--clay-brand-teal);
+  --color-clay-brand-lavender: var(--clay-brand-lavender);
+  --color-clay-brand-peach: var(--clay-brand-peach);
+  --color-clay-brand-ochre: var(--clay-brand-ochre);
+  --color-clay-canvas: var(--clay-canvas);
+  --color-clay-surface-soft: var(--clay-surface-soft);
+  --color-clay-surface-card: var(--clay-surface-card);
+  --color-clay-ink: var(--clay-ink);
+  --color-clay-body: var(--clay-body);
+  --color-clay-muted: var(--clay-muted);
+  --color-clay-muted-soft: var(--clay-muted-soft);
+  --color-clay-on-primary: var(--clay-on-primary);
+  --color-clay-hairline: var(--clay-hairline);
+  --spacing-clay-space-xl: var(--clay-space-xl);
+  --spacing-clay-space-lg: var(--clay-space-lg);
+  --spacing-clay-space-section: var(--clay-space-section);
+  --radius-clay-rounded-xl: var(--clay-rounded-xl);
+  --radius-clay-rounded-lg: var(--clay-rounded-lg);
+  --radius-clay-rounded-md: var(--clay-rounded-md);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -105,6 +129,29 @@
 }
 
 :root {
+  /* ─── Clay Design System Tokens ─── */
+  --clay-primary: #0a0a0a;
+  --clay-brand-pink: #ff4d8b;
+  --clay-brand-teal: #1a3a3a;
+  --clay-brand-lavender: #b8a4ed;
+  --clay-brand-peach: #ffb084;
+  --clay-brand-ochre: #e8b94a;
+  --clay-canvas: #fffaf0;
+  --clay-surface-soft: #faf5e8;
+  --clay-surface-card: #f5f0e0;
+  --clay-ink: #0a0a0a;
+  --clay-body: #3a3a3a;
+  --clay-muted: #6a6a6a;
+  --clay-muted-soft: #9a9a9a;
+  --clay-on-primary: #ffffff;
+  --clay-hairline: #e5e5e5;
+  --clay-space-xl: 32px;
+  --clay-space-lg: 24px;
+  --clay-space-section: 96px;
+  --clay-rounded-xl: 24px;
+  --clay-rounded-lg: 16px;
+  --clay-rounded-md: 12px;
+
   --radius: 0.75rem;
 
   /* Base — pastel mát, nền trắng kem */
@@ -193,6 +240,22 @@
 }
 
 .dark {
+  --clay-primary: #f6efe0;
+  --clay-brand-pink: #ff6a9d;
+  --clay-brand-teal: #294f4f;
+  --clay-brand-lavender: #8e7acf;
+  --clay-brand-peach: #d89768;
+  --clay-brand-ochre: #c79836;
+  --clay-canvas: #141715;
+  --clay-surface-soft: #1c211d;
+  --clay-surface-card: #252b26;
+  --clay-ink: #f7f0e4;
+  --clay-body: #dbd3c7;
+  --clay-muted: #aaa397;
+  --clay-muted-soft: #7f786d;
+  --clay-on-primary: #10110f;
+  --clay-hairline: rgba(255, 245, 230, 0.1);
+
   /* ─── Override semantic tokens — DARK ─── */
   --background:       oklch(0.13 0.01 260);
   --foreground:       oklch(0.88 0.01 240);
@@ -246,6 +309,18 @@
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-font-smoothing: antialiased;
     overflow: hidden;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at top left, color-mix(in srgb, var(--clay-brand-lavender) 14%, transparent) 0%, transparent 36%),
+      radial-gradient(circle at top right, color-mix(in srgb, var(--clay-brand-teal) 16%, transparent) 0%, transparent 34%),
+      linear-gradient(180deg, color-mix(in srgb, var(--clay-canvas) 92%, transparent), color-mix(in srgb, var(--clay-surface-soft) 96%, transparent));
+    z-index: -1;
   }
 
   h1, h2, h3, h4, h5, h6 {

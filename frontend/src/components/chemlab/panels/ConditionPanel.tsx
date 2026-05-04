@@ -8,167 +8,159 @@ import {
   FlaskConical,
   RotateCcw,
 } from "lucide-react";
+
 import { useLabStore } from "@/stores/lab-store";
 import { Formula } from "@/components/chemlab/Formula";
-import { cn } from "@/utils/cn";
 import { getBottleColor } from "@/constants/chemicals";
 import { PresetSelector } from "@/components/chemlab/PresetSelector";
 import { ExperimentTimeline } from "@/components/chemlab/timeline/ExperimentTimeline";
-
-/* ─── ConditionPanel ────────────────────────────────────────────────── */
+import {
+  ClayActionButton,
+  ClayPanelShell,
+  ClayPill,
+  ClaySectionCard,
+} from "@/components/ui/clay-primitives";
 
 export function ConditionPanel() {
-  const centerBeakerId = useLabStore((s) => s.centerBeakerId);
-  const vessel = useLabStore((s) =>
-    s.centerBeakerId ? s.vessels[s.centerBeakerId] : null
+  const centerBeakerId = useLabStore((state) => state.centerBeakerId);
+  const vessel = useLabStore((state) =>
+    state.centerBeakerId ? state.vessels[state.centerBeakerId] : null,
   );
-  const isLoading = useLabStore((s) => s.isLoading);
-  const removeFromBeaker = useLabStore((s) => s.removeFromBeaker);
-  const undoLastChemical = useLabStore((s) => s.undoLastChemical);
-  const clearBeaker = useLabStore((s) => s.clearBeaker);
-  const runReaction = useLabStore((s) => s.runReaction);
-  const getCanPlay = useLabStore((s) => s.getCanPlay);
+  const isLoading = useLabStore((state) => state.isLoading);
+  const removeFromBeaker = useLabStore((state) => state.removeFromBeaker);
+  const undoLastChemical = useLabStore((state) => state.undoLastChemical);
+  const clearBeaker = useLabStore((state) => state.clearBeaker);
+  const runReaction = useLabStore((state) => state.runReaction);
+  const getCanPlay = useLabStore((state) => state.getCanPlay);
 
-  const contents = vessel?.contents.filter((c) => c.formula) ?? [];
+  const contents = vessel?.contents.filter((content) => content.formula) ?? [];
   const canPlay = getCanPlay();
 
   return (
-    <aside className="flex h-full w-full flex-col overflow-hidden">
-      {/* Header */}
-      <div className="px-4 py-3.5">
-        <h2 className="font-display text-sm font-bold text-foreground">
-          Điều kiện thí nghiệm
-        </h2>
-        <p className="text-xs font-medium text-muted-foreground">
-          Thiết lập và kiểm soát phản ứng
-        </p>
+    <ClayPanelShell className="flex h-full w-full flex-col rounded-none border-0 bg-clay-surface-soft px-4 py-4">
+      <div className="mb-4">
+        <div className="mb-1 flex items-start justify-between gap-3">
+          <div>
+            <h2 className="clay-display-sm text-clay-ink">Điều kiện thí nghiệm</h2>
+            <p className="clay-body-sm text-clay-muted">
+              Thiết lập phản ứng, theo dõi bình chính và chạy mô phỏng.
+            </p>
+          </div>
+          <ClayPill tone="neutral">{contents.length} chất</ClayPill>
+        </div>
       </div>
 
-      <div className="thin-scroll flex-1 overflow-y-auto">
+      <div className="thin-scroll flex-1 space-y-4 overflow-y-auto pr-1">
         <PresetSelector />
 
-        {/* ── Beaker Contents ────────────────────────────────────────── */}
-        <section className="px-4 py-3">
-          <h3 className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-muted-foreground">
-            <FlaskConical className="h-3.5 w-3.5" />
-            Hoá chất trong bình
-            {contents.length > 0 && (
-              <span className="ml-auto rounded-full bg-mint-soft px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-foreground">
-                {contents.length}
-              </span>
-            )}
-          </h3>
+        <ClaySectionCard className="p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-clay-primary text-clay-on-primary">
+              <FlaskConical className="h-4.5 w-4.5" />
+            </div>
+            <div>
+              <div className="clay-caption-uppercase text-clay-muted">Bình trung tâm</div>
+              <div className="clay-title-sm text-clay-ink">Hóa chất trong bình</div>
+            </div>
+          </div>
 
           {contents.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-xl py-6 text-center">
-              <FlaskConical className="mb-2 h-6 w-6 text-muted-foreground/70" />
-              <p className="text-sm font-semibold text-foreground">Chưa có hoá chất</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                Chọn từ thư viện bên phải
+            <div className="rounded-[var(--clay-rounded-lg)] border border-dashed border-clay-hairline bg-clay-canvas px-5 py-8 text-center">
+              <FlaskConical className="mx-auto mb-3 h-6 w-6 text-clay-muted" />
+              <p className="clay-title-sm text-clay-ink">Chưa có hoá chất</p>
+              <p className="clay-body-sm mt-1 text-clay-muted">
+                Chọn từ thư viện bên phải để bắt đầu.
               </p>
             </div>
           ) : (
-            <div className="space-y-1.5">
-              {contents.map((c, i) => (
+            <div className="space-y-2">
+              {contents.map((content, index) => (
                 <div
-                  key={`${c.formula}-${i}`}
-                  className="group flex items-center gap-2.5 rounded-lg border border-border/70 bg-control-bg px-3 py-2 transition-colors hover:bg-control-bg-hover"
+                  key={`${content.formula}-${index}`}
+                  className="group flex items-center gap-3 rounded-[var(--clay-rounded-lg)] border border-clay-hairline bg-clay-canvas px-3 py-3"
                 >
-                  {/* Color dot */}
                   <span
-                    className="h-3 w-3 shrink-0 rounded-full shadow-sm"
+                    className="h-3.5 w-3.5 shrink-0 rounded-full border border-white/70 shadow-sm"
                     style={{
                       backgroundColor: getBottleColor(
-                        c.formula.toLowerCase().replace(/[₂₃₄₅₆₇₈₉()]/g, ""),
-                        c.formula
+                        content.formula.toLowerCase().replace(/[₂₃₄₅₆₇₈₉()]/g, ""),
+                        content.formula,
                       ),
                     }}
                   />
-                  {/* Formula */}
                   <Formula
-                    formula={c.formula}
-                    className="min-w-0 flex-1 break-words text-sm font-bold text-foreground"
+                    formula={content.formula}
+                    className="min-w-0 flex-1 break-words clay-title-sm text-clay-ink"
                   />
-                  {/* Amount */}
-                  <span className="text-xs font-semibold tabular-nums text-muted-foreground">
-                    {c.amountMl ?? 10} mL
+                  <span className="clay-caption shrink-0 text-clay-muted">
+                    {content.amountMl ?? 10} mL
                   </span>
-                  {/* Delete */}
                   <button
-                    onClick={() => removeFromBeaker(c.formula)}
-                    className="flex h-5 w-5 items-center justify-center rounded-md text-gray-400/50 opacity-0 transition-all hover:bg-rose-50 hover:text-rose-500 group-hover:opacity-100"
-                    title={`Bỏ ${c.formula}`}
+                    type="button"
+                    onClick={() => removeFromBeaker(content.formula)}
+                    className="flex h-8 w-8 items-center justify-center rounded-[10px] text-clay-muted opacity-0 transition-all hover:bg-clay-surface-soft hover:text-clay-ink group-hover:opacity-100"
+                    title={`Bỏ ${content.formula}`}
                   >
-                    <X className="h-3 w-3" />
+                    <X className="h-4 w-4" />
                   </button>
                 </div>
               ))}
             </div>
           )}
-        </section>
+        </ClaySectionCard>
 
-
-
-        {/* ── Environment Conditions moved to Toolbar ── */}
-
+        <ExperimentTimeline />
       </div>
-      
-      <ExperimentTimeline />
 
-      {/* ── Bottom Action Bar ───────────────────────────────────────── */}
-      <div className="px-4 py-3 space-y-2">
-        {/* Play button */}
-        <button
+      <ClaySectionCard className="mt-4 space-y-3 p-4">
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <div className="clay-caption-uppercase text-clay-muted">Thao tác</div>
+            <div className="clay-title-sm text-clay-ink">Điều khiển phản ứng</div>
+          </div>
+          <ClayPill tone={canPlay ? "teal" : "neutral"}>
+            {canPlay ? "Sẵn sàng" : "Chờ đủ chất"}
+          </ClayPill>
+        </div>
+
+        <ClayActionButton
+          variant="primary"
+          className="w-full justify-center"
           disabled={!canPlay}
           onClick={async () => {
             if (!canPlay || !centerBeakerId) return;
             await runReaction(centerBeakerId);
           }}
-          className={cn(
-            "flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold transition-all duration-200",
-            canPlay
-              ? "bg-emerald-500 text-white shadow-md hover:bg-emerald-600 hover:shadow-lg active:scale-[0.98]"
-              : "bg-control-bg text-gray-400 cursor-not-allowed"
-          )}
         >
           {isLoading ? (
-            <RotateCcw className="h-4 w-4 animate-spin" />
+            <RotateCcw className="h-4.5 w-4.5 animate-spin" />
           ) : (
-            <Play className="h-4 w-4" />
+            <Play className="h-4.5 w-4.5" />
           )}
-          {isLoading ? "Đang phản ứng…" : "Chạy phản ứng"}
-        </button>
+          {isLoading ? "Đang mô phỏng phản ứng" : "Chạy phản ứng"}
+        </ClayActionButton>
 
-        {/* Undo + Clear row */}
         <div className="grid grid-cols-2 gap-2">
-          <button
+          <ClayActionButton
+            variant="secondary"
+            disabled={contents.length === 0}
             onClick={() => undoLastChemical()}
-            disabled={contents.length === 0}
-            className={cn(
-              "flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-semibold transition-colors",
-              contents.length > 0
-                ? "bg-control-bg text-foreground hover:bg-control-bg-hover"
-                : "bg-surface text-gray-400/30 cursor-not-allowed"
-            )}
+            className="justify-center"
           >
-            <Undo2 className="h-3.5 w-3.5" />
+            <Undo2 className="h-4 w-4" />
             Hoàn tác
-          </button>
-          <button
-            onClick={() => clearBeaker()}
+          </ClayActionButton>
+          <ClayActionButton
+            variant="secondary"
             disabled={contents.length === 0}
-            className={cn(
-              "flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-semibold transition-colors",
-              contents.length > 0
-                ? "bg-rose-500/10 text-rose-500 hover:bg-rose-500/20"
-                : "bg-surface text-gray-400/30 cursor-not-allowed"
-            )}
+            onClick={() => clearBeaker()}
+            className="justify-center text-clay-brand-pink hover:bg-clay-brand-pink/10"
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            <Trash2 className="h-4 w-4" />
             Xóa tất cả
-          </button>
+          </ClayActionButton>
         </div>
-      </div>
-    </aside>
+      </ClaySectionCard>
+    </ClayPanelShell>
   );
 }

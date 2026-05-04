@@ -87,6 +87,7 @@ interface LabStore {
   isLoading: boolean;
   error: string | null;
   timelineEvents: TimelineEvent[];
+  unlockedReactions: string[];
 
   // Environment conditions
   temperature: number;
@@ -124,6 +125,7 @@ interface LabStore {
   setEnvironment: (conditions: Partial<{ temperature: number; pressure: number; catalyst: string }>) => void;
   addTimelineEvent: (event: Omit<TimelineEvent, "id" | "timestamp">) => void;
   clearTimeline: () => void;
+  unlockReaction: (id: string) => void;
 
   // PRO click-to-add actions
   /** Click a chemical card → adds to center beaker (no dupes, +15 level) */
@@ -156,6 +158,7 @@ export const useLabStore = create<LabStore>((set, get) => ({
   isLoading: false,
   error: null,
   timelineEvents: [],
+  unlockedReactions: [],
 
   temperature: 25,
   pressure: 1,
@@ -191,6 +194,12 @@ export const useLabStore = create<LabStore>((set, get) => ({
   })),
 
   clearTimeline: () => set({ timelineEvents: [] }),
+
+  unlockReaction: (id) => set((state) => ({
+    unlockedReactions: state.unlockedReactions.includes(id) 
+      ? state.unlockedReactions 
+      : [...state.unlockedReactions, id]
+  })),
 
   setCenterBeaker: (id) => set({ centerBeakerId: id }),
 
@@ -321,6 +330,10 @@ export const useLabStore = create<LabStore>((set, get) => ({
       setTimeout(() => set({ isReacting: false }), 3000);
 
       if (result?.hasReaction) {
+        const formulas = vessel.contents.map(c => c.formula).filter(Boolean);
+        const reactionKey = formulas.map(r => r.toLowerCase()).sort().join("+");
+        get().unlockReaction(reactionKey);
+
         get().addTimelineEvent({
           type: "REACT",
           description: result.equation || "Phản ứng đã chạy",
@@ -366,6 +379,9 @@ export const useLabStore = create<LabStore>((set, get) => ({
       setTimeout(() => set({ isReacting: false }), 3000);
 
       if (mockResult.hasReaction) {
+        const reactionKey = formulas.map(r => r.toLowerCase()).sort().join("+");
+        get().unlockReaction(reactionKey);
+
         get().addTimelineEvent({
           type: "REACT",
           description: mockResult.equation || "Phản ứng đã chạy",
@@ -508,6 +524,12 @@ export const useLabStore = create<LabStore>((set, get) => ({
         isLoading: false,
       });
 
+      if (result?.hasReaction) {
+        const formulas = [...target.contents.map(c => c.formula), chemical.formula].filter(Boolean);
+        const reactionKey = formulas.map(r => r.toLowerCase()).sort().join("+");
+        get().unlockReaction(reactionKey);
+      }
+
       if (effectType !== "NONE") {
         const duration = EFFECT_DURATION[effectType] ?? 3000;
         setTimeout(() => {
@@ -552,6 +574,11 @@ export const useLabStore = create<LabStore>((set, get) => ({
         activeEffect: effectType !== "NONE" ? { type: effectType, vesselId: targetId, color: mockResult.effectColor, precipitateColor: mockResult.precipitateColor, gasFormula: mockResult.gasFormula } : null,
         isLoading: false,
       });
+
+      if (mockResult.hasReaction) {
+        const reactionKey = formulas.map(r => r.toLowerCase()).sort().join("+");
+        get().unlockReaction(reactionKey);
+      }
 
       if (effectType !== "NONE") {
         const duration = EFFECT_DURATION[effectType] ?? 3000;
@@ -641,6 +668,12 @@ export const useLabStore = create<LabStore>((set, get) => ({
         isLoading: false,
       });
 
+      if (result?.hasReaction) {
+        const formulas = [...target.contents.map(c => c.formula), ...source.contents.map(c => c.formula)].filter(Boolean);
+        const reactionKey = formulas.map(r => r.toLowerCase()).sort().join("+");
+        get().unlockReaction(reactionKey);
+      }
+
       // Auto-clear effect after animation
       if (effectType !== "NONE") {
         const duration = EFFECT_DURATION[effectType] ?? 3000;
@@ -686,6 +719,11 @@ export const useLabStore = create<LabStore>((set, get) => ({
         activeEffect: effectType !== "NONE" ? { type: effectType, vesselId: targetId, color: mockResult.effectColor, precipitateColor: mockResult.precipitateColor, gasFormula: mockResult.gasFormula } : null,
         isLoading: false,
       });
+
+      if (mockResult.hasReaction) {
+        const reactionKey = formulas.map(r => r.toLowerCase()).sort().join("+");
+        get().unlockReaction(reactionKey);
+      }
 
       if (effectType !== "NONE") {
         const duration = EFFECT_DURATION[effectType] ?? 3000;

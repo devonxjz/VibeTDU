@@ -41,17 +41,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className={`${inter.variable} ${plusJakarta.variable} ${dmSans.variable}`} suppressHydrationWarning>
+    <html
+      lang="vi"
+      className={`dark ${inter.variable} ${plusJakarta.variable} ${dmSans.variable}`}
+      suppressHydrationWarning
+    >
       <body
         className="min-h-screen font-sans bg-background text-foreground antialiased selection:bg-primary/20"
         suppressHydrationWarning
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          disableTransitionOnChange={false}
-        >
+        <ThemeProvider defaultTheme="dark">
           {children}
         </ThemeProvider>
       </body>
