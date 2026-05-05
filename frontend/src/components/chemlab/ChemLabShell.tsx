@@ -10,6 +10,7 @@ import { Board } from "@/components/chemlab/Board";
 import { useLabStore } from "@/stores/lab-store";
 import { ChatbotWidget } from "@/components/chatbot/ChatbotWidget";
 import { ReactionResultCard } from "@/components/chemlab/scene/ReactionResultCard";
+import { GuestMigrationDialog } from "@/components/auth/GuestMigrationDialog";
 
 const LEFT_DEFAULT = 320;
 const LEFT_MIN = 240;
@@ -148,6 +149,7 @@ export function ChemLabShell() {
       </div>
 
       <ChatbotWidget />
+      <GuestMigrationDialog />
     </>
   );
 }

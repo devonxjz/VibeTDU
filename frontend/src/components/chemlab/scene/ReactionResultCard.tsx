@@ -3,9 +3,13 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useLabStore } from "@/stores/lab-store";
 import { ReactionFormula } from "@/components/chemlab/Formula";
-import { Info, Zap, AlertTriangle, XCircle } from "lucide-react";
+import { Info, Zap, AlertTriangle, XCircle, Save, CheckCircle2 } from "lucide-react";
 import { ExplanationPanel } from "@/components/chemlab/panels/ExplanationPanel";
-import { ClayPill } from "@/components/ui/clay-primitives";
+import { ClayPill, ClayActionButton } from "@/components/ui/clay-primitives";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { saveJournal } from "@/api/client/journal";
+import { toast } from "sonner";
 
 const EFFECT_PILL: Record<string, "pink" | "teal" | "lavender" | "peach" | "ochre" | "neutral"> = {
   GAS_BUBBLE: "teal",
@@ -18,6 +22,17 @@ const EFFECT_PILL: Record<string, "pink" | "teal" | "lavender" | "peach" | "ochr
 
 export function ReactionResultCard() {
   const reaction = useLabStore((state) => state.lastReaction);
+  const centerBeakerId = useLabStore((state) => state.centerBeakerId);
+  const vessels = useLabStore((state) => state.vessels);
+  const { isLoggedIn, login } = useAuth();
+  
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    setIsSaved(false);
+    setIsSaving(false);
+  }, [reaction]);
 
   const reactionTypeName: Record<string, string> = {
     GAS_BUBBLE: "Tạo khí",
@@ -26,6 +41,37 @@ export function ReactionResultCard() {
     HEAT: "Toả nhiệt",
     EXPLOSION: "Nổ mạnh",
     NONE: "Không có hiệu ứng",
+  };
+
+  const handleSave = async () => {
+    if (!isLoggedIn) {
+      toast("Vui lòng đăng nhập để lưu", {
+        action: { label: "Đăng nhập", onClick: () => login() },
+      });
+      return;
+    }
+
+    if (!reaction || !centerBeakerId) return;
+    const vessel = vessels[centerBeakerId];
+    if (!vessel) return;
+
+    setIsSaving(true);
+    const experimentData = JSON.stringify({
+      version: 1,
+      timestamp: new Date().toISOString(),
+      contents: vessel.contents,
+      reaction,
+    });
+
+    const result = await saveJournal("Thí nghiệm Mới", experimentData);
+    setIsSaving(false);
+
+    if (result.success) {
+      setIsSaved(true);
+      toast.success("Đã lưu vào Sổ tay Hóa học");
+    } else {
+      toast.error(result.error);
+    }
   };
 
   return (
@@ -71,6 +117,23 @@ export function ReactionResultCard() {
                           <p className="clay-title-md text-clay-ink">Phản ứng đã được mô phỏng</p>
                         </div>
                       </div>
+                      
+                      <div className="flex flex-wrap items-center gap-3 mb-2">
+                        {reaction.effectType && reaction.effectType !== "NONE" && (
+                          <ClayPill tone={EFFECT_PILL[reaction.effectType] ?? "neutral"}>
+                            {reactionTypeName[reaction.effectType] ?? reaction.effectType}
+                          </ClayPill>
+                        )}
+                        <ClayActionButton
+                          variant="ghost"
+                          onClick={handleSave}
+                          disabled={isSaving || isSaved}
+                          className="text-sm h-8"
+                        >
+                          {isSaving ? "Đang lưu..." : isSaved ? <><CheckCircle2 className="w-4 h-4 mr-1 text-green-500" /> Đã lưu</> : <><Save className="w-4 h-4 mr-1" /> Lưu vào Sổ tay</>}
+                        </ClayActionButton>
+                      </div>
+
                       {reaction.equation && (
                         <ReactionFormula
                           formula={reaction.equation}
@@ -78,11 +141,6 @@ export function ReactionResultCard() {
                         />
                       )}
                     </div>
-                    {reaction.effectType && reaction.effectType !== "NONE" && (
-                      <ClayPill tone={EFFECT_PILL[reaction.effectType] ?? "neutral"}>
-                        {reactionTypeName[reaction.effectType] ?? reaction.effectType}
-                      </ClayPill>
-                    )}
                   </div>
 
                   <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">

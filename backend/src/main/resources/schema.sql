@@ -1,7 +1,5 @@
 -- ============================================================
 -- Virtual Chemistry Lab – PostgreSQL Schema (Supabase)
--- Supabase tự tạo schema "public" – chỉ cần tạo tables.
--- Spring Boot ddl-auto=update cũng tự tạo nếu chưa có.
 -- ============================================================
 
 -- ──────────────────────────────────────────────────────────────
@@ -77,3 +75,23 @@ CREATE TABLE IF NOT EXISTS api_error_logs (
     error_message    TEXT,
     created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- ──────────────────────────────────────────────────────────────
+-- 6. users
+-- ──────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS users (
+    id                 UUID PRIMARY KEY,
+    email              VARCHAR(255) NOT NULL,
+    provider           VARCHAR(20)  DEFAULT 'google',
+    google_sub         VARCHAR(255),
+    name               VARCHAR(255),
+    picture_url        TEXT,
+    ai_quota_remaining INT          DEFAULT 20,
+    last_reset_date    DATE         NOT NULL,
+    created_at         TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_users_email UNIQUE (email),
+    CONSTRAINT uq_users_google_sub UNIQUE (google_sub)
+);
+
+CREATE INDEX IF NOT EXISTS idx_users_google_sub ON users(google_sub);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
