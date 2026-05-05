@@ -1,6 +1,6 @@
 com\virtualchemistrylab\util\ReactionProductParserTest.class
 com\virtualchemistrylab\VirtualChemistryLabApplicationTests.class
 com\virtualchemistrylab\service\PairReactionResolverServiceTest.class
-com\virtualchemistrylab\service\ReactionConditionServiceTest.class
 com\virtualchemistrylab\service\LabMixNormalizationTest.class
 com\virtualchemistrylab\service\SequentialReactionServiceTest.class
+com\virtualchemistrylab\service\ReactionConditionServiceTest.class

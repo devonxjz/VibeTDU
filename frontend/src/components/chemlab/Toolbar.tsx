@@ -16,6 +16,7 @@ import { useState } from "react";
 import { cn } from "@/utils/cn";
 import { useLabStore } from "@/stores/lab-store";
 import { useChatbotStore } from "@/stores/chatbot-store";
+import { useAuth } from "@/hooks/useAuth";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import {
   ClayActionButton,
@@ -138,6 +139,8 @@ export function Toolbar() {
 
   const toggleChatbotPanel = useChatbotStore((s) => s.togglePanel);
   const isChatbotOpen = useChatbotStore((s) => s.isOpen);
+
+  const { isLoggedIn, user, logout } = useAuth();
 
   const pressureOptions = [
     { value: 0.5, label: "0.5 atm" },
@@ -263,13 +266,40 @@ export function Toolbar() {
               active={isChatbotOpen}
               onClick={toggleChatbotPanel}
             />
-            <IconButton
-              icon={UserCircle2}
-              label="Đăng nhập"
-              onClick={() => {
-                // TODO: wire to login flow
-              }}
-            />
+            {isLoggedIn && user ? (
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm("Đăng xuất?")) logout();
+                }}
+                className="group relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-clay-hairline transition-transform active:scale-95"
+                title={`Đăng xuất (${user.name})`}
+              >
+                {user.pictureUrl ? (
+                  <img
+                    src={user.pictureUrl}
+                    alt={user.name}
+                    className="h-full w-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-clay-primary text-clay-on-primary">
+                    {user.name?.charAt(0).toUpperCase() ?? "U"}
+                  </div>
+                )}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                  <UserCircle2 className="h-5 w-5 text-white" />
+                </div>
+              </button>
+            ) : (
+              <IconButton
+                icon={UserCircle2}
+                label="Đăng nhập"
+                onClick={() => {
+                  window.location.href = "/login";
+                }}
+              />
+            )}
           </div>
         </ToolbarCluster>
       </div>

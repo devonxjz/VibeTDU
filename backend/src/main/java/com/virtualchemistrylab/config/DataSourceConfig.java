@@ -39,26 +39,38 @@ public class DataSourceConfig {
     @Bean
     @Primary
     public DataSource supabaseDataSource() {
-        log.info("Configuring HikariCP -> Supabase PostgreSQL (Session Pooler)...");
+        log.info("Configuring HikariCP -> Supabase PostgreSQL (Transaction Pooler on 6543)...");
 
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(jdbcUrl);
+        
+        // Final recommended URL for Supabase Transaction Pooler
+        String url = "jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres" +
+                     "?sslmode=require" +
+                     "&prepareThreshold=0" +
+                     "&defaultRowFetchSize=0" +
+                     "&tcpKeepAlive=true";
+        
+        config.setJdbcUrl(url);
         config.setUsername(dbUser);
         config.setPassword(dbPass);
         config.setDriverClassName("org.postgresql.Driver");
 
-        // Pool settings - Supabase free tier allows max ~15 concurrent connections
+        // Pool settings
         config.setPoolName("VCL-Supabase-Pool");
         config.setMaximumPoolSize(5);
-        config.setMinimumIdle(0);         // 0 idle to conserve connection slots
-        config.setConnectionTimeout(30_000);
-        config.setIdleTimeout(600_000);
-        config.setMaxLifetime(1_800_000);
-        // Required for Connection Pooler (PgBouncer) to avoid Prepared Statement errors
+        config.setMinimumIdle(0);
+        config.setConnectionTimeout(30000);
+        config.setIdleTimeout(600000);
+        config.setMaxLifetime(1800000);
+
+        // ✅ Critical: Prevent Hikari from calling setTransactionIsolation() by using connectionInitSql
+        config.setConnectionInitSql("SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED");
+        
+        // ✅ Explicitly disable prepared statements (required for Transaction Pooler)
         config.addDataSourceProperty("prepareThreshold", "0");
         config.setConnectionTestQuery("SELECT 1");
         
-        log.info("HikariCP bean created successfully. URL: {}", jdbcUrl);
+        log.info("HikariCP bean created successfully. URL: {}", url);
 
         return new HikariDataSource(config);
     }

@@ -136,6 +136,11 @@ interface LabStore {
   removeFromBeaker: (formula: string) => void;
   /** Clear center beaker only (reset contents, level, reaction state) */
   clearBeaker: () => void;
+
+  // Guest Migration Actions
+  saveGuestExperiment: () => void;
+  clearGuestExperiment: () => void;
+  setGuestExperimentDismissed: (dismissed: boolean) => void;
 }
 
 // ─── Effect Duration Map ────────────────────────────────────────────
@@ -204,6 +209,49 @@ export const useLabStore = create<LabStore>((set, get) => ({
       ? state.unlockedReactions 
       : [...state.unlockedReactions, id]
   })),
+
+  // Guest Migration
+  saveGuestExperiment: () => {
+    const s = get();
+    // Only save if we have a reaction and a beaker
+    if (!s.lastReaction || !s.centerBeakerId) return;
+    const vessel = s.vessels[s.centerBeakerId];
+    if (!vessel) return;
+
+    // Build experiment data matching schema
+    const experimentData = {
+      version: 1,
+      timestamp: new Date().toISOString(),
+      contents: vessel.contents,
+      reaction: s.lastReaction,
+    };
+
+    // Check size limit (~4MB to be safe)
+    try {
+      const dataStr = JSON.stringify(experimentData);
+      if (dataStr.length < 4 * 1024 * 1024) {
+        localStorage.setItem("guestExperiment", dataStr);
+      }
+    } catch (e) {
+      console.warn("Failed to save guest experiment to local storage", e);
+    }
+  },
+
+  clearGuestExperiment: () => {
+    try {
+      localStorage.removeItem("guestExperiment");
+    } catch (e) {}
+  },
+
+  setGuestExperimentDismissed: (dismissed: boolean) => {
+    try {
+      if (dismissed) {
+        localStorage.setItem("guestExperimentDismissed", "true");
+      } else {
+        localStorage.removeItem("guestExperimentDismissed");
+      }
+    } catch (e) {}
+  },
 
   setCenterBeaker: (id) => set({ centerBeakerId: id }),
 
@@ -363,6 +411,9 @@ export const useLabStore = create<LabStore>((set, get) => ({
         const duration = EFFECT_DURATION[effectType] ?? 3000;
         setTimeout(() => get().clearEffect(), duration);
       }
+
+      // Save to guest storage if unauthenticated
+      get().saveGuestExperiment();
     } catch (err) {
       // Offline fallback
       const formulas = vessel.contents.map(c => c.formula).filter(Boolean);
@@ -411,6 +462,8 @@ export const useLabStore = create<LabStore>((set, get) => ({
         const duration = EFFECT_DURATION[effectType] ?? 3000;
         setTimeout(() => get().clearEffect(), duration);
       }
+      
+      get().saveGuestExperiment();
     }
   },
 
@@ -603,6 +656,8 @@ export const useLabStore = create<LabStore>((set, get) => ({
         const duration = EFFECT_DURATION[effectType] ?? 3000;
         setTimeout(() => get().clearEffect(), duration);
       }
+      
+      get().saveGuestExperiment();
     }
   },
 
@@ -748,6 +803,8 @@ export const useLabStore = create<LabStore>((set, get) => ({
         const duration = EFFECT_DURATION[effectType] ?? 3000;
         setTimeout(() => get().clearEffect(), duration);
       }
+      
+      get().saveGuestExperiment();
     }
   },
 

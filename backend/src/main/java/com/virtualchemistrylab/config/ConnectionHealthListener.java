@@ -8,10 +8,10 @@ import org.springframework.stereotype.Component;
 
 /**
  * ╔══════════════════════════════════════════════════════════╗
- * ║       ConnectionHealthListener                          ║
- * ║  Listens for ApplicationReady event -> automatically    ║
- * ║  verifies DB connection via DatabaseConnectionSingleton ║
- * ║  and prints banner result to Terminal.                  ║
+ * ║ ConnectionHealthListener ║
+ * ║ Listens for ApplicationReady event -> automatically ║
+ * ║ verifies DB connection via DatabaseConnectionSingleton ║
+ * ║ and prints banner result to Terminal. ║
  * ╚══════════════════════════════════════════════════════════╝
  */
 @Component
@@ -32,15 +32,6 @@ public class ConnectionHealthListener {
      */
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationReady() {
-        log.info("");
-        log.info("╔══════════════════════════════════════════════════════════════╗");
-        log.info("║        Virtual Chemistry Lab - Backend Ready                 ║");
-        log.info("╠══════════════════════════════════════════════════════════════╣");
-        log.info("║  🌐  Swagger UI   : http://localhost:8080/swagger-ui.html   ║");
-        log.info("║  📋  API Docs     : http://localhost:8080/v3/api-docs        ║");
-        log.info("╚══════════════════════════════════════════════════════════════╝");
-        log.info("");
-
         boolean ok = dbSingleton.verifyAndLog();
 
         if (ok) {
