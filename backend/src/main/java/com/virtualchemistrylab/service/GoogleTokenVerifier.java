@@ -38,6 +38,10 @@ public class GoogleTokenVerifier {
             return token != null ? token.getPayload() : null;
         } catch (GeneralSecurityException | IOException e) {
             return null;
+        } catch (Exception e) {
+            // Catch-all for malformed tokens (e.g. IllegalArgumentException from bad Base64)
+            return null;
         }
     }
 }
+
