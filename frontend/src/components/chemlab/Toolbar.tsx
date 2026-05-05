@@ -25,6 +25,7 @@ import {
   ClayPill,
 } from "@/components/ui/clay-primitives";
 import { LabJournalModal } from "./panels/LabJournalModal";
+import { LogoutConfirmDialog } from "@/components/auth/LogoutConfirmDialog";
 
 interface IconButtonProps {
   icon: ComponentType<{ className?: string }>;
@@ -129,6 +130,7 @@ function SliderControl({
 
 export function Toolbar() {
   const [isJournalOpen, setIsJournalOpen] = useState(false);
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   
   const vesselCount = useLabStore((s) => Object.keys(s.vessels).length);
   const temperature = useLabStore((s) => s.temperature);
@@ -269,9 +271,7 @@ export function Toolbar() {
             {isLoggedIn && user ? (
               <button
                 type="button"
-                onClick={() => {
-                  if (confirm("Đăng xuất?")) logout();
-                }}
+                onClick={() => setIsLogoutDialogOpen(true)}
                 className="group relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-clay-hairline transition-transform active:scale-95"
                 title={`Đăng xuất (${user.name})`}
               >
@@ -305,6 +305,14 @@ export function Toolbar() {
       </div>
     </header>
     <LabJournalModal isOpen={isJournalOpen} onClose={() => setIsJournalOpen(false)} />
+    <LogoutConfirmDialog 
+      isOpen={isLogoutDialogOpen} 
+      onClose={() => setIsLogoutDialogOpen(false)} 
+      onConfirm={() => {
+        setIsLogoutDialogOpen(false);
+        logout();
+      }} 
+    />
     </>
   );
 }
