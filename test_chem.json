@@ -1,0 +1,32 @@
+[
+  {
+    "acid": "HCl",
+    "base": "NaOH",
+    "eq": "HCl + NaOH → NaCl + H2O",
+    "prods": "NaCl + H2O"
+  },
+  {
+    "acid": "HCl",
+    "base": "KOH",
+    "eq": "HCl + KOH → KCl + H2O",
+    "prods": "KCl + H2O"
+  },
+  {
+    "acid": "HCl",
+    "base": "Ca(OH)2",
+    "eq": "2HCl + Ca(OH)2 → Ca2Cl + 2H2O",
+    "prods": "Ca2Cl + H2O"
+  },
+  {
+    "acid": "HCl",
+    "base": "NH3",
+    "eq": "HCl + NH3 → NH4Cl",
+    "prods": "NH4Cl"
+  },
+  {
+    "acid": "HCl",
+    "base": "Mg(OH)2",
+    "eq": "2HCl + Mg(OH)2 → Mg2Cl + 2H2O",
+    "prods": "Mg2Cl + H2O"
+  }
+]

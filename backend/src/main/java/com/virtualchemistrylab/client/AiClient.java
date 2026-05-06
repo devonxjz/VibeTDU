@@ -448,7 +448,11 @@ public class AiClient {
                   "messageVi": string,
                   "explanationVi": string,
                   "safetyNoteVi": string,
-                  "confidence": number (0.0-1.0)
+                  "confidence": number (0.0-1.0),
+                  "requiredTemperatureMin": number | null,
+                  "requiredTemperatureLabel": string | null,
+                  "requiredCatalyst": string | null,
+                  "requiredPressureMin": number | null
                 }
 
                 Mandatory rules:
@@ -459,6 +463,9 @@ public class AiClient {
                 - MUST include color description of products in `messageVi` and `explanationVi`. E.g., Na2SO4 is white, Cu(OH)2 is blue precipitate.
                 - For precipitates, `precipitateColor` must be an exact HEX color code.
                 - messageVi, explanationVi, safetyNoteVi MUST be in Vietnamese
+                - If reaction requires heating (>100°C), set requiredTemperatureMin
+                - If reaction requires catalyst, set requiredCatalyst
+                - If reaction requires high pressure (>1 atm), set requiredPressureMin
                 - Return ONLY pure JSON, no markdown
                 """.formatted(String.join(" + ", reactants), envStr);
     }
@@ -553,26 +560,34 @@ public class AiClient {
 
         if (key.equals("CACO3__HCL") || key.equals("CCAO3__CLH")) {
             return """
-                    {"hasReaction":true,"equation":"2HCl + CaCO3 -> CaCl2 + CO2 + H2O","productFormula":"CaCl2 + CO2 + H2O","effectType":"GAS_BUBBLE","effectColor":"#FFFFFF","gasFormula":"CO2","precipitateFormula":null,"precipitateColor":null,"messageVi":"Khí CO2 thoát ra, sủi bọt khí mạnh.","explanationVi":"Axit HCl tác dụng với muối cacbonat CaCO3 tạo thành muối CaCl2, nước và khí CO2.","safetyNoteVi":"Đây là mô phỏng giáo dục; không thực hiện ngoài đời thực khi không có hướng dẫn an toàn.","confidence":0.97}""";
+                    {"hasReaction":true,"equation":"2HCl + CaCO3 -> CaCl2 + CO2 + H2O","productFormula":"CaCl2 + CO2 + H2O","effectType":"GAS_BUBBLE","effectColor":"#FFFFFF","gasFormula":"CO2","precipitateFormula":null,"precipitateColor":null,"messageVi":"Khí CO2 thoát ra, sủi bọt khí mạnh.","explanationVi":"Axit HCl tác dụng với muối cacbonat CaCO3 tạo thành muối CaCl2, nước và khí CO2.","safetyNoteVi":"Đây là mô phỏng giáo dục; không thực hiện ngoài đời thực khi không có hướng dẫn an toàn.","confidence":0.97,"requiredTemperatureMin":null,"requiredTemperatureLabel":null,"requiredCatalyst":null,"requiredPressureMin":null}""";
         }
         if (key.equals("CUSO4__NAOH") || key.equals("CUSO4__HNAO")) {
             return """
-                    {"hasReaction":true,"equation":"CuSO4 + 2NaOH -> Cu(OH)2 + Na2SO4","productFormula":"Cu(OH)2 + Na2SO4","effectType":"PRECIPITATE","effectColor":"#1E90FF","gasFormula":null,"precipitateFormula":"Cu(OH)2","precipitateColor":"#1565C0","messageVi":"Kết tủa màu xanh lam Cu(OH)2 xuất hiện.","explanationVi":"Ion Cu2+ từ CuSO4 kết hợp với ion OH- từ NaOH tạo thành kết tủa Cu(OH)2 không tan.","safetyNoteVi":"Mô phỏng giáo dục.","confidence":0.98}""";
+                    {"hasReaction":true,"equation":"CuSO4 + 2NaOH -> Cu(OH)2 + Na2SO4","productFormula":"Cu(OH)2 + Na2SO4","effectType":"PRECIPITATE","effectColor":"#1E90FF","gasFormula":null,"precipitateFormula":"Cu(OH)2","precipitateColor":"#1565C0","messageVi":"Kết tủa màu xanh lam Cu(OH)2 xuất hiện.","explanationVi":"Ion Cu2+ từ CuSO4 kết hợp với ion OH- từ NaOH tạo thành kết tủa Cu(OH)2 không tan.","safetyNoteVi":"Mô phỏng giáo dục.","confidence":0.98,"requiredTemperatureMin":null,"requiredTemperatureLabel":null,"requiredCatalyst":null,"requiredPressureMin":null}""";
         }
         if (key.equals("AGNO3__NACL") || key.equals("AGNO3__CLNA")) {
             return """
-                    {"hasReaction":true,"equation":"AgNO3 + NaCl -> AgCl + NaNO3","productFormula":"AgCl + NaNO3","effectType":"PRECIPITATE","effectColor":"#F5F5F5","gasFormula":null,"precipitateFormula":"AgCl","precipitateColor":"#EEEEEE","messageVi":"Kết tủa trắng AgCl xuất hiện.","explanationVi":"Ion Ag+ kết hợp với ion Cl- tạo thành kết tủa trắng AgCl không tan trong nước.","safetyNoteVi":"Mô phỏng giáo dục.","confidence":0.98}""";
+                    {"hasReaction":true,"equation":"AgNO3 + NaCl -> AgCl + NaNO3","productFormula":"AgCl + NaNO3","effectType":"PRECIPITATE","effectColor":"#F5F5F5","gasFormula":null,"precipitateFormula":"AgCl","precipitateColor":"#EEEEEE","messageVi":"Kết tủa trắng AgCl xuất hiện.","explanationVi":"Ion Ag+ kết hợp với ion Cl- tạo thành kết tủa trắng AgCl không tan trong nước.","safetyNoteVi":"Mô phỏng giáo dục.","confidence":0.98,"requiredTemperatureMin":null,"requiredTemperatureLabel":null,"requiredCatalyst":null,"requiredPressureMin":null}""";
         }
         if (key.equals("HCL__NAOH") || key.equals("CLH__HNAO")) {
             return """
-                    {"hasReaction":true,"equation":"HCl + NaOH -> NaCl + H2O","productFormula":"NaCl + H2O","effectType":"HEAT","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Phản ứng trung hòa tỏa nhiệt, dung dịch trở nên trung tính.","explanationVi":"Axit mạnh HCl phản ứng với bazơ mạnh NaOH tạo ra muối NaCl và nước, có tỏa nhiệt.","safetyNoteVi":"Mô phỏng giáo dục.","confidence":0.96}""";
+                    {"hasReaction":true,"equation":"HCl + NaOH -> NaCl + H2O","productFormula":"NaCl + H2O","effectType":"HEAT","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Phản ứng trung hòa tỏa nhiệt, dung dịch trở nên trung tính.","explanationVi":"Axit mạnh HCl phản ứng với bazơ mạnh NaOH tạo ra muối NaCl và nước, có tỏa nhiệt.","safetyNoteVi":"Mô phỏng giáo dục.","confidence":0.96,"requiredTemperatureMin":null,"requiredTemperatureLabel":null,"requiredCatalyst":null,"requiredPressureMin":null}""";
         }
         if (key.equals("HCL__NA") || key.equals("CLH__NA")) {
             return """
-                    {"hasReaction":true,"equation":"2Na + 2HCl -> 2NaCl + H2","productFormula":"NaCl + H2","effectType":"EXPLOSION","effectColor":null,"gasFormula":"H2","precipitateFormula":null,"precipitateColor":null,"messageVi":"Phản ứng mãnh liệt, khí H2 thoát ra có thể gây nổ nhỏ.","explanationVi":"Kim loại kiềm Na phản ứng rất mạnh với axit HCl tạo ra muối NaCl và khí Hydro. Nhiệt lượng tỏa ra có thể làm cháy H2.","safetyNoteVi":"CẢNH BÁO: Phản ứng cực kỳ nguy hiểm, không thực hiện ngoài đời thực.","confidence":0.99}""";
+                    {"hasReaction":true,"equation":"2Na + 2HCl -> 2NaCl + H2","productFormula":"NaCl + H2","effectType":"EXPLOSION","effectColor":null,"gasFormula":"H2","precipitateFormula":null,"precipitateColor":null,"messageVi":"Phản ứng mãnh liệt, khí H2 thoát ra có thể gây nổ nhỏ.","explanationVi":"Kim loại kiềm Na phản ứng rất mạnh với axit HCl tạo ra muối NaCl và khí Hydro. Nhiệt lượng tỏa ra có thể làm cháy H2.","safetyNoteVi":"CẢNH BÁO: Phản ứng cực kỳ nguy hiểm, không thực hiện ngoài đời thực.","confidence":0.99,"requiredTemperatureMin":null,"requiredTemperatureLabel":null,"requiredCatalyst":null,"requiredPressureMin":null}""";
+        }
+        if (key.equals("H2__N2") || key.equals("N2__H2")) {
+            return """
+                    {"hasReaction":true,"equation":"N2 + 3H2 <=> 2NH3","productFormula":"NH3","effectType":"GAS_BUBBLE","effectColor":null,"gasFormula":"NH3","precipitateFormula":null,"precipitateColor":null,"messageVi":"Tạo ra khí Amoniac có mùi khai (Haber-Bosch).","explanationVi":"Nitơ và hiđro phản ứng ở nhiệt độ và áp suất cao với xúc tác sắt để tạo amoniac.","safetyNoteVi":"Thực hiện trong thiết bị chịu áp suất cao.","confidence":0.95,"requiredTemperatureMin":400.0,"requiredTemperatureLabel":"400-500°C","requiredCatalyst":"Fe","requiredPressureMin":200.0}""";
+        }
+        if (key.equals("O2__SO2") || key.equals("SO2__O2")) {
+            return """
+                    {"hasReaction":true,"equation":"2SO2 + O2 <=> 2SO3","productFormula":"SO3","effectType":"NONE","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Lưu huỳnh đioxit oxi hóa thành lưu huỳnh trioxit.","explanationVi":"Phản ứng cần xúc tác V2O5 và nhiệt độ cao để đẩy nhanh tốc độ oxi hóa.","safetyNoteVi":"SO3 là khí độc.","confidence":0.95,"requiredTemperatureMin":450.0,"requiredTemperatureLabel":"450°C","requiredCatalyst":"V2O5","requiredPressureMin":null}""";
         }
         // Unknown pair
         return """
-                {"hasReaction":false,"equation":null,"productFormula":null,"effectType":"NONE","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Hai chất này không phản ứng với nhau trong điều kiện hiện tại.","explanationVi":"Điều kiện phản ứng không phù hợp hoặc cặp chất này không nằm trong phạm vi mô phỏng.","safetyNoteVi":null,"confidence":1.0}""";
+                {"hasReaction":false,"equation":null,"productFormula":null,"effectType":"NONE","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Hai chất này không phản ứng với nhau trong điều kiện hiện tại.","explanationVi":"Điều kiện phản ứng không phù hợp hoặc cặp chất này không nằm trong phạm vi mô phỏng.","safetyNoteVi":null,"confidence":1.0,"requiredTemperatureMin":null,"requiredTemperatureLabel":null,"requiredCatalyst":null,"requiredPressureMin":null}""";
     }
 }

@@ -43,6 +43,22 @@ public class ReactionApiCache {
     @Column(name = "confidence")
     private Double confidence;
 
+    /** Minimum required temperature (Celsius) */
+    @Column(name = "required_temperature_min")
+    private Double requiredTemperatureMin;
+
+    /** Required temperature description (e.g. ">100°C", "500-600°C") */
+    @Column(name = "required_temperature_label", length = 100)
+    private String requiredTemperatureLabel;
+
+    /** Required catalyst formula or name (e.g. "Pt", "V2O5") */
+    @Column(name = "required_catalyst", length = 100)
+    private String requiredCatalyst;
+
+    /** Minimum required pressure (atm) */
+    @Column(name = "required_pressure_min")
+    private Double requiredPressureMin;
+
     /** Manually verified by a chemistry expert – default false */
     @Column(name = "verified")
     @Builder.Default
