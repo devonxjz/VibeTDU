@@ -4,11 +4,8 @@ import com.virtualchemistrylab.dto.AiChatRequest;
 import com.virtualchemistrylab.dto.AiChatResponse;
 import com.virtualchemistrylab.dto.AiAskRequest;
 import com.virtualchemistrylab.dto.AiAskResponse;
-import com.virtualchemistrylab.entity.User;
 import com.virtualchemistrylab.service.AiInterpretationService;
 import com.virtualchemistrylab.service.ExperimentLogService;
-import com.virtualchemistrylab.service.QuotaGuard;
-import com.virtualchemistrylab.config.AuthFilter;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -31,14 +28,10 @@ public class AiController {
 
     private final AiInterpretationService aiInterpretationService;
     private final ExperimentLogService experimentLogService;
-    private final QuotaGuard quotaGuard;
-
     public AiController(AiInterpretationService aiInterpretationService,
-                        ExperimentLogService experimentLogService,
-                        QuotaGuard quotaGuard) {
+                        ExperimentLogService experimentLogService) {
         this.aiInterpretationService = aiInterpretationService;
         this.experimentLogService = experimentLogService;
-        this.quotaGuard = quotaGuard;
     }
 
     @Operation(
@@ -117,18 +110,11 @@ public class AiController {
     }
 
     @PostMapping("/chat")
-    public ResponseEntity<AiChatResponse> chat(@Valid @RequestBody AiChatRequest request,
-                                               HttpServletRequest httpRequest) {
-        // QuotaGuard: check quota before calling AI (throws 401/429 if invalid)
-        java.util.UUID userId = AuthFilter.getUserId(httpRequest);
-        User user = quotaGuard.check(userId);
+    public ResponseEntity<AiChatResponse> chat(@Valid @RequestBody AiChatRequest request) {
 
         String answer = aiInterpretationService.chat(
                 request.getMessages(),
                 request.getReactionContext());
-
-        // Deduct quota only AFTER successful AI response
-        quotaGuard.deduct(user.getId());
 
         AiChatResponse response = AiChatResponse.builder()
                 .status("success")

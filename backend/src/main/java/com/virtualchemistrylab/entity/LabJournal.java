@@ -11,9 +11,7 @@ import java.util.UUID;
  * experiment_data is stored as TEXT (works on both H2 and PostgreSQL/JSONB).
  */
 @Entity
-@Table(name = "lab_journals",
-       indexes = @Index(name = "idx_journal_user_created",
-                        columnList = "user_id, created_at DESC"))
+@Table(name = "lab_journals")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class LabJournal {
 
@@ -21,9 +19,7 @@ public class LabJournal {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+
 
     @Column(length = 255)
     private String title;

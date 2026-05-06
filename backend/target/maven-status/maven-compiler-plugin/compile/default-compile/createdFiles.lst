@@ -1,5 +1,6 @@
 com\virtualchemistrylab\exception\ApiException.class
 com\virtualchemistrylab\config\WebClientConfig.class
+com\virtualchemistrylab\repository\LabJournalRepository.class
 com\virtualchemistrylab\entity\ExperimentSession.class
 com\virtualchemistrylab\dto\AutoAppliedConditionsDTO$AutoAppliedConditionsDTOBuilder.class
 com\virtualchemistrylab\controller\ChemicalController.class
@@ -7,8 +8,10 @@ com\virtualchemistrylab\dto\MixRequest.class
 com\virtualchemistrylab\dto\AiChatRequest.class
 com\virtualchemistrylab\config\AppProperties$Opsin.class
 com\virtualchemistrylab\client\CactusClient.class
+com\virtualchemistrylab\entity\LabJournal$LabJournalBuilder.class
 com\virtualchemistrylab\repository\ExperimentSessionRepository.class
 com\virtualchemistrylab\config\AppProperties$Cactus.class
+com\virtualchemistrylab\controller\LabJournalController.class
 com\virtualchemistrylab\dto\ApiResponse$ApiResponseBuilder.class
 com\virtualchemistrylab\config\AppProperties$Supabase.class
 com\virtualchemistrylab\dto\AutoAppliedConditionsDTO.class
@@ -38,6 +41,7 @@ com\virtualchemistrylab\dto\MixRequest$MixRequestBuilder.class
 com\virtualchemistrylab\dto\MixResponse$ProductEntry$ProductEntryBuilder.class
 com\virtualchemistrylab\config\DatabaseConnectionSingleton.class
 com\virtualchemistrylab\dto\AiAskResponse$AiAskResponseBuilder.class
+com\virtualchemistrylab\controller\LabJournalController$SaveJournalRequest.class
 com\virtualchemistrylab\VirtualChemistryLabApplication.class
 com\virtualchemistrylab\controller\LabController.class
 com\virtualchemistrylab\service\PairReactionResolverService.class
@@ -48,6 +52,7 @@ com\virtualchemistrylab\dto\FinalContentDTO.class
 com\virtualchemistrylab\entity\ExperimentLog.class
 com\virtualchemistrylab\controller\AiController.class
 com\virtualchemistrylab\dto\ReactionStepDTO$ReactionStepDTOBuilder.class
+com\virtualchemistrylab\service\LabJournalService.class
 com\virtualchemistrylab\entity\ReactionApiCache.class
 com\virtualchemistrylab\config\AppProperties$RateLimit.class
 com\virtualchemistrylab\service\SequentialReactionService.class
@@ -60,6 +65,7 @@ com\virtualchemistrylab\dto\AiAskRequest$AiAskRequestBuilder.class
 com\virtualchemistrylab\config\OpenApiConfig.class
 com\virtualchemistrylab\controller\SeedController$SeedOneResponse.class
 com\virtualchemistrylab\dto\MixResponse$ProductEntry.class
+com\virtualchemistrylab\service\ReactionSeederService.class
 com\virtualchemistrylab\config\AppProperties$PubChem.class
 com\virtualchemistrylab\controller\SeedController$SeedOneRequest.class
 com\virtualchemistrylab\dto\MixResponse$NewVesselState$NewVesselStateBuilder.class
@@ -78,6 +84,7 @@ com\virtualchemistrylab\service\ReactionPredictionService$PredictResult.class
 com\virtualchemistrylab\repository\ExperimentLogRepository.class
 com\virtualchemistrylab\client\AiClient.class
 com\virtualchemistrylab\dto\MixResponse.class
+com\virtualchemistrylab\entity\LabJournal.class
 com\virtualchemistrylab\config\AppProperties$Cors.class
 com\virtualchemistrylab\dto\AiAskRequest.class
 com\virtualchemistrylab\dto\ReactionResultDTO.class
@@ -86,10 +93,13 @@ com\virtualchemistrylab\dto\ChemicalInfoDTO$ChemicalInfoDTOBuilder.class
 com\virtualchemistrylab\dto\MixResponse$GasEntry$GasEntryBuilder.class
 com\virtualchemistrylab\service\CacheService.class
 com\virtualchemistrylab\entity\ApiErrorLog$ApiErrorLogBuilder.class
+com\virtualchemistrylab\service\LabJournalService$JournalSummary.class
 com\virtualchemistrylab\entity\ChemicalCache.class
 com\virtualchemistrylab\exception\GlobalExceptionHandler.class
 com\virtualchemistrylab\exception\ValidationException.class
 com\virtualchemistrylab\dto\ReactionResultDTO$ReactionResultDTOBuilder.class
 com\virtualchemistrylab\util\ReactionKeyUtil.class
+com\virtualchemistrylab\controller\AdminController.class
 com\virtualchemistrylab\client\OpsinClient.class
+com\virtualchemistrylab\service\LabJournalService$SaveRequest.class
 com\virtualchemistrylab\service\RateLimitService.class
