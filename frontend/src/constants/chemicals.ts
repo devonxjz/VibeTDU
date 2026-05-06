@@ -466,9 +466,16 @@ export function formatFormula(formula: string): Array<{ text: string; sub: boole
   const parts: Array<{ text: string; sub: boolean }> = [];
   let buf = "";
   let mode: "text" | "digit" = "text";
+  let hasEncounteredNonDigit = false;
+  
   for (const ch of formula) {
     const isDigit = /[0-9]/.test(ch);
-    const wantMode = isDigit ? "digit" : "text";
+    if (!isDigit) {
+      hasEncounteredNonDigit = true;
+    }
+    
+    const wantMode = (isDigit && hasEncounteredNonDigit) ? "digit" : "text";
+    
     if (wantMode !== mode && buf) {
       parts.push({ text: buf, sub: mode === "digit" });
       buf = "";
