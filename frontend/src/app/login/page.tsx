@@ -105,7 +105,7 @@ function LoginForm() {
           style={{ color: "#6c6a64", fontWeight: 500 }}
           onClick={() => router.push("/")}
         >
-          Tiếp tục không cần đăng nhập →
+          Tiếp tục mà không cần đăng nhập →
         </button>
 
         <p

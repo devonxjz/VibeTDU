@@ -12,7 +12,7 @@ export default function ChemLabPage() {
   useEffect(() => {
     // Only redirect after auth state is hydrated (avoid flash)
     if (!isLoading && !isLoggedIn) {
-      router.replace("/login");
+      // router.replace("/login"); // Disabled for testing phase
     }
   }, [isLoggedIn, isLoading, router]);
 
@@ -42,8 +42,8 @@ export default function ChemLabPage() {
     );
   }
 
-  // Not logged in → redirect happening, show nothing
-  if (!isLoggedIn) return null;
+  // Not logged in -> redirect happening, show nothing
+  // if (!isLoggedIn) return null; // Disabled for testing phase
 
   return <ChemLabShell />;
 }
