@@ -7,6 +7,8 @@ import com.virtualchemistrylab.util.JsonUtil;
 import com.virtualchemistrylab.util.ReactionKeyUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.virtualchemistrylab.exception.ApiException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,8 +21,8 @@ import java.util.Set;
  *   3. Validating the JSON response
  *   4. Saving result to cache
  *
- * Returns a validated ReactionResultDTO. Never returns null –
- * falls back to a safe "no reaction" DTO on any failure.
+ * Returns a validated ReactionResultDTO.
+ * Throws ApiException HTTP 500 if AI call fails or times out.
  */
 @Service
 public class ReactionPredictionService {
@@ -66,7 +68,19 @@ public class ReactionPredictionService {
 
         // ── Step 2: Cache miss → call AI ──
         log.info("[reaction-predict] Cache MISS for: {} – calling AI", formulae);
-        String rawJson = aiClient.predictReaction(formulae, temperature, pressure, catalyst);
+        String rawJson;
+        try {
+            rawJson = aiClient.predictReaction(formulae, temperature, pressure, catalyst);
+        } catch (Exception e) {
+            log.error("[reaction-predict] AI call threw exception for key {}: {}", reactionKey, e.getMessage());
+            throw new ApiException("Không thể mô phỏng phản ứng. Vui lòng thử lại sau.",
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (rawJson == null) {
+            log.error("[reaction-predict] AI returned null for key: {}", reactionKey);
+            throw new ApiException("Không thể mô phỏng phản ứng. Vui lòng thử lại sau.",
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
         // Validate
         ReactionResultDTO dto = validateAndParse(rawJson);

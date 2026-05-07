@@ -23,6 +23,7 @@ export function ReactionResultCard() {
   const reaction = useLabStore((state) => state.lastReaction);
   const centerBeakerId = useLabStore((state) => state.centerBeakerId);
   const vessels = useLabStore((state) => state.vessels);
+  const appliedConditions = useLabStore((state) => state.appliedConditions);
   
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
@@ -142,6 +143,37 @@ export function ReactionResultCard() {
                           <p className="clay-caption-uppercase text-clay-muted">Hiện tượng</p>
                         </div>
                         <p className="clay-body-md text-clay-body">{reaction.messageVi}</p>
+                      </div>
+                    )}
+
+                    {appliedConditions?.autoAdjusted && (
+                      <div className="rounded-[var(--clay-rounded-lg)] border border-amber-200 bg-amber-50 p-4 dark:border-amber-700/40 dark:bg-amber-950/20">
+                        <div className="mb-2 flex items-center gap-2">
+                          <Zap className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                          <p className="clay-caption-uppercase text-amber-900 dark:text-amber-100">
+                            Tự động điều chỉnh
+                          </p>
+                        </div>
+                        <p className="clay-body-sm text-amber-800 dark:text-amber-200 mb-2">
+                          {appliedConditions.reasonVi}
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {appliedConditions.temperature != null && (
+                            <ClayPill tone="ochre" className="clay-caption">
+                              🌡️ {appliedConditions.temperature}°C
+                            </ClayPill>
+                          )}
+                          {appliedConditions.pressure != null && (
+                            <ClayPill tone="ochre" className="clay-caption">
+                              💨 {appliedConditions.pressure} atm
+                            </ClayPill>
+                          )}
+                          {appliedConditions.catalyst != null && appliedConditions.catalyst !== "Không" && (
+                            <ClayPill tone="ochre" className="clay-caption">
+                              ⚗️ {appliedConditions.catalyst}
+                            </ClayPill>
+                          )}
+                        </div>
                       </div>
                     )}
 

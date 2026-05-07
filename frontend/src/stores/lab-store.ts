@@ -8,6 +8,7 @@ import { mixChemicals } from "@/api/client/lab";
 import { resetSession as apiResetSession } from "@/api/client/lab";
 import { CHEMICAL_COLORS, getBottleColor } from "@/constants/chemicals";
 import { getMockReaction } from "@/utils/reaction-mock";
+import { toast } from "sonner";
 
 // ─── Color map by chemical category ─────────────────────────────────
 
@@ -382,6 +383,20 @@ export const useLabStore = create<LabStore>((set, get) => ({
         error: (!result?.hasReaction) ? null : null, // clear any previous errors on success
       });
 
+      // TASK 3: Auto-adjust environment conditions if backend applied them
+      if (response.appliedConditions?.autoAdjusted) {
+        const applied = response.appliedConditions;
+        const updates: Partial<{ temperature: number; pressure: number; catalyst: string }> = {};
+        
+        if (applied.temperature != null) updates.temperature = applied.temperature;
+        if (applied.pressure != null) updates.pressure = applied.pressure;
+        if (applied.catalyst != null) updates.catalyst = applied.catalyst;
+        
+        if (Object.keys(updates).length > 0) {
+          get().setEnvironment(updates);
+        }
+      }
+
       // Auto-clear isReacting after 3000ms
       setTimeout(() => set({ isReacting: false }), 3000);
 
@@ -415,55 +430,18 @@ export const useLabStore = create<LabStore>((set, get) => ({
       // Save to guest storage if unauthenticated
       get().saveGuestExperiment();
     } catch (err) {
-      // Offline fallback
-      const formulas = vessel.contents.map(c => c.formula).filter(Boolean);
-      const mockResult = getMockReaction(formulas);
-      const effectType = mockResult.effectType ?? "NONE";
-      
-      let newColor = vessel.displayColor;
-      if (mockResult.effectColor) newColor = mockResult.effectColor;
-      else if (mockResult.precipitateColor) newColor = mockResult.precipitateColor;
-      else {
-        const pc = getProductColor(mockResult.productFormula, mockResult.effectColor);
-        if (pc) newColor = pc;
-      }
-      
-      let newLabel = vessel.label;
-      if (mockResult.hasReaction && mockResult.productFormula) newLabel = mockResult.productFormula;
-
+      // Surface error to user — do NOT silently fall back to mock
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Không thể kết nối tới máy chủ";
+      toast.error(errorMessage || "Không thể mô phỏng phản ứng. Vui lòng thử lại sau.");
       set({
-        vessels: {
-          ...state.vessels,
-          [vesselId]: {
-            ...vessel,
-            displayColor: newColor,
-            label: newLabel,
-          },
-        },
-        lastReaction: mockResult,
-        activeEffect: effectType !== "NONE" ? { type: effectType, vesselId, color: mockResult.effectColor, precipitateColor: mockResult.precipitateColor, gasFormula: mockResult.gasFormula } : null,
         isLoading: false,
+        isReacting: false,
+        error: errorMessage,
       });
-
-      // Auto-clear isReacting after 3000ms
-      setTimeout(() => set({ isReacting: false }), 3000);
-
-      if (mockResult.hasReaction) {
-        const reactionKey = formulas.map(r => r.toLowerCase()).sort().join("+");
-        get().unlockReaction(reactionKey);
-
-        get().addTimelineEvent({
-          type: "REACT",
-          description: mockResult.equation || "Phản ứng đã chạy",
-        });
-      }
-
-      if (effectType !== "NONE") {
-        const duration = EFFECT_DURATION[effectType] ?? 3000;
-        setTimeout(() => get().clearEffect(), duration);
-      }
-      
-      get().saveGuestExperiment();
+      setTimeout(() => get().setError(null), 5000);
     }
   },
 

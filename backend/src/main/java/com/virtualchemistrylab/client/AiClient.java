@@ -35,7 +35,7 @@ import java.util.Objects;
 public class AiClient {
 
     private static final Logger log = LoggerFactory.getLogger(AiClient.class);
-    private static final Duration TIMEOUT = Duration.ofSeconds(30);
+    private static final Duration TIMEOUT = Duration.ofSeconds(10);
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     // Gemini endpoint template
@@ -585,6 +585,10 @@ public class AiClient {
         if (key.equals("O2__SO2") || key.equals("SO2__O2")) {
             return """
                     {"hasReaction":true,"equation":"2SO2 + O2 <=> 2SO3","productFormula":"SO3","effectType":"NONE","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Lưu huỳnh đioxit oxi hóa thành lưu huỳnh trioxit.","explanationVi":"Phản ứng cần xúc tác V2O5 và nhiệt độ cao để đẩy nhanh tốc độ oxi hóa.","safetyNoteVi":"SO3 là khí độc.","confidence":0.95,"requiredTemperatureMin":450.0,"requiredTemperatureLabel":"450°C","requiredCatalyst":"V2O5","requiredPressureMin":null}""";
+        }
+        if (key.equals("CU__O2") || key.equals("O2__CU")) {
+            return """
+                    {"hasReaction":true,"equation":"2Cu + O2 -> 2CuO","productFormula":"CuO","effectType":"COLOR_CHANGE","effectColor":"#2C2C2C","gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Đồng (Cu) bị oxi hóa thành đồng(II) oxit (CuO) có màu đen.","explanationVi":"Phản ứng giữa đồng và oxi ở nhiệt độ cao tạo ra lớp oxit đen bao phủ bề mặt kim loại.","safetyNoteVi":"Cần nung nóng trong môi trường có oxi.","confidence":0.96,"requiredTemperatureMin":300.0,"requiredTemperatureLabel":"300-400°C","requiredCatalyst":null,"requiredPressureMin":null}""";
         }
         // Unknown pair
         return """

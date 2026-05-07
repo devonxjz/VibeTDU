@@ -151,11 +151,19 @@ public class SequentialReactionService {
 
         String mode = initial.size() <= 2 ? "DIRECT_PAIR" : "SEQUENTIAL_MULTI";
 
+        // Extract appliedConditions from the first step that has auto-adjustment
+        AutoAppliedConditionsDTO appliedConditions = steps.stream()
+                .map(ReactionStepDTO::getAppliedConditions)
+                .filter(ac -> ac != null && ac.isAutoAdjusted())
+                .findFirst()
+                .orElse(null);
+
         return MixResponse.builder()
                 .status("success")
                 .reactionMode(mode)
                 .stepCount(steps.size())
                 .steps(steps)
+                .appliedConditions(appliedConditions)
                 .finalContents(finalContents)
                 .ambiguityNoteVi(ambiguity)
                 .build();

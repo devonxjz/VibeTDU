@@ -113,9 +113,30 @@ export function ConditionPanel() {
         <ExperimentTimeline />
 
         {appliedConditions?.autoAdjusted && (
-          <div className="mt-3 rounded-[var(--clay-rounded-lg)] bg-amber-50 border border-amber-200 p-3">
-             <div className="clay-title-sm text-amber-800">Tự động áp dụng điều kiện</div>
-             <div className="clay-body-sm text-amber-700">{appliedConditions.reasonVi}</div>
+          <div className="mt-3 rounded-[var(--clay-rounded-lg)] border border-amber-200 bg-amber-50 p-3 dark:border-amber-700/40 dark:bg-amber-950/20">
+            <div className="clay-title-sm text-amber-900 dark:text-amber-100">
+              ⚙️ Tự động điều chỉnh điều kiện
+            </div>
+            <div className="clay-body-sm mt-1 text-amber-800 dark:text-amber-200">
+              {appliedConditions.reasonVi}
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {appliedConditions.temperature != null && (
+                <ClayPill tone="ochre" className="clay-caption">
+                  🌡️ {appliedConditions.temperature}°C
+                </ClayPill>
+              )}
+              {appliedConditions.pressure != null && (
+                <ClayPill tone="ochre" className="clay-caption">
+                  💨 {appliedConditions.pressure} atm
+                </ClayPill>
+              )}
+              {appliedConditions.catalyst != null && appliedConditions.catalyst !== "Không" && (
+                <ClayPill tone="ochre" className="clay-caption">
+                  ⚗️ {appliedConditions.catalyst}
+                </ClayPill>
+              )}
+            </div>
           </div>
         )}
       </div>
