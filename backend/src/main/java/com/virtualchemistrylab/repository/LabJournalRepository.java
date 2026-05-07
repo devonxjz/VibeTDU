@@ -10,6 +10,6 @@ import java.util.UUID;
 @Repository
 public interface LabJournalRepository extends JpaRepository<LabJournal, UUID> {
 
-    /** Returns all journals for a user, newest first. */
-    List<LabJournal> findByUserIdOrderByCreatedAtDesc(UUID userId);
+    /** Returns all journals, newest first. */
+    List<LabJournal> findAllByOrderByCreatedAtDesc();
 }

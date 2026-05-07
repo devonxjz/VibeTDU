@@ -7,7 +7,6 @@ import { Info, Zap, AlertTriangle, XCircle, Save, CheckCircle2 } from "lucide-re
 import { ExplanationPanel } from "@/components/chemlab/panels/ExplanationPanel";
 import { ClayPill, ClayActionButton } from "@/components/ui/clay-primitives";
 import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
 import { saveJournal } from "@/api/client/journal";
 import { toast } from "sonner";
 
@@ -24,7 +23,6 @@ export function ReactionResultCard() {
   const reaction = useLabStore((state) => state.lastReaction);
   const centerBeakerId = useLabStore((state) => state.centerBeakerId);
   const vessels = useLabStore((state) => state.vessels);
-  const { isLoggedIn, login } = useAuth();
   
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
@@ -44,13 +42,6 @@ export function ReactionResultCard() {
   };
 
   const handleSave = async () => {
-    if (!isLoggedIn) {
-      toast("Vui lòng đăng nhập để lưu", {
-        action: { label: "Đăng nhập", onClick: () => login() },
-      });
-      return;
-    }
-
     if (!reaction || !centerBeakerId) return;
     const vessel = vessels[centerBeakerId];
     if (!vessel) return;
