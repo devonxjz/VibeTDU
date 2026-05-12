@@ -422,7 +422,7 @@ export const useLabStore = create<LabStore>((set, get) => ({
         });
       }
 
-      if (effectType !== "NONE") {
+      if (effectType !== "NONE" && effectType !== "PRECIPITATE" && effectType !== "GAS_BUBBLE") {
         const duration = EFFECT_DURATION[effectType] ?? 3000;
         setTimeout(() => get().clearEffect(), duration);
       }
@@ -580,7 +580,7 @@ export const useLabStore = create<LabStore>((set, get) => ({
         get().unlockReaction(reactionKey);
       }
 
-      if (effectType !== "NONE") {
+      if (effectType !== "NONE" && effectType !== "PRECIPITATE" && effectType !== "GAS_BUBBLE") {
         const duration = EFFECT_DURATION[effectType] ?? 3000;
         setTimeout(() => {
           get().clearEffect();
@@ -630,7 +630,7 @@ export const useLabStore = create<LabStore>((set, get) => ({
         get().unlockReaction(reactionKey);
       }
 
-      if (effectType !== "NONE") {
+      if (effectType !== "NONE" && effectType !== "PRECIPITATE" && effectType !== "GAS_BUBBLE") {
         const duration = EFFECT_DURATION[effectType] ?? 3000;
         setTimeout(() => get().clearEffect(), duration);
       }
@@ -726,8 +726,8 @@ export const useLabStore = create<LabStore>((set, get) => ({
         get().unlockReaction(reactionKey);
       }
 
-      // Auto-clear effect after animation
-      if (effectType !== "NONE") {
+      // Auto-clear effect after animation (except persistent ones)
+      if (effectType !== "NONE" && effectType !== "PRECIPITATE" && effectType !== "GAS_BUBBLE") {
         const duration = EFFECT_DURATION[effectType] ?? 3000;
         setTimeout(() => {
           get().clearEffect();
@@ -777,7 +777,7 @@ export const useLabStore = create<LabStore>((set, get) => ({
         get().unlockReaction(reactionKey);
       }
 
-      if (effectType !== "NONE") {
+      if (effectType !== "NONE" && effectType !== "PRECIPITATE" && effectType !== "GAS_BUBBLE") {
         const duration = EFFECT_DURATION[effectType] ?? 3000;
         setTimeout(() => get().clearEffect(), duration);
       }
