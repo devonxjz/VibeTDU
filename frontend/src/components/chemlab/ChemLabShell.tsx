@@ -1,6 +1,8 @@
 "use client";
 
+import type { PointerEvent as ReactPointerEvent } from "react";
 import { useEffect, useRef, useCallback } from "react";
+
 import { Toolbar } from "@/components/chemlab/Toolbar";
 import { ConditionPanel } from "@/components/chemlab/panels/ConditionPanel";
 import { ChemicalLibrary } from "@/components/chemlab/panels/ChemicalLibrary";
@@ -9,202 +11,145 @@ import { useLabStore } from "@/stores/lab-store";
 import { ChatbotWidget } from "@/components/chatbot/ChatbotWidget";
 import { ReactionResultCard } from "@/components/chemlab/scene/ReactionResultCard";
 
-/* ── Left sidebar width constraints ──────────────────────────────────── */
-const LEFT_DEFAULT = 260;
-const LEFT_MIN     = 200;
-const LEFT_MAX     = 420;
 
-/* ── ChemLabShell ─────────────────────────────────────────────────────── */
+const LEFT_DEFAULT = 320;
+const LEFT_MIN = 240;
+const LEFT_MAX = 460;
+
 export function ChemLabShell() {
-  const centerBeakerId   = useLabStore((s) => s.centerBeakerId);
-  const undoLastChemical = useLabStore((s) => s.undoLastChemical);
-  const clearBeaker      = useLabStore((s) => s.clearBeaker);
-  const runReaction      = useLabStore((s) => s.runReaction);
-  const isLoading        = useLabStore((s) => s.isLoading);
-  const vessels          = useLabStore((s) => s.vessels);
+  const centerBeakerId = useLabStore((state) => state.centerBeakerId);
+  const undoLastChemical = useLabStore((state) => state.undoLastChemical);
+  const clearBeaker = useLabStore((state) => state.clearBeaker);
+  const runReaction = useLabStore((state) => state.runReaction);
+  const isLoading = useLabStore((state) => state.isLoading);
+  const vessels = useLabStore((state) => state.vessels);
 
-  /* Drag refs — bypass React renders for 60fps smoothness */
   const leftColRef = useRef<HTMLDivElement>(null);
-  const dragging   = useRef(false);
-  const startX     = useRef(0);
-  const startW     = useRef(0);
+  const dragging = useRef(false);
+  const startX = useRef(0);
+  const startW = useRef(0);
 
-  /* ── Pointer handlers attached inline on the handle div ── */
-  const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    (e.target as HTMLDivElement).setPointerCapture(e.pointerId);
-    
-    const col = leftColRef.current;
-    if (!col) return;
+  const handlePointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    (event.target as HTMLDivElement).setPointerCapture(event.pointerId);
+
+    const column = leftColRef.current;
+    if (!column) return;
 
     dragging.current = true;
-    startX.current   = e.clientX;
-    startW.current   = col.getBoundingClientRect().width;
-    
-    document.body.style.cursor     = "col-resize";
+    startX.current = event.clientX;
+    startW.current = column.getBoundingClientRect().width;
+
+    document.body.style.cursor = "col-resize";
     document.body.style.userSelect = "none";
   }, []);
 
-  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+  const handlePointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     if (!dragging.current) return;
-    const col = leftColRef.current;
-    if (!col) return;
+    const column = leftColRef.current;
+    if (!column) return;
 
-    const delta = e.clientX - startX.current;
-    const next  = Math.max(LEFT_MIN, Math.min(LEFT_MAX, startW.current + delta));
-    
-    // Direct DOM mutation for zero-lag smoothness
-    col.style.width = `${Math.round(next)}px`;
+    const delta = event.clientX - startX.current;
+    const next = Math.max(LEFT_MIN, Math.min(LEFT_MAX, startW.current + delta));
+
+    column.style.setProperty("--left-col-w", `${Math.round(next)}px`);
   }, []);
 
-  const handlePointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+  const handlePointerUp = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     if (!dragging.current) return;
     dragging.current = false;
-    (e.target as HTMLDivElement).releasePointerCapture(e.pointerId);
-    document.body.style.cursor     = "";
+    (event.target as HTMLDivElement).releasePointerCapture(event.pointerId);
+    document.body.style.cursor = "";
     document.body.style.userSelect = "";
   }, []);
 
-  /* ── Keyboard shortcuts (unchanged from original) ── */
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement
-      ) return;
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
 
       if (
-        e.key.toLowerCase() === "z" ||
-        ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z")
+        event.key.toLowerCase() === "z" ||
+        ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z")
       ) {
-        e.preventDefault();
+        event.preventDefault();
         undoLastChemical();
         return;
       }
-      if (e.key.toLowerCase() === "r" && !e.ctrlKey && !e.metaKey) {
-        e.preventDefault();
+
+      if (event.key.toLowerCase() === "r" && !event.ctrlKey && !event.metaKey) {
+        event.preventDefault();
         clearBeaker();
         return;
       }
-      if (e.key === " " || e.key === "Enter") {
-        if (e.key === " ") e.preventDefault();
+
+      if (event.key === " " || event.key === "Enter") {
+        if (event.key === " ") event.preventDefault();
         const vessel = centerBeakerId ? vessels[centerBeakerId] : null;
-        const count  = vessel?.contents.filter((c) => c.formula).length ?? 0;
-        if (count >= 2 && !isLoading && centerBeakerId)
+        const count = vessel?.contents.filter((content) => content.formula).length ?? 0;
+
+        if (count >= 2 && !isLoading && centerBeakerId) {
           runReaction(centerBeakerId);
-        return;
+        }
       }
     };
+
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [centerBeakerId, vessels, isLoading, undoLastChemical, clearBeaker, runReaction]);
 
   return (
     <>
-      {/* ── True 3-column layout — lab scene stays in center column ── */}
-      <div className="flex h-screen w-screen flex-col overflow-hidden bg-[#121212] text-[#E0E0E0]">
-        {/* Top toolbar */}
+      <div className="flex h-screen w-screen flex-col overflow-hidden bg-clay-canvas text-clay-ink">
         <Toolbar />
 
-        {/* Main content row */}
-        <div className="flex min-h-0 flex-1">
-          {/* ── Left panel — width controlled by drag ── */}
+        <div className="flex min-h-0 flex-1 flex-col lg:flex-row gap-3 p-2 md:gap-4 md:p-4 overflow-y-auto lg:overflow-hidden overflow-x-hidden thin-scroll">
           <div
             ref={leftColRef}
-            className="hidden lg:flex flex-col shrink-0 bg-[rgba(22,24,28,0.92)] backdrop-blur-[12px] overflow-hidden z-10"
-            style={{ width: LEFT_DEFAULT, minWidth: LEFT_MIN, maxWidth: LEFT_MAX }}
+            className="flex w-full shrink-0 flex-col overflow-hidden rounded-[20px] md:rounded-[28px] border border-clay-hairline bg-clay-surface-soft lg:!w-[var(--left-col-w)] lg:min-w-[240px] lg:max-w-[460px] min-h-[300px] lg:min-h-0"
+            style={{ "--left-col-w": `${LEFT_DEFAULT}px` } as React.CSSProperties}
           >
             <ConditionPanel />
           </div>
 
-          {/* ── Drag handle ── all pointer events on this single element ── */}
           <div
-            className="hidden lg:block shrink-0"
+            className="relative hidden shrink-0 lg:block"
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerUp}
-            style={{
-              width: 6,
-              cursor: "col-resize",
-              position: "relative",
-              userSelect: "none",
-              touchAction: "none",
-              flexShrink: 0,
-              zIndex: 20,
-              background: "transparent",
-              transition: "background 0.15s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "oklch(0.84 0.09 175 / 0.22)";
-            }}
-            onMouseLeave={(e) => {
-              if (!dragging.current)
-                e.currentTarget.style.background = "transparent";
-            }}
+            style={{ width: 12, cursor: "col-resize", touchAction: "none" }}
           >
-            {/* Vertical line */}
-            <div style={{
-              position: "absolute",
-              top: 0, bottom: 0,
-              left: "50%",
-              width: 1,
-              transform: "translateX(-50%)",
-              background: "oklch(0.78 0.04 250 / 0.35)",
-            }} />
-            {/* Grip dots */}
-            <div style={{
-              position: "absolute",
-              top: "50%", left: "50%",
-              transform: "translate(-50%, -50%)",
-              display: "flex",
-              flexDirection: "column",
-              gap: 4,
-              pointerEvents: "none",
-            }}>
-              {[0,1,2,3,4].map(i => (
-                <div key={i} style={{
-                  width: 3, height: 3,
-                  borderRadius: "50%",
-                  background: "oklch(0.65 0.04 250 / 0.55)",
-                }} />
+            <div className="absolute inset-y-4 left-1/2 w-px -translate-x-1/2 bg-clay-hairline" />
+            <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col gap-1 rounded-full border border-clay-hairline bg-clay-surface-card px-1.5 py-2 hover:bg-clay-surface-soft transition-colors">
+              {[0, 1, 2, 3].map((dot) => (
+                <span key={dot} className="h-1 w-1 rounded-full bg-clay-muted-soft" />
               ))}
             </div>
           </div>
 
-          {/* Center — lab canvas & results */}
-          <div
-            className="relative min-w-0 flex-1 flex flex-col h-full overflow-hidden"
-            style={{
-              margin: 10,
-              borderRadius: 20,
-              background: "linear-gradient(180deg, #12141D 0%, #0E1017 100%)",
-              border: "1.5px solid rgba(0, 102, 255, 0.3)",
-              boxShadow:
-                "0 0 0 1px rgba(0,0,0,0.4), " +
-                "0 8px 32px rgba(0,0,0,0.6), " +
-                "0 2px 8px rgba(0,0,0,0.3), " +
-                "inset 0 1px 0 rgba(255,255,255,0.05), " +
-                "inset 0 -2px 6px rgba(0,0,0,0.2)",
-            }}
-          >
-            {/* Top Zone (The Stage) — Beaker focus */}
-            <div className="flex-1 relative flex items-center justify-center min-h-[50%] transition-all duration-500">
-              <Board />
+          <div className="flex w-full min-w-0 flex-1 flex-col h-[50vh] min-h-[400px] lg:h-full lg:w-auto">
+            <div className="relative flex h-full w-full min-w-0 flex-col overflow-hidden rounded-[20px] md:rounded-[32px] border border-clay-hairline bg-clay-surface-soft">
+              <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/40 to-transparent dark:from-white/4 pointer-events-none z-10" />
+              <div className="relative flex-1 h-full w-full">
+                <Board />
+              </div>
+              <ReactionResultCard />
             </div>
-
-            {/* Bottom Zone (The Result) — Accordion slide-up block */}
-            <ReactionResultCard />
           </div>
 
-          {/* Right panel */}
-          <div className="hidden md:flex w-72 shrink-0 flex-col bg-[rgba(22,24,28,0.92)] backdrop-blur-[12px] overflow-y-auto z-10">
+          <div className="flex w-full shrink-0 flex-col overflow-hidden rounded-[20px] md:rounded-[28px] border border-clay-hairline bg-clay-surface-soft lg:w-[360px] min-h-[400px] lg:min-h-0">
             <ChemicalLibrary />
           </div>
         </div>
       </div>
 
       <ChatbotWidget />
+
     </>
   );
 }

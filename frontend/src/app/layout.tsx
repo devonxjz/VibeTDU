@@ -31,6 +31,8 @@ export const metadata: Metadata = {
     "Sân chơi kéo-thả mô phỏng phản ứng hoá học 2.5D. Khám phá hợp chất, điều kiện phản ứng và mô phỏng trực quan.",
 };
 
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+
 /* ─── Root Layout ────────────────────────────────────────────────────── */
 
 export default function RootLayout({
@@ -39,12 +41,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className={`${inter.variable} ${plusJakarta.variable} ${dmSans.variable}`} suppressHydrationWarning>
+    <html
+      lang="vi"
+      className={`${inter.variable} ${plusJakarta.variable} ${dmSans.variable}`}
+      suppressHydrationWarning
+    >
       <body
         className="min-h-screen font-sans bg-background text-foreground antialiased selection:bg-primary/20"
         suppressHydrationWarning
       >
-        {children}
+        <ThemeProvider defaultTheme="light">
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

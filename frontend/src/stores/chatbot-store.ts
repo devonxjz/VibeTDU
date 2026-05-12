@@ -27,7 +27,7 @@ interface ChatbotStore {
   sendMessage: (text: string) => Promise<void>;
 }
 
-function buildReactionContext(labState: any): Record<string, string> | undefined {
+function buildReactionContext(labState: ReturnType<typeof useLabStore.getState>): Record<string, string> | undefined {
   const ctx: Record<string, string> = {};
   
   if (labState.lastReaction) {
@@ -123,7 +123,6 @@ export const useChatbotStore = create<ChatbotStore>()(
       name: "chatbot:v1",
       partialize: (s) => ({
         position: s.position,
-        messages: s.messages.slice(-MAX_PERSISTED_MESSAGES),
       }),
     },
   ),

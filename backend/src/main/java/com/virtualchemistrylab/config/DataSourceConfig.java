@@ -27,37 +27,50 @@ public class DataSourceConfig {
     private static final Logger log = LoggerFactory.getLogger(DataSourceConfig.class);
 
     // ── Supabase Connection Pooler (IPv4 - aws-1) ───────────────────────────
-    private static final String JDBC_URL = "jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require";
+    @org.springframework.beans.factory.annotation.Value("${SPRING_DATASOURCE_URL:jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require}")
+    private String jdbcUrl;
     
-    // Pooler requires tenant ref in the username
-    private static final String DB_USER = "postgres.yesykibnglunqlspikin";
+    @org.springframework.beans.factory.annotation.Value("${SPRING_DATASOURCE_USERNAME:postgres.yesykibnglunqlspikin}")
+    private String dbUser;
     
-    // Password with special characters - hardcoded to avoid .properties escape issue
-    private static final String DB_PASS = "MSK&7%BX3FfSjN6";
+    @org.springframework.beans.factory.annotation.Value("${SPRING_DATASOURCE_PASSWORD:MSK&7%BX3FfSjN6}")
+    private String dbPass;
 
     @Bean
     @Primary
     public DataSource supabaseDataSource() {
-        log.info("Configuring HikariCP -> Supabase PostgreSQL (Session Pooler)...");
+        log.info("Configuring HikariCP -> Supabase PostgreSQL (Transaction Pooler on 6543)...");
 
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(JDBC_URL);
-        config.setUsername(DB_USER);
-        config.setPassword(DB_PASS);
+        
+        // Final recommended URL for Supabase Transaction Pooler
+        String url = "jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres" +
+                     "?sslmode=require" +
+                     "&prepareThreshold=0" +
+                     "&defaultRowFetchSize=0" +
+                     "&tcpKeepAlive=true";
+        
+        config.setJdbcUrl(url);
+        config.setUsername(dbUser);
+        config.setPassword(dbPass);
         config.setDriverClassName("org.postgresql.Driver");
 
-        // Pool settings - Supabase free tier allows max ~15 concurrent connections
+        // Pool settings
         config.setPoolName("VCL-Supabase-Pool");
         config.setMaximumPoolSize(5);
-        config.setMinimumIdle(0);         // 0 idle to conserve connection slots
-        config.setConnectionTimeout(30_000);
-        config.setIdleTimeout(600_000);
-        config.setMaxLifetime(1_800_000);
-        // Required for Connection Pooler (PgBouncer) to avoid Prepared Statement errors
+        config.setMinimumIdle(0);
+        config.setConnectionTimeout(30000);
+        config.setIdleTimeout(600000);
+        config.setMaxLifetime(1800000);
+
+        // ✅ Critical: Prevent Hikari from calling setTransactionIsolation() by using connectionInitSql
+        config.setConnectionInitSql("SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED");
+        
+        // ✅ Explicitly disable prepared statements (required for Transaction Pooler)
         config.addDataSourceProperty("prepareThreshold", "0");
         config.setConnectionTestQuery("SELECT 1");
         
-        log.info("HikariCP bean created successfully. URL: {}", JDBC_URL);
+        log.info("HikariCP bean created successfully. URL: {}", url);
 
         return new HikariDataSource(config);
     }

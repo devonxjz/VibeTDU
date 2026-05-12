@@ -1,15 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Search,
-  Check,
-  ChevronDown,
-  Loader2,
-  Database,
-  FlaskConical
-} from "lucide-react";
+import { motion } from "framer-motion";
+import { Search, Check, ChevronDown, FlaskConical } from "lucide-react";
+
 import { useLabStore } from "@/stores/lab-store";
 import {
   CATEGORY_GROUPS,
@@ -19,8 +13,49 @@ import {
 } from "@/constants/chemicals";
 import { Formula } from "@/components/chemlab/Formula";
 import { cn } from "@/utils/cn";
+import {
+  ClayFieldShell,
+  ClayPanelShell,
+  ClayPill,
+} from "@/components/ui/clay-primitives";
 
-/* ─── Chemical Card ─────────────────────────────────────────────────── */
+const CLAY_CATEGORY_MAP: Record<string, { bg: string; text: string; pill: string }> = {
+  acid: {
+    bg: "bg-clay-brand-pink/12",
+    text: "text-clay-brand-pink",
+    pill: "bg-clay-brand-pink text-clay-on-primary",
+  },
+  base: {
+    bg: "bg-clay-brand-teal/14",
+    text: "text-clay-brand-teal",
+    pill: "bg-clay-brand-teal text-clay-on-primary",
+  },
+  salt: {
+    bg: "bg-clay-brand-lavender/22",
+    text: "text-clay-ink",
+    pill: "bg-clay-brand-lavender text-clay-ink",
+  },
+  metal: {
+    bg: "bg-clay-brand-peach/22",
+    text: "text-clay-ink",
+    pill: "bg-clay-brand-peach text-clay-ink",
+  },
+  nonmetal: {
+    bg: "bg-clay-brand-ochre/22",
+    text: "text-clay-ink",
+    pill: "bg-clay-brand-ochre text-clay-ink",
+  },
+  organic: {
+    bg: "bg-clay-surface-card",
+    text: "text-clay-ink",
+    pill: "bg-clay-primary text-clay-on-primary",
+  },
+  api: {
+    bg: "bg-sky-500/12",
+    text: "text-sky-700 dark:text-sky-300",
+    pill: "bg-sky-600 text-white",
+  },
+};
 
 function ChemicalCard({
   chemical,
@@ -29,17 +64,19 @@ function ChemicalCard({
   chemical: Chemical;
   group: CategoryGroup;
 }) {
-  const addToBeaker = useLabStore((s) => s.addToBeaker);
-  const centerBeakerId = useLabStore((s) => s.centerBeakerId);
-  const vessel = useLabStore((s) => s.centerBeakerId ? s.vessels[s.centerBeakerId] : null);
+  const addToBeaker = useLabStore((state) => state.addToBeaker);
+  const vessel = useLabStore((state) =>
+    state.centerBeakerId ? state.vessels[state.centerBeakerId] : null,
+  );
 
-  // Check if chemical is already in the beaker
-  const isAdded = vessel?.contents.some((c) => c.formula === chemical.formula) ?? false;
-  const dotColor = getBottleColor(chemical.id, chemical.formula);
+  const isAdded = vessel?.contents.some((content) => content.formula === chemical.formula) ?? false;
+  const substanceColor = getBottleColor(chemical.id, chemical.formula);
+  const clayStyle = CLAY_CATEGORY_MAP[group.key] || CLAY_CATEGORY_MAP.organic;
 
   return (
     <motion.button
-      whileTap={isAdded ? undefined : { scale: 0.95 }}
+      whileTap={isAdded ? undefined : { scale: 0.98 }}
+      type="button"
       onClick={() => {
         if (!isAdded) {
           addToBeaker({
@@ -52,45 +89,41 @@ function ChemicalCard({
       }}
       disabled={isAdded}
       className={cn(
-        "group flex w-full items-center gap-3 rounded-xl p-2.5 text-left transition-all duration-200 ease-out",
+        "group flex w-full items-center gap-4 rounded-[var(--clay-rounded-lg)] border p-4 text-left transition-colors duration-200",
         isAdded
-          ? "bg-[#2C2C2C]/40 opacity-60 cursor-not-allowed"
-          : "bg-[#2C2C2C] hover:bg-[#3C3C3C]/80 hover:shadow-[var(--shadow-card)] active:bg-[#3C3C3C]/50"
+          ? "cursor-not-allowed border-clay-hairline bg-clay-surface-soft opacity-65"
+          : "border-clay-hairline bg-clay-canvas hover:bg-clay-surface-card",
       )}
     >
-      {/* Color dot */}
       <span
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#1C1C1C] shadow-inner"
+        className={cn(
+          "relative flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px]",
+          clayStyle.bg,
+        )}
       >
-        <FlaskConical className="h-4 w-4" style={{ color: dotColor }} />
+        <FlaskConical className={cn("h-6 w-6", clayStyle.text)} strokeWidth={2} />
+        <span
+          className="absolute bottom-1 right-1 h-3 w-3 rounded-full border-2 border-white shadow-sm"
+          style={{ backgroundColor: substanceColor }}
+        />
       </span>
 
-      {/* Info */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
-          <Formula
-            formula={chemical.formula}
-            className="truncate font-display text-xs font-bold text-[#E0E0E0]"
-          />
-          {/* Badge */}
-          <span className="shrink-0 rounded bg-[#3C3C3C] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-gray-400">
+          <Formula formula={chemical.formula} className="truncate clay-title-sm text-clay-ink" />
+          <span className={cn("rounded-full px-2 py-0.5 clay-caption", clayStyle.pill)}>
             {chemical.category}
           </span>
         </div>
-        <div className="truncate text-[10px] font-medium text-gray-400">
-          {chemical.name}
-        </div>
+        <div className="truncate clay-body-sm text-clay-muted">{chemical.name}</div>
       </div>
 
-      {/* Status icon */}
-      <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-transparent">
-        {isAdded && <Check className="h-4 w-4 text-emerald-500" />}
+      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-transparent">
+        {isAdded && <Check className="h-5 w-5 text-clay-ink" />}
       </div>
     </motion.button>
   );
 }
-
-/* ─── Category Section ──────────────────────────────────────────────── */
 
 function CategorySection({
   group,
@@ -99,39 +132,51 @@ function CategorySection({
   group: CategoryGroup;
   defaultOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(!!defaultOpen);
+  const [open, setOpen] = useState(Boolean(defaultOpen));
   if (group.chemicals.length === 0) return null;
 
+  const clayStyle = CLAY_CATEGORY_MAP[group.key] || CLAY_CATEGORY_MAP.organic;
+
   return (
-    <div className="overflow-hidden rounded-xl bg-[#2C2C2C]/40">
+    <div
+      className={cn(
+        "overflow-hidden rounded-[var(--clay-rounded-xl)] border border-clay-hairline transition-colors",
+        open ? clayStyle.bg : "bg-clay-surface-card",
+      )}
+    >
       <button
-        onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left transition-colors hover:bg-[#3C3C3C]/40"
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left"
       >
-        <div className="flex items-center gap-2">
-          <span className="text-base leading-none">{group.emoji}</span>
-          <span className="text-xs font-semibold text-[#E0E0E0]">{group.label}</span>
-          <span className="rounded-full bg-[#3C3C3C] px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-gray-400">
-            {group.chemicals.length}
+        <div className="flex items-center gap-3">
+          <span className="text-xl">{group.emoji}</span>
+          <span className={cn("clay-title-md", open ? clayStyle.text : "text-clay-ink")}>
+            {group.label}
           </span>
+          <ClayPill tone="neutral" className={open ? "border-transparent bg-black/8 text-current dark:bg-white/10" : ""}>
+            {group.chemicals.length}
+          </ClayPill>
         </div>
         <ChevronDown
           className={cn(
-            "h-4 w-4 text-gray-400 transition-transform duration-300",
-            open && "rotate-180"
+            "h-5 w-5 transition-transform duration-300",
+            open ? clayStyle.text : "text-clay-muted",
+            open && "rotate-180",
           )}
         />
       </button>
+
       <div
         className={cn(
           "grid transition-all duration-300 ease-out",
-          open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+          open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
         )}
       >
         <div className="overflow-hidden">
-          <div className="space-y-1.5 p-2 pt-0">
-            {group.chemicals.map((c) => (
-              <ChemicalCard key={c.id} chemical={c} group={group} />
+          <div className="space-y-3 p-4 pt-0">
+            {group.chemicals.map((chemical) => (
+              <ChemicalCard key={chemical.id} chemical={chemical} group={group} />
             ))}
           </div>
         </div>
@@ -140,113 +185,112 @@ function CategorySection({
   );
 }
 
-/* ─── Main ChemicalLibrary Panel ────────────────────────────────────── */
-
 export function ChemicalLibrary() {
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState<string>("all");
 
   const q = query.toLowerCase();
 
-  // Filter chemicals
-  const filteredGroups = CATEGORY_GROUPS.map((g) => {
-    // If a specific tab is selected (not "all") and it doesn't match this category, hide all
-    if (activeTab !== "all" && g.key !== activeTab) {
-      return { ...g, chemicals: [] };
+  const filteredGroups = CATEGORY_GROUPS.map((group) => {
+    if (activeTab !== "all" && group.key !== activeTab) {
+      return { ...group, chemicals: [] };
     }
-    // Filter by search query
-    const filteredChems = g.chemicals.filter(
-      (c) =>
-        c.formula.toLowerCase().includes(q) ||
-        c.name.toLowerCase().includes(q)
+
+    const chemicals = group.chemicals.filter(
+      (chemical) =>
+        chemical.formula.toLowerCase().includes(q) ||
+        chemical.name.toLowerCase().includes(q),
     );
-    return { ...g, chemicals: filteredChems };
-  }).filter((g) => g.chemicals.length > 0);
+
+    return { ...group, chemicals };
+  }).filter((group) => group.chemicals.length > 0);
 
   const hasResults = filteredGroups.length > 0;
 
   return (
-    <aside className="flex h-full w-full flex-col overflow-hidden">
-      {/* Header */}
-      <div className="bg-[#2C2C2C]/40 px-4 py-3.5">
-        <div className="mb-2.5 flex items-center justify-between">
-          <h2 className="font-display text-sm font-bold text-[#E0E0E0]">
-            Thư viện hoá chất
-          </h2>
-          <span className="text-[11px] text-gray-400">
-            {CATEGORY_GROUPS.reduce((s, g) => s + g.chemicals.length, 0)} chất
-          </span>
+    <ClayPanelShell className="flex h-full w-full flex-col rounded-none border-0 bg-clay-surface-soft px-4 py-4">
+      <div className="mb-4">
+        <div className="mb-4 flex items-end justify-between gap-3">
+          <div>
+            <h2 className="clay-display-sm text-clay-ink">Thư viện hoá chất</h2>
+            <p className="clay-body-sm text-clay-muted">
+              Tìm chất, lọc theo nhóm và thêm trực tiếp vào bình trung tâm.
+            </p>
+          </div>
+          <ClayPill tone="neutral">
+            {CATEGORY_GROUPS.reduce((sum, group) => sum + group.chemicals.length, 0)} chất
+          </ClayPill>
         </div>
 
-        {/* Search Input */}
-        <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+        <ClayFieldShell className="mb-4 h-[52px] bg-clay-canvas">
+          <Search className="h-5 w-5 text-clay-muted" />
           <input
             type="text"
             placeholder="Tìm công thức, tên..."
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-[#2C2C2C] py-2 pl-9 pr-3 text-xs text-[#E0E0E0] outline-none transition-all placeholder:text-gray-400/60 focus:border-mint focus:ring-2 focus:ring-mint/20"
+            onChange={(event) => setQuery(event.target.value)}
+            className="h-full w-full bg-transparent text-sm md:text-base text-clay-ink outline-none placeholder:text-clay-muted-soft"
           />
-        </div>
+        </ClayFieldShell>
 
-        {/* Filter Tabs */}
-        <div className="thin-scroll -mx-2 flex gap-1.5 overflow-x-auto px-2 pb-1">
+        <div className="thin-scroll -mx-1 flex gap-2 overflow-x-auto px-1 pb-2">
           <button
+            type="button"
             onClick={() => setActiveTab("all")}
             className={cn(
-              "shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-colors",
+              "shrink-0 rounded-full px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-medium transition-colors",
               activeTab === "all"
-                ? "bg-[#FF8A65] text-white"
-                : "bg-[#3C3C3C] text-gray-400 hover:bg-[#3C3C3C]/80 hover:text-[#E0E0E0]"
+                ? "bg-clay-ink text-clay-canvas"
+                : "bg-clay-canvas text-clay-muted hover:bg-clay-surface-card hover:text-clay-ink",
             )}
           >
             Tất cả
           </button>
-          {CATEGORY_GROUPS.map((g) => (
-            <button
-              key={g.key}
-              onClick={() => setActiveTab(g.key)}
-              className={cn(
-                "shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-colors flex items-center gap-1",
-                activeTab === g.key
-                  ? "bg-[#FF8A65] text-white"
-                  : "bg-[#3C3C3C] text-gray-400 hover:bg-[#3C3C3C]/80 hover:text-[#E0E0E0]"
-              )}
-            >
-              <span>{g.emoji}</span>
-              {g.label}
-            </button>
-          ))}
+          {CATEGORY_GROUPS.map((group) => {
+            const active = activeTab === group.key;
+            const clayStyle = CLAY_CATEGORY_MAP[group.key] || CLAY_CATEGORY_MAP.organic;
+
+            return (
+              <button
+                key={group.key}
+                type="button"
+                onClick={() => setActiveTab(group.key)}
+                className={cn(
+                  "shrink-0 rounded-full px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-medium transition-colors",
+                  active ? clayStyle.pill : "bg-clay-canvas text-clay-muted hover:bg-clay-surface-card hover:text-clay-ink",
+                )}
+              >
+                <span className="mr-1.5">{group.emoji}</span>
+                {group.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* List */}
-      <div className="thin-scroll flex-1 overflow-y-auto px-3 py-3">
+      <div className="thin-scroll flex-1 overflow-y-auto pr-1">
         {!hasResults ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-[#3C3C3C]/60">
-              <Search className="h-5 w-5 text-gray-400/60" />
+          <div className="flex h-full flex-col items-center justify-center rounded-[var(--clay-rounded-xl)] border border-dashed border-clay-hairline bg-clay-surface-card px-6 py-12 text-center">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-clay-canvas">
+              <Search className="h-5 w-5 text-clay-muted" />
             </div>
-            <p className="text-xs font-semibold text-[#E0E0E0]">
-              Không tìm thấy hoá chất
-            </p>
-            <p className="mt-1 text-[11px] text-gray-400">
-              Thử tìm với từ khóa khác
+            <p className="clay-title-sm text-clay-ink">Không tìm thấy hoá chất</p>
+            <p className="mt-1 clay-body-sm text-clay-muted">
+              Thử lại với công thức hoặc tên khác.
             </p>
           </div>
         ) : (
-          <div className="space-y-2">
-            {filteredGroups.map((g) => (
+          <div className="space-y-3">
+            {filteredGroups.map((group) => (
               <CategorySection
-                key={g.key}
-                group={g}
-                defaultOpen={query.length > 0 || activeTab === g.key}
+                key={group.key}
+                group={group}
+                defaultOpen={query.length > 0 || activeTab === group.key}
               />
             ))}
           </div>
         )}
       </div>
-    </aside>
+    </ClayPanelShell>
   );
 }

@@ -1,0 +1,46 @@
+/* === FILE: clay-typography.css === */
+
+/* Base Font Definition for Clay classes */
+.clay-display-xl,
+.clay-display-lg,
+.clay-display-md,
+.clay-display-sm,
+.clay-title-lg,
+.clay-title-md,
+.clay-title-sm,
+.clay-body-md,
+.clay-body-sm,
+.clay-caption,
+.clay-caption-uppercase,
+.clay-button {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Display — wt 500 + negative letter-spacing (Plain Black substitute) */
+.clay-display-xl { font-size: 72px; font-weight: 500; line-height: 1.0; letter-spacing: -2.5px; }
+.clay-display-lg { font-size: 56px; font-weight: 500; line-height: 1.05; letter-spacing: -2px; }
+.clay-display-md { font-size: 40px; font-weight: 500; line-height: 1.1; letter-spacing: -1px; }
+.clay-display-sm { font-size: 32px; font-weight: 500; line-height: 1.15; letter-spacing: -0.5px; }
+
+/* Titles — wt 600 */
+.clay-title-lg  { font-size: 24px; font-weight: 600; line-height: 1.3; letter-spacing: -0.3px; }
+.clay-title-md  { font-size: 18px; font-weight: 600; line-height: 1.4; letter-spacing: 0; }
+.clay-title-sm  { font-size: 16px; font-weight: 600; line-height: 1.4; letter-spacing: 0; }
+
+/* Body — wt 400 */
+.clay-body-md   { font-size: 16px; font-weight: 400; line-height: 1.55; letter-spacing: 0; }
+.clay-body-sm   { font-size: 14px; font-weight: 400; line-height: 1.55; letter-spacing: 0; }
+
+/* Caption / UI */
+.clay-caption   { font-size: 13px; font-weight: 500; line-height: 1.4; letter-spacing: 0; }
+.clay-caption-uppercase { font-size: 12px; font-weight: 600; line-height: 1.4; letter-spacing: 1.5px; text-transform: uppercase; }
+
+/* Button */
+.clay-button    { font-size: 14px; font-weight: 600; line-height: 1.0; letter-spacing: 0; }
+
+@media (max-width: 767px) {
+  .clay-display-xl { font-size: 36px; letter-spacing: -1px; }
+  .clay-display-lg { font-size: 32px; letter-spacing: -0.8px; }
+  .clay-display-md { font-size: 28px; letter-spacing: -0.6px; }
+  .clay-display-sm { font-size: 24px; letter-spacing: -0.4px; }
+}

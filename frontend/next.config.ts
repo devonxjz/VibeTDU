@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   /**
    * Tất cả pages sử dụng client-side hooks (DnD, Zustand)
    * nên cần dynamic rendering, không static generation.

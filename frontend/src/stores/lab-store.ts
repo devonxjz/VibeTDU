@@ -3,11 +3,12 @@
 import { create } from "zustand";
 import { nanoid } from "nanoid";
 import type { Vessel, ActiveEffect, Position, TimelineEvent } from "@/types/lab";
-import type { MixResponse, ReactionResult, VesselContent } from "@/types/api";
+import type { MixResponse, ReactionResult, VesselContent, AutoAppliedConditions, ReactionStep } from "@/types/api";
 import { mixChemicals } from "@/api/client/lab";
 import { resetSession as apiResetSession } from "@/api/client/lab";
 import { CHEMICAL_COLORS, getBottleColor } from "@/constants/chemicals";
 import { getMockReaction } from "@/utils/reaction-mock";
+import { toast } from "sonner";
 
 // ─── Color map by chemical category ─────────────────────────────────
 
@@ -87,6 +88,9 @@ interface LabStore {
   isLoading: boolean;
   error: string | null;
   timelineEvents: TimelineEvent[];
+  unlockedReactions: string[];
+  reactionSteps: ReactionStep[];
+  appliedConditions: AutoAppliedConditions | null;
 
   // Environment conditions
   temperature: number;
@@ -124,6 +128,7 @@ interface LabStore {
   setEnvironment: (conditions: Partial<{ temperature: number; pressure: number; catalyst: string }>) => void;
   addTimelineEvent: (event: Omit<TimelineEvent, "id" | "timestamp">) => void;
   clearTimeline: () => void;
+  unlockReaction: (id: string) => void;
 
   // PRO click-to-add actions
   /** Click a chemical card → adds to center beaker (no dupes, +15 level) */
@@ -132,6 +137,14 @@ interface LabStore {
   removeFromBeaker: (formula: string) => void;
   /** Clear center beaker only (reset contents, level, reaction state) */
   clearBeaker: () => void;
+
+  // Guest Migration Actions
+  saveGuestExperiment: () => void;
+  clearGuestExperiment: () => void;
+  setGuestExperimentDismissed: (dismissed: boolean) => void;
+
+  // Load from journal
+  loadExperiment: (data: any) => void;
 }
 
 // ─── Effect Duration Map ────────────────────────────────────────────
@@ -156,6 +169,9 @@ export const useLabStore = create<LabStore>((set, get) => ({
   isLoading: false,
   error: null,
   timelineEvents: [],
+  unlockedReactions: [],
+  reactionSteps: [],
+  appliedConditions: null,
 
   temperature: 25,
   pressure: 1,
@@ -191,6 +207,55 @@ export const useLabStore = create<LabStore>((set, get) => ({
   })),
 
   clearTimeline: () => set({ timelineEvents: [] }),
+
+  unlockReaction: (id) => set((state) => ({
+    unlockedReactions: state.unlockedReactions.includes(id) 
+      ? state.unlockedReactions 
+      : [...state.unlockedReactions, id]
+  })),
+
+  // Guest Migration
+  saveGuestExperiment: () => {
+    const s = get();
+    // Only save if we have a reaction and a beaker
+    if (!s.lastReaction || !s.centerBeakerId) return;
+    const vessel = s.vessels[s.centerBeakerId];
+    if (!vessel) return;
+
+    // Build experiment data matching schema
+    const experimentData = {
+      version: 1,
+      timestamp: new Date().toISOString(),
+      contents: vessel.contents,
+      reaction: s.lastReaction,
+    };
+
+    // Check size limit (~4MB to be safe)
+    try {
+      const dataStr = JSON.stringify(experimentData);
+      if (dataStr.length < 4 * 1024 * 1024) {
+        localStorage.setItem("guestExperiment", dataStr);
+      }
+    } catch (e) {
+      console.warn("Failed to save guest experiment to local storage", e);
+    }
+  },
+
+  clearGuestExperiment: () => {
+    try {
+      localStorage.removeItem("guestExperiment");
+    } catch (e) {}
+  },
+
+  setGuestExperimentDismissed: (dismissed: boolean) => {
+    try {
+      if (dismissed) {
+        localStorage.setItem("guestExperimentDismissed", "true");
+      } else {
+        localStorage.removeItem("guestExperimentDismissed");
+      }
+    } catch (e) {}
+  },
 
   setCenterBeaker: (id) => set({ centerBeakerId: id }),
 
@@ -307,75 +372,79 @@ export const useLabStore = create<LabStore>((set, get) => ({
             ...vessel,
             displayColor: newColor,
             label: newLabel,
-            contents: response.newTargetVesselState?.contents?.map((p) => ({ inputName: p.formula, formula: p.formula })) as VesselContent[] ?? vessel.contents,
+            contents: response.finalContents?.map(p => ({ inputName: p.formula, formula: p.formula })) as VesselContent[] ??
+                      response.newTargetVesselState?.contents?.map((p) => ({ inputName: p.formula, formula: p.formula })) as VesselContent[] ?? 
+                      vessel.contents,
           },
         },
         // Always update lastReaction (even no-reaction) so UI can show feedback
         lastReaction: result ?? null,
+        reactionSteps: response.steps ?? [],
+        appliedConditions: response.appliedConditions ?? null,
         activeEffect: effectType !== "NONE" ? { type: effectType, vesselId, color: result?.effectColor, precipitateColor: result?.precipitateColor, gasFormula: result?.gasFormula } : null,
         isLoading: false,
         error: (!result?.hasReaction) ? null : null, // clear any previous errors on success
       });
 
+      // TASK 3: Auto-adjust environment conditions if backend applied them
+      if (response.appliedConditions?.autoAdjusted) {
+        const applied = response.appliedConditions;
+        const updates: Partial<{ temperature: number; pressure: number; catalyst: string }> = {};
+        
+        if (applied.temperature != null) updates.temperature = applied.temperature;
+        if (applied.pressure != null) updates.pressure = applied.pressure;
+        if (applied.catalyst != null) updates.catalyst = applied.catalyst;
+        
+        if (Object.keys(updates).length > 0) {
+          get().setEnvironment(updates);
+        }
+      }
+
       // Auto-clear isReacting after 3000ms
       setTimeout(() => set({ isReacting: false }), 3000);
 
-      if (result?.hasReaction) {
+      if (response.steps && response.steps.length > 0) {
+        // Sequential mode: Add an event for each step
+        response.steps.forEach(step => {
+           get().addTimelineEvent({
+             type: "REACT",
+             description: `Bước ${step.stepNumber}: ${step.equation || "Phản ứng"}`,
+           });
+           const reactionKey = step.reactants.map(r => r.toLowerCase()).sort().join("+");
+           get().unlockReaction(reactionKey);
+        });
+      } else if (result?.hasReaction) {
+        // Fallback for mock/cache
+        const formulas = vessel.contents.map(c => c.formula).filter(Boolean);
+        const reactionKey = formulas.map(r => r.toLowerCase()).sort().join("+");
+        get().unlockReaction(reactionKey);
+
         get().addTimelineEvent({
           type: "REACT",
           description: result.equation || "Phản ứng đã chạy",
         });
       }
 
-      if (effectType !== "NONE") {
+      if (effectType !== "NONE" && effectType !== "PRECIPITATE" && effectType !== "GAS_BUBBLE") {
         const duration = EFFECT_DURATION[effectType] ?? 3000;
         setTimeout(() => get().clearEffect(), duration);
       }
+
+      // Save to guest storage if unauthenticated
+      get().saveGuestExperiment();
     } catch (err) {
-      // Offline fallback
-      const formulas = vessel.contents.map(c => c.formula).filter(Boolean);
-      const mockResult = getMockReaction(formulas);
-      const effectType = mockResult.effectType ?? "NONE";
-      
-      let newColor = vessel.displayColor;
-      if (mockResult.effectColor) newColor = mockResult.effectColor;
-      else if (mockResult.precipitateColor) newColor = mockResult.precipitateColor;
-      else {
-        const pc = getProductColor(mockResult.productFormula, mockResult.effectColor);
-        if (pc) newColor = pc;
-      }
-      
-      let newLabel = vessel.label;
-      if (mockResult.hasReaction && mockResult.productFormula) newLabel = mockResult.productFormula;
-
+      // Surface error to user — do NOT silently fall back to mock
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Không thể kết nối tới máy chủ";
+      toast.error(errorMessage || "Không thể mô phỏng phản ứng. Vui lòng thử lại sau.");
       set({
-        vessels: {
-          ...state.vessels,
-          [vesselId]: {
-            ...vessel,
-            displayColor: newColor,
-            label: newLabel,
-          },
-        },
-        lastReaction: mockResult,
-        activeEffect: effectType !== "NONE" ? { type: effectType, vesselId, color: mockResult.effectColor, precipitateColor: mockResult.precipitateColor, gasFormula: mockResult.gasFormula } : null,
         isLoading: false,
+        isReacting: false,
+        error: errorMessage,
       });
-
-      // Auto-clear isReacting after 3000ms
-      setTimeout(() => set({ isReacting: false }), 3000);
-
-      if (mockResult.hasReaction) {
-        get().addTimelineEvent({
-          type: "REACT",
-          description: mockResult.equation || "Phản ứng đã chạy",
-        });
-      }
-
-      if (effectType !== "NONE") {
-        const duration = EFFECT_DURATION[effectType] ?? 3000;
-        setTimeout(() => get().clearEffect(), duration);
-      }
+      setTimeout(() => get().setError(null), 5000);
     }
   },
 
@@ -508,7 +577,13 @@ export const useLabStore = create<LabStore>((set, get) => ({
         isLoading: false,
       });
 
-      if (effectType !== "NONE") {
+      if (result?.hasReaction) {
+        const formulas = [...target.contents.map(c => c.formula), chemical.formula].filter(Boolean);
+        const reactionKey = formulas.map(r => r.toLowerCase()).sort().join("+");
+        get().unlockReaction(reactionKey);
+      }
+
+      if (effectType !== "NONE" && effectType !== "PRECIPITATE" && effectType !== "GAS_BUBBLE") {
         const duration = EFFECT_DURATION[effectType] ?? 3000;
         setTimeout(() => {
           get().clearEffect();
@@ -553,10 +628,17 @@ export const useLabStore = create<LabStore>((set, get) => ({
         isLoading: false,
       });
 
-      if (effectType !== "NONE") {
+      if (mockResult.hasReaction) {
+        const reactionKey = formulas.map(r => r.toLowerCase()).sort().join("+");
+        get().unlockReaction(reactionKey);
+      }
+
+      if (effectType !== "NONE" && effectType !== "PRECIPITATE" && effectType !== "GAS_BUBBLE") {
         const duration = EFFECT_DURATION[effectType] ?? 3000;
         setTimeout(() => get().clearEffect(), duration);
       }
+      
+      get().saveGuestExperiment();
     }
   },
 
@@ -641,8 +723,14 @@ export const useLabStore = create<LabStore>((set, get) => ({
         isLoading: false,
       });
 
-      // Auto-clear effect after animation
-      if (effectType !== "NONE") {
+      if (result?.hasReaction) {
+        const formulas = [...target.contents.map(c => c.formula), ...source.contents.map(c => c.formula)].filter(Boolean);
+        const reactionKey = formulas.map(r => r.toLowerCase()).sort().join("+");
+        get().unlockReaction(reactionKey);
+      }
+
+      // Auto-clear effect after animation (except persistent ones)
+      if (effectType !== "NONE" && effectType !== "PRECIPITATE" && effectType !== "GAS_BUBBLE") {
         const duration = EFFECT_DURATION[effectType] ?? 3000;
         setTimeout(() => {
           get().clearEffect();
@@ -687,10 +775,17 @@ export const useLabStore = create<LabStore>((set, get) => ({
         isLoading: false,
       });
 
-      if (effectType !== "NONE") {
+      if (mockResult.hasReaction) {
+        const reactionKey = formulas.map(r => r.toLowerCase()).sort().join("+");
+        get().unlockReaction(reactionKey);
+      }
+
+      if (effectType !== "NONE" && effectType !== "PRECIPITATE" && effectType !== "GAS_BUBBLE") {
         const duration = EFFECT_DURATION[effectType] ?? 3000;
         setTimeout(() => get().clearEffect(), duration);
       }
+      
+      get().saveGuestExperiment();
     }
   },
 
@@ -897,6 +992,68 @@ export const useLabStore = create<LabStore>((set, get) => ({
         lastReaction: null,
         activeEffect: null,
         isReacting: false,
+      };
+    });
+  },
+
+  loadExperiment: (data: any) => {
+    const state = get();
+    let beakerId = state.centerBeakerId;
+    if (!beakerId) {
+      beakerId = get().initCenterBeaker();
+    }
+
+    get().clearTimeline();
+    get().addTimelineEvent({
+      type: "RESET",
+      description: "Tải phản ứng từ sổ tay",
+    });
+
+    set((s) => {
+      const v = s.vessels[beakerId!];
+      if (!v) return s;
+
+      const newContents = data.contents || [];
+      const realContents = newContents.filter((c: any) => c.formula);
+
+      let newColor = "rgba(200,230,255,0.0)";
+      if (data.reaction?.effectColor) {
+        newColor = data.reaction.effectColor;
+      } else if (data.reaction?.precipitateColor) {
+        newColor = data.reaction.precipitateColor;
+      } else if (realContents.length > 0) {
+        const last = realContents[realContents.length - 1];
+        newColor = getDisplayColor("", last.formula, "");
+      }
+
+      let newLabel = v.label;
+      if (data.reaction?.hasReaction && data.reaction.productFormula) {
+        newLabel = data.reaction.productFormula;
+      } else if (realContents.length > 0) {
+        newLabel = [...new Set(realContents.map((c: any) => c.formula).filter(Boolean))].join(" + ");
+      }
+
+      const effectType = data.reaction?.effectType || "NONE";
+
+      return {
+        vessels: {
+          ...s.vessels,
+          [beakerId!]: {
+            ...v,
+            contents: newContents,
+            displayColor: newColor,
+            label: newLabel,
+          },
+        },
+        beakerLiquidLevel: Math.min(100, Math.max(0, realContents.length * 15)),
+        lastReaction: data.reaction || null,
+        activeEffect: effectType !== "NONE" ? {
+          type: effectType,
+          vesselId: beakerId,
+          color: data.reaction?.effectColor,
+          precipitateColor: data.reaction?.precipitateColor,
+          gasFormula: data.reaction?.gasFormula,
+        } : null,
       };
     });
   },

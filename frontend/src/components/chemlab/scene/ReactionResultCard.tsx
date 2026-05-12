@@ -3,19 +3,67 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useLabStore } from "@/stores/lab-store";
 import { ReactionFormula } from "@/components/chemlab/Formula";
-import { Info, Zap, AlertTriangle, XCircle } from "lucide-react";
+import { Info, Zap, AlertTriangle, XCircle, Save, CheckCircle2 } from "lucide-react";
 import { ExplanationPanel } from "@/components/chemlab/panels/ExplanationPanel";
+import { ClayPill, ClayActionButton } from "@/components/ui/clay-primitives";
+import { useState, useEffect } from "react";
+import { saveJournal } from "@/api/client/journal";
+import { toast } from "sonner";
+
+const EFFECT_PILL: Record<string, "pink" | "teal" | "lavender" | "peach" | "ochre" | "neutral"> = {
+  GAS_BUBBLE: "teal",
+  PRECIPITATE: "lavender",
+  COLOR_CHANGE: "peach",
+  HEAT: "ochre",
+  EXPLOSION: "pink",
+  NONE: "neutral",
+};
 
 export function ReactionResultCard() {
-  const reaction = useLabStore((s) => s.lastReaction);
+  const reaction = useLabStore((state) => state.lastReaction);
+  const centerBeakerId = useLabStore((state) => state.centerBeakerId);
+  const vessels = useLabStore((state) => state.vessels);
+  const appliedConditions = useLabStore((state) => state.appliedConditions);
+  
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    setIsSaved(false);
+    setIsSaving(false);
+  }, [reaction]);
 
   const reactionTypeName: Record<string, string> = {
-    GAS_BUBBLE: "Tạo khí 🫧",
-    PRECIPITATE: "Kết tủa ⬇️",
-    COLOR_CHANGE: "Đổi màu 🎨",
-    HEAT: "Toả nhiệt 🔥",
-    EXPLOSION: "Nổ 💥",
+    GAS_BUBBLE: "Tạo khí",
+    PRECIPITATE: "Kết tủa",
+    COLOR_CHANGE: "Đổi màu",
+    HEAT: "Toả nhiệt",
+    EXPLOSION: "Nổ mạnh",
     NONE: "Không có hiệu ứng",
+  };
+
+  const handleSave = async () => {
+    if (!reaction || !centerBeakerId) return;
+    const vessel = vessels[centerBeakerId];
+    if (!vessel) return;
+
+    setIsSaving(true);
+    const experimentData = JSON.stringify({
+      version: 1,
+      timestamp: new Date().toISOString(),
+      contents: vessel.contents,
+      reaction,
+    });
+
+    const result = await saveJournal("Thí nghiệm Mới", experimentData);
+    setIsSaving(false);
+
+    if (result.success) {
+      setIsSaved(true);
+      toast.success("Đã lưu vào Sổ tay Hóa học");
+    } else {
+      toast.error(result.error);
+    }
   };
 
   return (
@@ -26,91 +74,129 @@ export function ReactionResultCard() {
           animate={{ height: "auto", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
           transition={{ type: "spring", damping: 25, stiffness: 120 }}
-          className="w-full bg-white border-t border-slate-200 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] shrink-0 max-h-[45%] overflow-hidden flex flex-col"
+          className="flex max-h-[48%] w-full shrink-0 flex-col overflow-hidden border-t border-clay-hairline bg-clay-surface-soft"
         >
-          <div className="overflow-y-auto p-4 sm:p-6">
-            {/* No-reaction state */}
+          <div className="thin-scroll overflow-y-auto p-4 sm:p-5">
             {!reaction.hasReaction ? (
-              <div className="flex items-start gap-3 rounded-xl bg-slate-50 border border-slate-200 p-4">
-                <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-slate-400" />
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                    Không có phản ứng
-                  </p>
-                  <p className="text-sm leading-relaxed text-slate-700">
-                    {reaction.messageVi || "Các chất này không phản ứng với nhau trong điều kiện hiện tại."}
-                  </p>
-                  {reaction.explanationVi && (
-                    <p className="mt-1.5 text-xs text-slate-500 leading-relaxed">
-                      {reaction.explanationVi}
-                    </p>
-                  )}
+              <div className="rounded-[var(--clay-rounded-xl)] border border-clay-hairline bg-clay-surface-card p-5">
+                <div className="mb-3 flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-clay-surface-card">
+                    <XCircle className="h-5 w-5 text-clay-muted" />
+                  </div>
+                  <div>
+                    <p className="clay-caption-uppercase text-clay-muted">Kết quả phản ứng</p>
+                    <p className="clay-title-sm text-clay-ink">Không có phản ứng xảy ra</p>
+                  </div>
                 </div>
+                <p className="clay-body-md text-clay-body">
+                  {reaction.messageVi || "Các chất này không phản ứng với nhau trong điều kiện hiện tại."}
+                </p>
+                {reaction.explanationVi && (
+                  <p className="mt-3 clay-body-sm text-clay-muted">{reaction.explanationVi}</p>
+                )}
               </div>
             ) : (
-              <>
-                {/* Header & Equation */}
-                <div className="flex items-start justify-between gap-4 mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Zap className="h-4 w-4 text-amber-500" />
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-navy-soft">
-                        Kết quả phản ứng
-                      </span>
-                      {reaction.effectType && reaction.effectType !== "NONE" && (
-                        <span className="ml-2 rounded-full bg-mint-soft px-2 py-0.5 text-[10px] font-bold text-navy">
-                          {reactionTypeName[reaction.effectType] ?? reaction.effectType}
-                        </span>
+              <div className="space-y-4">
+                <div className="rounded-[var(--clay-rounded-xl)] border border-clay-hairline bg-clay-surface-card p-5">
+                  <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                      <div className="mb-2 flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-[14px] bg-clay-brand-ochre/22">
+                          <Zap className="h-5 w-5 text-clay-ink" />
+                        </div>
+                        <div>
+                          <p className="clay-caption-uppercase text-clay-muted">Kết quả phản ứng</p>
+                          <p className="clay-title-md text-clay-ink">Phản ứng đã được mô phỏng</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-wrap items-center gap-3 mb-2">
+                        {reaction.effectType && reaction.effectType !== "NONE" && (
+                          <ClayPill tone={EFFECT_PILL[reaction.effectType] ?? "neutral"}>
+                            {reactionTypeName[reaction.effectType] ?? reaction.effectType}
+                          </ClayPill>
+                        )}
+                        <ClayActionButton
+                          variant="ghost"
+                          onClick={handleSave}
+                          disabled={isSaving || isSaved}
+                          className="text-sm h-8"
+                        >
+                          {isSaving ? "Đang lưu..." : isSaved ? <><CheckCircle2 className="w-4 h-4 mr-1 text-green-500" /> Đã lưu</> : <><Save className="w-4 h-4 mr-1" /> Lưu vào Sổ tay</>}
+                        </ClayActionButton>
+                      </div>
+
+                      {reaction.equation && (
+                        <ReactionFormula
+                          formula={reaction.equation}
+                          className="break-words text-[28px] font-medium leading-[1.15] tracking-[-0.6px] text-clay-ink md:text-[40px] md:tracking-[-1px]"
+                        />
                       )}
                     </div>
-                    {reaction.equation && (
-                      <ReactionFormula
-                        formula={reaction.equation}
-                        className="text-base font-bold text-navy"
-                      />
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                    {reaction.messageVi && (
+                      <div className="rounded-[var(--clay-rounded-lg)] border border-clay-hairline bg-clay-canvas p-4">
+                        <div className="mb-2 flex items-center gap-2">
+                          <Info className="h-4 w-4 text-clay-brand-teal" />
+                          <p className="clay-caption-uppercase text-clay-muted">Hiện tượng</p>
+                        </div>
+                        <p className="clay-body-md text-clay-body">{reaction.messageVi}</p>
+                      </div>
+                    )}
+
+                    {appliedConditions?.autoAdjusted && (
+                      <div className="rounded-[var(--clay-rounded-lg)] border border-amber-200 bg-amber-50 p-4 dark:border-amber-700/40 dark:bg-amber-950/20">
+                        <div className="mb-2 flex items-center gap-2">
+                          <Zap className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                          <p className="clay-caption-uppercase text-amber-900 dark:text-amber-100">
+                            Tự động điều chỉnh
+                          </p>
+                        </div>
+                        <p className="clay-body-sm text-amber-800 dark:text-amber-200 mb-2">
+                          {appliedConditions.reasonVi}
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {appliedConditions.temperature != null && (
+                            <ClayPill tone="ochre" className="clay-caption">
+                              🌡️ {appliedConditions.temperature}°C
+                            </ClayPill>
+                          )}
+                          {appliedConditions.pressure != null && (
+                            <ClayPill tone="ochre" className="clay-caption">
+                              💨 {appliedConditions.pressure} atm
+                            </ClayPill>
+                          )}
+                          {appliedConditions.catalyst != null && appliedConditions.catalyst !== "Không" && (
+                            <ClayPill tone="ochre" className="clay-caption">
+                              ⚗️ {appliedConditions.catalyst}
+                            </ClayPill>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {reaction.safetyNoteVi && (
+                      <div className="rounded-[var(--clay-rounded-lg)] border border-clay-brand-pink/35 bg-clay-brand-pink/10 p-4">
+                        <div className="mb-2 flex items-center gap-2">
+                          <AlertTriangle className="h-4 w-4 text-clay-brand-pink" />
+                          <p className="clay-caption-uppercase text-clay-brand-pink">An toàn</p>
+                        </div>
+                        <p className="clay-body-md text-clay-ink">{reaction.safetyNoteVi}</p>
+                      </div>
                     )}
                   </div>
                 </div>
 
-                {/* Content Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  {/* Observation */}
-                  {reaction.messageVi && (
-                    <div className="flex items-start gap-2.5 rounded-xl bg-baby-soft/30 p-3 border border-baby-soft/50">
-                      <Info className="mt-0.5 h-4 w-4 shrink-0 text-navy-soft" />
-                      <div>
-                        <p className="mb-1 text-[9px] font-bold uppercase tracking-wider text-navy-soft/70">
-                          Hiện tượng
-                        </p>
-                        <p className="text-sm leading-relaxed text-navy">
-                          {reaction.messageVi}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Safety */}
-                  {reaction.safetyNoteVi && (
-                    <div className="flex items-start gap-2.5 rounded-xl bg-rose-50/50 p-3 border border-rose-100/50">
-                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
-                      <div>
-                        <p className="mb-1 text-[9px] font-bold uppercase tracking-wider text-rose-600/70">
-                          An toàn
-                        </p>
-                        <p className="text-sm leading-relaxed text-rose-700">
-                          {reaction.safetyNoteVi}
-                        </p>
-                      </div>
-                    </div>
-                  )}
+                <div className="rounded-[var(--clay-rounded-xl)] border border-clay-hairline bg-clay-surface-card p-5">
+                  <div className="mb-4">
+                    <p className="clay-caption-uppercase text-clay-muted">Giải thích</p>
+                    <p className="clay-title-md text-clay-ink">Phân tích phản ứng</p>
+                  </div>
+                  <ExplanationPanel />
                 </div>
-
-                {/* Divider */}
-                <div className="h-px bg-slate-100 w-full mb-4" />
-
-                {/* Integrated Explanation Panel */}
-                <ExplanationPanel />
-              </>
+              </div>
             )}
           </div>
         </motion.div>

@@ -25,5 +25,15 @@ public class ReactionResultDTO {
     private String explanationVi;
     private String safetyNoteVi;
 
+    private String basicExplanation;
+    private String intermediateExplanation;
+    private String advancedExplanation;
+
     private Double confidence;
+
+    /* ── Condition requirements (nullable — old cache entries won't have these) ── */
+    private Double requiredTemperatureMin;
+    private String requiredTemperatureLabel;
+    private String requiredCatalyst;
+    private Double requiredPressureMin;
 }

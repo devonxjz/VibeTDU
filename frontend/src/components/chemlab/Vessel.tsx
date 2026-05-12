@@ -46,8 +46,8 @@ export function VesselComponent({ vessel }: VesselProps) {
       initial={{ scale: 0, opacity: 0 }}
       animate={
         isReacting 
-          ? { x: [-3, 3, -3, 3, 0], transition: { repeat: Infinity, duration: 0.4 } } 
-          : { scale: 1, opacity: 1 }
+          ? { x: [-3, 3, -3, 3, 0], scale: 1, opacity: 1, transition: { repeat: Infinity, duration: 0.4 } } 
+          : { x: 0, scale: 1, opacity: 1 }
       }
       exit={{ scale: 0, opacity: 0 }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
@@ -120,19 +120,26 @@ export function VesselComponent({ vessel }: VesselProps) {
           
           <g clipPath={`url(#liquid-clip-${vessel.id})`}>
             {/* Main liquid body */}
-            <rect x="13" y="12" width="38" height="57" rx="4" fill={liquidColor} opacity="0.85" />
+            <rect x="13" y="12" width="38" height="57" rx="4" fill={liquidColor} opacity="0.55" />
             
-            {/* Liquid surface wave */}
-            <motion.path
-              d={`M13 ${70 - 58 * fillRatio} Q22 ${68 - 58 * fillRatio} 32 ${70 - 58 * fillRatio} Q42 ${72 - 58 * fillRatio} 51 ${70 - 58 * fillRatio} L51 70 L13 70 Z`}
+            {/* Liquid surface meniscus */}
+            <motion.ellipse
+              cx="32"
+              cy={70 - 58 * fillRatio}
+              rx="19"
+              ry="2"
               fill={liquidColor}
-              opacity="0.6"
-              animate={{
-                d: [
-                  `M13 ${70 - 58 * fillRatio} Q22 ${68 - 58 * fillRatio} 32 ${70 - 58 * fillRatio} Q42 ${72 - 58 * fillRatio} 51 ${70 - 58 * fillRatio} L51 70 L13 70 Z`,
-                  `M13 ${70 - 58 * fillRatio} Q22 ${72 - 58 * fillRatio} 32 ${70 - 58 * fillRatio} Q42 ${68 - 58 * fillRatio} 51 ${70 - 58 * fillRatio} L51 70 L13 70 Z`,
-                ],
-              }}
+              opacity="0.3"
+            />
+            
+            {/* Liquid surface highlight */}
+            <motion.ellipse
+              cx="32"
+              cy={70 - 58 * fillRatio}
+              rx="17"
+              ry="1"
+              fill="rgba(255,255,255,0.4)"
+              animate={{ opacity: [0.2, 0.4, 0.2] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             />
           </g>

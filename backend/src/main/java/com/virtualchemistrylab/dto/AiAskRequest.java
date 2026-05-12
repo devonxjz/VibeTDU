@@ -16,8 +16,10 @@ public class AiAskRequest {
     private String sessionCode;
 
     /** Optional context – free-form map from frontend (equation, effectType, …) */
+    @jakarta.validation.constraints.Size(max = 10, message = "reactionContext must not exceed 10 items") // Fix: 2
     private Map<String, String> reactionContext;
 
     @NotBlank(message = "question must not be blank")
+    @jakarta.validation.constraints.Size(max = 1000, message = "question must not exceed 1000 characters") // Fix: 2
     private String question;
 }

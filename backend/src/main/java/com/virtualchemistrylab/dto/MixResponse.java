@@ -8,6 +8,9 @@ import java.util.List;
 /**
  * Response payload for POST /api/lab/mix.
  * Contains the full reaction result plus the new vessel state for animation.
+ *
+ * Sequential reaction fields (reactionMode, steps, etc.) are nullable
+ * for backward compatibility with existing 2-chemical responses.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
@@ -19,6 +22,16 @@ public class MixResponse {
     private Double confidence;
     private ReactionResultDTO result;
     private NewVesselState newTargetVesselState;
+
+    /* ── Sequential reaction fields ── */
+
+    /** "DIRECT_PAIR" for 2-chemical or "SEQUENTIAL_MULTI" for 3+ */
+    private String reactionMode;
+    private Integer stepCount;
+    private List<ReactionStepDTO> steps;
+    private AutoAppliedConditionsDTO appliedConditions;
+    private List<FinalContentDTO> finalContents;
+    private String ambiguityNoteVi;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
