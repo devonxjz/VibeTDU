@@ -183,10 +183,10 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
             </linearGradient>
 
             <linearGradient id="beaker-liquid-fill" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor={liquidColor} stopOpacity="0.42" />
-              <stop offset="28%" stopColor={liquidColor} stopOpacity="0.5" />
-              <stop offset="74%" stopColor={liquidColor} stopOpacity="0.58" />
-              <stop offset="100%" stopColor={liquidColor} stopOpacity="0.64" />
+              <stop offset="0%" stopColor={liquidColor} stopOpacity="0.15" />
+              <stop offset="28%" stopColor={liquidColor} stopOpacity="0.35" />
+              <stop offset="74%" stopColor={liquidColor} stopOpacity="0.5" />
+              <stop offset="100%" stopColor={liquidColor} stopOpacity="0.65" />
             </linearGradient>
 
             <linearGradient id="beaker-liquid-soft-light" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -343,68 +343,62 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
               opacity={contentCount === 0 ? 0 : 0.2}
             />
 
-            <motion.path
-              animate={{
-                d: [
-                  "M23 0 Q75 -5 100 0 Q130 5 177 0 L177 12 L23 12 Z",
-                  "M23 0 Q75 5 100 0 Q130 -5 177 0 L177 12 L23 12 Z",
-                ],
-              }}
-              transition={{
-                duration: waveDuration,
-                repeat: Infinity,
-                ease: "easeInOut",
-                repeatType: "reverse",
-              }}
+            <motion.ellipse
+              cx="100"
+              cy={0}
+              rx="76.5"
+              ry="6"
               fill={liquidColor}
-              opacity={showGas ? 0.94 : 0.88}
+              opacity={contentCount === 0 ? 0 : 0.45}
               style={{ y: surfaceY }}
             />
 
             <motion.ellipse
               cx="100"
               cy={0}
-              rx="70"
-              ry="5"
-              fill="rgba(255,255,255,0.22)"
+              rx="68"
+              ry="3.5"
+              fill="rgba(255,255,255,0.4)"
               style={{ y: surfaceY }}
-              animate={{ opacity: [0.18, 0.3, 0.18] }}
+              animate={{ opacity: [0.15, 0.35, 0.15] }}
               transition={{ duration: waveDuration, repeat: Infinity, ease: "easeInOut" }}
             />
 
             <motion.ellipse
               cx="102"
               cy={0}
-              rx="62"
-              ry="4"
-              fill="rgba(255,255,255,0.08)"
+              rx="60"
+              ry="2"
+              fill="rgba(255,255,255,0.15)"
               style={{ y: surfaceY }}
-              animate={{ opacity: [0.07, 0.13, 0.07] }}
+              animate={{ opacity: [0.05, 0.15, 0.05] }}
               transition={{ duration: waveDuration * 0.9, repeat: Infinity, ease: "easeInOut" }}
             />
 
-            {showGas &&
-              [0, 1, 2, 3, 4, 5, 6, 7].map((index) => (
-                <motion.circle
-                  key={index}
-                  cx={52 + index * 14}
-                  cy={244}
-                  r={2.4 + (index % 3)}
-                  fill="rgba(255,255,255,0.82)"
-                  initial={{ opacity: 0, y: 0, scale: 0.7 }}
-                  animate={{
-                    opacity: [0, 0.85, 0],
-                    y: [0, -92 - (index % 4) * 14],
-                    scale: [0.7, 1.25, 0.5],
-                  }}
-                  transition={{
-                    duration: 1.6,
-                    delay: index * 0.12,
-                    repeat: Infinity,
-                    ease: "easeOut",
-                  }}
-                />
-              ))}
+            <motion.g style={{ y: surfaceY }}>
+              {showGas &&
+                [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((index) => (
+                  <motion.circle
+                    key={index}
+                    cx={45 + index * 12}
+                    cy={0}
+                    r={1.5 + (index % 3)}
+                    fill="rgba(255,255,255,0.65)"
+                    initial={{ opacity: 0, y: 35 + (index % 4) * 10, scale: 0.5 }}
+                    animate={{
+                      opacity: [0, 0.9, 0],
+                      y: [35 + (index % 4) * 10, -5 - (index % 3) * 5],
+                      scale: [0.5, 1.2, 0.2],
+                    }}
+                    transition={{
+                      duration: 1.2 + (index % 2) * 0.4,
+                      delay: index * 0.15,
+                      repeat: Infinity,
+                      ease: "easeOut",
+                    }}
+                  />
+                ))}
+            </motion.g>
 
             {contentCount > 0 && (
               <motion.path
@@ -428,23 +422,26 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
                 ry="8"
                 fill={precipitateColor}
                 initial={{ scaleX: 0, scaleY: 0.5, opacity: 0 }}
-                animate={{ scaleX: 1, scaleY: 1, opacity: 0.88 }}
+                animate={{ scaleX: 1, scaleY: 1, opacity: 0.85 }}
                 transition={{ duration: 1.2, ease: "easeOut" }}
                 style={{
                   filter:
-                    "drop-shadow(0 0 5px rgba(0,0,0,0.08)) drop-shadow(0 0 12px rgba(255,255,255,0.32))",
+                    "drop-shadow(0 0 5px rgba(0,0,0,0.12)) drop-shadow(0 0 12px rgba(255,255,255,0.2))",
                   transformOrigin: "100px 252px",
                 }}
               />
               <motion.ellipse
                 cx="100"
-                cy="246"
-                rx="54"
-                ry="4"
-                fill="rgba(255,255,255,0.14)"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: [0, 0.22, 0.08] }}
-                transition={{ duration: 1.3, ease: "easeOut" }}
+                cy="248"
+                rx="60"
+                ry="5"
+                fill={precipitateColor}
+                initial={{ scaleX: 0, scaleY: 0.5, opacity: 0 }}
+                animate={{ scaleX: 1, scaleY: 1, opacity: 0.35 }}
+                transition={{ duration: 1.4, ease: "easeOut", delay: 0.2 }}
+                style={{
+                  transformOrigin: "100px 248px",
+                }}
               />
             </>
           )}
