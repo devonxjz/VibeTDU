@@ -48,13 +48,13 @@ function IconButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "inline-flex h-10 w-10 items-center justify-center rounded-[var(--clay-rounded-md)] border border-transparent transition-colors",
+        "inline-flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-[var(--clay-rounded-md)] md:rounded-[var(--clay-rounded-lg)] border border-transparent transition-colors",
         active
           ? "bg-clay-primary text-clay-on-primary"
           : "bg-transparent text-clay-muted hover:border-clay-hairline hover:bg-clay-surface-card hover:text-clay-ink",
       )}
     >
-      <Icon className="h-[18px] w-[18px]" />
+      <Icon className="h-4 w-4 md:h-[18px] md:w-[18px]" />
     </button>
   );
 }
@@ -69,7 +69,7 @@ function ToolbarCluster({
   return (
     <ClayFieldShell
       className={cn(
-        "min-h-[56px] gap-2 bg-clay-surface-card/90 px-3 py-2 backdrop-blur-sm",
+        "flex min-h-[56px] items-center gap-2 bg-clay-surface-card/90 px-3 py-2 backdrop-blur-sm",
         className,
       )}
     >
@@ -100,8 +100,8 @@ function SliderControl({
   onChange: (next: number) => void;
 }) {
   return (
-    <div className="flex min-w-[180px] items-center gap-3">
-      <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-clay-canvas">
+    <div className="flex w-auto min-w-[180px] items-center gap-3 shrink-0">
+      <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-clay-canvas shrink-0">
         <Icon className={cn("h-4.5 w-4.5 text-clay-muted", accentClassName)} />
       </div>
       <div className="min-w-0 flex-1">
@@ -151,25 +151,27 @@ export function Toolbar() {
   return (
     <>
       <header className="border-b border-clay-hairline bg-clay-canvas/95 px-3 py-3 backdrop-blur-md md:px-4">
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-3 overflow-x-auto thin-scroll pb-1">
         <ClayPanelShell
           tone="card"
-          className="flex min-h-[56px] items-center gap-3 rounded-[var(--clay-rounded-lg)] px-3 py-2"
+          className="flex min-h-[56px] shrink-0 items-center justify-between md:justify-start gap-3 rounded-[var(--clay-rounded-lg)] px-3 py-2"
         >
-          <div className="relative flex h-14 w-16 -ml-2 items-center justify-center">
-            <img src="/logo.png" alt="VibeTDU Logo" className="absolute h-full w-full object-contain scale-[1.7] drop-shadow-sm" />
-          </div>
-          <div>
-            <div className="clay-title-md text-clay-ink">VibeTDU</div>
-            <div className="clay-caption text-clay-muted">
-              Bàn thí nghiệm tương tác
+          <div className="flex items-center gap-3">
+            <div className="relative flex h-14 w-16 -ml-2 items-center justify-center shrink-0">
+              <img src="/logo.png" alt="VibeTDU Logo" className="absolute h-full w-full object-contain scale-[1.7] drop-shadow-sm" />
+            </div>
+            <div>
+              <div className="clay-title-md text-clay-ink">VibeTDU</div>
+              <div className="clay-caption text-clay-muted line-clamp-1">
+                Bàn thí nghiệm tương tác
+              </div>
             </div>
           </div>
           <ClayPill tone="neutral">{vesselCount} bình</ClayPill>
         </ClayPanelShell>
 
-        <ToolbarCluster className="flex-1 flex-wrap justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-3">
+        <ToolbarCluster className="flex-1 shrink-0 justify-between gap-3 min-w-max">
+          <div className="flex items-center gap-3">
             <SliderControl
               icon={Thermometer}
               label="Nhiệt độ"
@@ -181,9 +183,9 @@ export function Toolbar() {
               accentClassName="text-rose-500 dark:text-rose-300"
               onChange={(next) => setEnvironment({ temperature: next })}
             />
-            <div className="hidden h-8 w-px bg-clay-hairline lg:block" />
-            <div className="flex min-w-[220px] items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-clay-canvas">
+            <div className="h-8 w-px bg-clay-hairline block shrink-0" />
+            <div className="flex w-auto min-w-[220px] items-center gap-3 shrink-0">
+              <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-clay-canvas shrink-0">
                 <Gauge className="h-4.5 w-4.5 text-sky-600 dark:text-sky-300" />
               </div>
               <div className="min-w-0 flex-1">
@@ -198,7 +200,7 @@ export function Toolbar() {
                       type="button"
                       onClick={() => setEnvironment({ pressure: option.value })}
                       className={cn(
-                        "rounded-full px-2.5 py-1 clay-caption transition-colors",
+                        "rounded-full px-3 py-1.5 md:px-2.5 md:py-1 clay-caption transition-colors",
                         pressure === option.value
                           ? "bg-clay-primary text-clay-on-primary"
                           : "bg-clay-canvas text-clay-muted hover:bg-clay-surface-soft hover:text-clay-ink",
@@ -210,9 +212,9 @@ export function Toolbar() {
                 </div>
               </div>
             </div>
-            <div className="hidden h-8 w-px bg-clay-hairline xl:block" />
-            <div className="hidden min-w-[240px] items-center gap-3 xl:flex">
-              <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-clay-canvas">
+            <div className="h-8 w-px bg-clay-hairline block shrink-0" />
+            <div className="flex w-auto min-w-[240px] items-center gap-3 shrink-0 flex">
+              <div className="flex h-9 w-9 items-center justify-center rounded-[12px] bg-clay-canvas shrink-0">
                 <Sparkles className="h-4.5 w-4.5 text-amber-600 dark:text-amber-300" />
               </div>
               <div className="min-w-0 flex-1">
@@ -227,7 +229,7 @@ export function Toolbar() {
                       type="button"
                       onClick={() => setEnvironment({ catalyst: option })}
                       className={cn(
-                        "rounded-full px-2.5 py-1 clay-caption transition-colors",
+                        "rounded-full px-3 py-1.5 md:px-2.5 md:py-1 clay-caption transition-colors",
                         catalyst === option
                           ? "bg-clay-brand-ochre text-clay-ink"
                           : "bg-clay-canvas text-clay-muted hover:bg-clay-surface-soft hover:text-clay-ink",
@@ -241,17 +243,19 @@ export function Toolbar() {
             </div>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex w-auto items-center justify-center gap-2 border-l border-clay-hairline pl-2 ml-2 shrink-0">
             <ClayActionButton
               variant="secondary"
               size="icon"
+              className="h-10 w-10 md:h-11 md:w-11 rounded-[var(--clay-rounded-md)] md:rounded-[var(--clay-rounded-lg)]"
               onClick={() => resetBoard()}
               disabled={vesselCount === 0}
               aria-label="Xoá tất cả"
               title="Xoá tất cả"
             >
-              <Trash2 className="h-4.5 w-4.5" />
+              <Trash2 className="h-4 w-4 md:h-4.5 md:w-4.5" />
             </ClayActionButton>
+            <div className="h-6 w-px bg-clay-hairline mx-1" />
             <ThemeToggle />
             <IconButton
               icon={BookOpen}
@@ -265,7 +269,6 @@ export function Toolbar() {
               active={isChatbotOpen}
               onClick={toggleChatbotPanel}
             />
-
           </div>
         </ToolbarCluster>
       </div>

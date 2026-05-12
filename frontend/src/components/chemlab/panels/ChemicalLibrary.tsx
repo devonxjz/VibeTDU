@@ -229,7 +229,7 @@ export function ChemicalLibrary() {
             placeholder="Tìm công thức, tên..."
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            className="h-full w-full bg-transparent clay-body-md text-clay-ink outline-none placeholder:text-clay-muted-soft"
+            className="h-full w-full bg-transparent text-sm md:text-base text-clay-ink outline-none placeholder:text-clay-muted-soft"
           />
         </ClayFieldShell>
 
@@ -238,7 +238,7 @@ export function ChemicalLibrary() {
             type="button"
             onClick={() => setActiveTab("all")}
             className={cn(
-              "shrink-0 rounded-full px-4 py-2 clay-caption transition-colors",
+              "shrink-0 rounded-full px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-medium transition-colors",
               activeTab === "all"
                 ? "bg-clay-ink text-clay-canvas"
                 : "bg-clay-canvas text-clay-muted hover:bg-clay-surface-card hover:text-clay-ink",
@@ -256,7 +256,7 @@ export function ChemicalLibrary() {
                 type="button"
                 onClick={() => setActiveTab(group.key)}
                 className={cn(
-                  "shrink-0 rounded-full px-4 py-2 clay-caption transition-colors",
+                  "shrink-0 rounded-full px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-medium transition-colors",
                   active ? clayStyle.pill : "bg-clay-canvas text-clay-muted hover:bg-clay-surface-card hover:text-clay-ink",
                 )}
               >
