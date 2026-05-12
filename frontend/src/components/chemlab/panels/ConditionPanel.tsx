@@ -154,7 +154,7 @@ export function ConditionPanel() {
 
         <ClayActionButton
           variant="primary"
-          className="w-full justify-center"
+          className="w-full justify-center py-2.5 md:py-3 text-sm md:text-base"
           disabled={!canPlay}
           onClick={async () => {
             if (!canPlay || !centerBeakerId) return;
@@ -169,12 +169,12 @@ export function ConditionPanel() {
           {isLoading ? "Đang mô phỏng phản ứng" : "Chạy phản ứng"}
         </ClayActionButton>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
           <ClayActionButton
             variant="secondary"
             disabled={contents.length === 0}
             onClick={() => undoLastChemical()}
-            className="justify-center"
+            className="justify-center py-2 md:py-2.5"
           >
             <Undo2 className="h-4 w-4" />
             Hoàn tác
@@ -183,7 +183,7 @@ export function ConditionPanel() {
             variant="secondary"
             disabled={contents.length === 0}
             onClick={() => clearBeaker()}
-            className="justify-center text-clay-brand-pink hover:bg-clay-brand-pink/10"
+            className="justify-center text-clay-brand-pink hover:bg-clay-brand-pink/10 py-2 md:py-2.5"
           >
             <Trash2 className="h-4 w-4" />
             Xóa tất cả

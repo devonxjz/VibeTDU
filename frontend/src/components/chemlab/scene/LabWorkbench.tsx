@@ -68,8 +68,8 @@ export function LabWorkbench({ children }: LabWorkbenchProps) {
         <LabEquipment2D />
       </div>
 
-      <div className="absolute inset-0 z-10 flex items-center justify-center px-6">
-        <div className="my-auto flex min-h-[240px] items-center justify-center">{children}</div>
+      <div className="absolute inset-0 z-10 flex items-center justify-center px-4 md:px-6">
+        <div className="my-auto flex min-h-[180px] md:min-h-[240px] w-full max-w-full items-center justify-center">{children}</div>
       </div>
     </div>
   );
