@@ -1,2 +1,4 @@
 backend/target/
 *.class
+backend/.mvn
+backend/src/main/resources/application.properties
