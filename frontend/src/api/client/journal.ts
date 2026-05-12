@@ -1,4 +1,4 @@
-import { get, post, HttpError } from "./http";
+import { nanoid } from "nanoid";
 import type { JournalSummary, JournalEntry } from "@/types/journal";
 
 export type ApiResult<T> =
@@ -10,27 +10,28 @@ export async function saveJournal(
   experimentData: string
 ): Promise<ApiResult<{ id: string; title: string; createdAt: string }>> {
   try {
-    const data = await post<{ id: string; title: string; createdAt: string }>("/api/journal", {
+    const newEntry = {
+      id: nanoid(),
       title,
       experimentData,
-    });
-    return { success: true, data };
+      createdAt: new Date().toISOString()
+    };
+    const stored = localStorage.getItem("vibetdu_journals");
+    const journals = stored ? JSON.parse(stored) : [];
+    journals.unshift(newEntry);
+    localStorage.setItem("vibetdu_journals", JSON.stringify(journals));
+    return { success: true, data: newEntry };
   } catch (error) {
-    if (error instanceof HttpError) {
-      return { success: false, error: error.message, status: error.status };
-    }
-    return { success: false, error: "Lỗi kết nối tới máy chủ" };
+    return { success: false, error: "Lỗi lưu dữ liệu cục bộ" };
   }
 }
 
 export async function getJournals(): Promise<ApiResult<JournalSummary[]>> {
   try {
-    const data = await get<JournalSummary[]>("/api/journal");
-    return { success: true, data };
+    const stored = localStorage.getItem("vibetdu_journals");
+    const journals = stored ? JSON.parse(stored) : [];
+    return { success: true, data: journals };
   } catch (error) {
-    if (error instanceof HttpError) {
-      return { success: false, error: error.message, status: error.status };
-    }
-    return { success: false, error: "Lỗi kết nối tới máy chủ" };
+    return { success: false, error: "Lỗi tải dữ liệu cục bộ" };
   }
 }

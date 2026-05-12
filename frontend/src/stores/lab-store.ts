@@ -142,6 +142,9 @@ interface LabStore {
   saveGuestExperiment: () => void;
   clearGuestExperiment: () => void;
   setGuestExperimentDismissed: (dismissed: boolean) => void;
+
+  // Load from journal
+  loadExperiment: (data: any) => void;
 }
 
 // ─── Effect Duration Map ────────────────────────────────────────────
@@ -989,6 +992,68 @@ export const useLabStore = create<LabStore>((set, get) => ({
         lastReaction: null,
         activeEffect: null,
         isReacting: false,
+      };
+    });
+  },
+
+  loadExperiment: (data: any) => {
+    const state = get();
+    let beakerId = state.centerBeakerId;
+    if (!beakerId) {
+      beakerId = get().initCenterBeaker();
+    }
+
+    get().clearTimeline();
+    get().addTimelineEvent({
+      type: "RESET",
+      description: "Tải phản ứng từ sổ tay",
+    });
+
+    set((s) => {
+      const v = s.vessels[beakerId!];
+      if (!v) return s;
+
+      const newContents = data.contents || [];
+      const realContents = newContents.filter((c: any) => c.formula);
+
+      let newColor = "rgba(200,230,255,0.0)";
+      if (data.reaction?.effectColor) {
+        newColor = data.reaction.effectColor;
+      } else if (data.reaction?.precipitateColor) {
+        newColor = data.reaction.precipitateColor;
+      } else if (realContents.length > 0) {
+        const last = realContents[realContents.length - 1];
+        newColor = getDisplayColor("", last.formula, "");
+      }
+
+      let newLabel = v.label;
+      if (data.reaction?.hasReaction && data.reaction.productFormula) {
+        newLabel = data.reaction.productFormula;
+      } else if (realContents.length > 0) {
+        newLabel = [...new Set(realContents.map((c: any) => c.formula).filter(Boolean))].join(" + ");
+      }
+
+      const effectType = data.reaction?.effectType || "NONE";
+
+      return {
+        vessels: {
+          ...s.vessels,
+          [beakerId!]: {
+            ...v,
+            contents: newContents,
+            displayColor: newColor,
+            label: newLabel,
+          },
+        },
+        beakerLiquidLevel: Math.min(100, Math.max(0, realContents.length * 15)),
+        lastReaction: data.reaction || null,
+        activeEffect: effectType !== "NONE" ? {
+          type: effectType,
+          vesselId: beakerId,
+          color: data.reaction?.effectColor,
+          precipitateColor: data.reaction?.precipitateColor,
+          gasFormula: data.reaction?.gasFormula,
+        } : null,
       };
     });
   },

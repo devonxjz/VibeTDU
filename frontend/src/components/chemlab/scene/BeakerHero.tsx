@@ -8,9 +8,12 @@ import {
   useTransform,
   AnimatePresence,
 } from "framer-motion";
+import { Save } from "lucide-react";
+import { toast } from "sonner";
 
 import { useLabStore } from "@/stores/lab-store";
 import { Formula } from "@/components/chemlab/Formula";
+import { saveJournal } from "@/api/client/journal";
 
 interface BeakerHeroProps {
   vesselId: string | null;
@@ -60,6 +63,29 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
 
   const waveDuration = Math.max(1.5, 3 / Math.max(0.8, effectSpeed));
 
+  const handleSaveJournal = () => {
+    if (!vessel) return;
+    const data = {
+      version: 1,
+      timestamp: new Date().toISOString(),
+      contents: vessel.contents,
+      reaction: lastReaction,
+    };
+    
+    let title = "Thí nghiệm mới";
+    if (lastReaction?.hasReaction && lastReaction.productFormula) {
+       title = lastReaction.productFormula;
+    } else if (vessel.label) {
+       title = vessel.label;
+    }
+    
+    toast.promise(saveJournal(title, JSON.stringify(data)), {
+      loading: "Đang lưu...",
+      success: "Đã lưu phản ứng vào sổ tay",
+      error: "Không thể lưu sổ tay",
+    });
+  };
+
   return (
     <div className="relative flex flex-col items-center" style={{ zIndex: 10 }}>
       {showLabel && vessel && (
@@ -69,11 +95,21 @@ export function BeakerHero({ vesselId }: BeakerHeroProps) {
           animate={{ opacity: 1, y: 0 }}
           className="absolute bottom-[calc(100%-4px)] left-1/2 z-30 -translate-x-1/2"
         >
-          <div className="relative max-w-[min(78vw,420px)] rounded-[18px] border border-clay-hairline bg-clay-surface-card px-4 py-2.5 shadow-[0_14px_34px_rgba(15,23,42,0.16)]">
+          <div className="relative max-w-[min(85vw,420px)] rounded-[18px] border border-clay-hairline bg-clay-surface-card px-3 py-2 shadow-[0_14px_34px_rgba(15,23,42,0.16)] flex items-center gap-4">
             <Formula
               formula={vessel.label}
               className="block break-words text-center clay-title-sm leading-tight text-clay-ink"
             />
+            {contentCount > 0 && (
+              <button 
+                onClick={handleSaveJournal}
+                className="flex shrink-0 h-8 items-center gap-1.5 rounded-full bg-clay-ink text-clay-canvas px-3 text-xs font-semibold shadow-md hover:scale-105 hover:shadow-lg active:scale-95 transition-all"
+                title="Lưu vào sổ tay"
+              >
+                <Save className="h-3.5 w-3.5" />
+                Lưu
+              </button>
+            )}
             <div
               className="absolute bottom-[-8px] left-1/2 -translate-x-1/2"
               style={{

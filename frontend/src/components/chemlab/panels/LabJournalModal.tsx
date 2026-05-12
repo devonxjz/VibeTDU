@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, BookOpen, Lock } from "lucide-react";
+import { X, BookOpen, Lock, Play } from "lucide-react";
 import { useLabStore } from "@/stores/lab-store";
 import { ClayPanelShell, ClayActionButton, ClayPill } from "@/components/ui/clay-primitives";
 import { cn } from "@/utils/cn";
@@ -164,9 +164,23 @@ export function LabJournalModal({ isOpen, onClose }: LabJournalModalProps) {
                             </h3>
                           </div>
                           
-                          <p className={cn("relative z-10 clay-body-sm font-mono truncate", theme.subtitle)}>
-                            {reaction?.equation || (hasReaction ? "Phản ứng đã xảy ra" : "Không có phản ứng")}
-                          </p>
+                          <div className="relative z-10 flex items-center justify-between mt-auto">
+                            <p className={cn("clay-body-sm font-mono truncate", theme.subtitle)}>
+                              {reaction?.equation || (hasReaction ? "Phản ứng đã xảy ra" : "Không có phản ứng")}
+                            </p>
+                            <button
+                              onClick={() => {
+                                if (entry.parsedData) {
+                                  useLabStore.getState().loadExperiment(entry.parsedData);
+                                  onClose();
+                                }
+                              }}
+                              className="flex h-8 w-8 items-center justify-center rounded-full bg-black/10 hover:bg-black/20 text-current transition-colors"
+                              title="Xem lại mô phỏng phản ứng"
+                            >
+                              <Play className="h-4 w-4" />
+                            </button>
+                          </div>
                           
                           {/* Decorative background element */}
                           <div className="absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-white/10 transition-transform duration-500 group-hover:scale-125" />
