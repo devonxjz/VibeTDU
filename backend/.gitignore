@@ -12,3 +12,5 @@ target/
 
 # Sensitive config (contains API keys, JWT secrets)
 src/main/resources/application.properties
+src/main/resources/.env
+.env
