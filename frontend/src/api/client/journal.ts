@@ -14,6 +14,7 @@ export async function saveJournal(
       id: nanoid(),
       title,
       experimentData,
+      savedBy: localStorage.getItem("vibe_user_name") || "Ẩn danh",
       createdAt: new Date().toISOString()
     };
     const stored = localStorage.getItem("vibetdu_journals");

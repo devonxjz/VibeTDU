@@ -11,7 +11,7 @@ import {
   UserCircle2,
   BookOpen,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { cn } from "@/utils/cn";
 import { useLabStore } from "@/stores/lab-store";
@@ -128,6 +128,11 @@ function SliderControl({
 
 export function Toolbar() {
   const [isJournalOpen, setIsJournalOpen] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null);
+
+  useEffect(() => {
+    setUserName(localStorage.getItem("vibe_user_name"));
+  }, []);
   
   const vesselCount = useLabStore((s) => Object.keys(s.vessels).length);
   const temperature = useLabStore((s) => s.temperature);
@@ -163,7 +168,7 @@ export function Toolbar() {
             <div>
               <div className="clay-title-md text-clay-ink">VibeTDU</div>
               <div className="clay-caption text-clay-muted line-clamp-1">
-                Bàn thí nghiệm tương tác
+                {userName ? `🧑‍🔬 ${userName}` : "Bàn thí nghiệm tương tác"}
               </div>
             </div>
           </div>
