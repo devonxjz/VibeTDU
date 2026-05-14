@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, BookOpen, Lock, Play } from "lucide-react";
+import { X, BookOpen, Lock, Play, User } from "lucide-react";
 import { useLabStore } from "@/stores/lab-store";
 import { ClayPanelShell, ClayActionButton, ClayPill } from "@/components/ui/clay-primitives";
 import { cn } from "@/utils/cn";
@@ -30,6 +30,11 @@ export function LabJournalModal({ isOpen, onClose }: LabJournalModalProps) {
   const [journals, setJournals] = React.useState<(JournalSummary & { parsedData: ExperimentData | null })[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [userName, setUserName] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    setUserName(localStorage.getItem("vibe_user_name"));
+  }, [isOpen]);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -100,7 +105,9 @@ export function LabJournalModal({ isOpen, onClose }: LabJournalModalProps) {
                     <BookOpen className="h-6 w-6 text-clay-ink" />
                   </div>
                   <div>
-                    <h2 className="clay-display-sm text-clay-ink">Sổ tay Hóa học</h2>
+                    <h2 className="clay-display-sm text-clay-ink">
+                      {userName ? `Sổ tay của ${userName}` : "Sổ tay Hóa học"}
+                    </h2>
                     <p className="clay-body-sm text-clay-muted mt-1">
                       Đã lưu: <span className="font-bold text-clay-ink">{journals.length}</span> thí nghiệm
                     </p>
@@ -156,9 +163,17 @@ export function LabJournalModal({ isOpen, onClose }: LabJournalModalProps) {
                           )}
                         >
                           <div className="relative z-10">
-                            <ClayPill tone="neutral" className="mb-3 border-none bg-white/20 text-current backdrop-blur-md">
-                              {dateStr}
-                            </ClayPill>
+                            <div className="flex items-center gap-2 mb-3">
+                              <ClayPill tone="neutral" className="border-none bg-white/20 text-current backdrop-blur-md">
+                                {dateStr}
+                              </ClayPill>
+                              {entry.savedBy && (
+                                <ClayPill tone="neutral" className="border-none bg-white/15 text-current backdrop-blur-md">
+                                  <User className="h-3 w-3 mr-1" />
+                                  {entry.savedBy}
+                                </ClayPill>
+                              )}
+                            </div>
                             <h3 className="clay-title-md line-clamp-2">
                               {entry.title}
                             </h3>

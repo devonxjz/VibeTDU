@@ -16,6 +16,7 @@ export interface JournalSummary {
   title: string;
   createdAt: string;
   experimentData: string; // JSON string of ExperimentData
+  savedBy?: string;
 }
 
 export interface JournalEntry {
