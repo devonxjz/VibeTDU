@@ -35,6 +35,16 @@ public class AppProperties {
         public String getApiKey() {
             return (apiKeys != null && !apiKeys.isEmpty()) ? apiKeys.get(0) : null;
         }
+
+        // Added setter to handle the APP_AI_API_KEY environment variable which Spring 
+        // automatically maps to app.ai.api-key.
+        public void setApiKey(String apiKey) {
+            if (this.apiKeys.isEmpty()) {
+                this.apiKeys.add(apiKey);
+            } else {
+                this.apiKeys.set(0, apiKey);
+            }
+        }
     }
 
     @Getter @Setter
