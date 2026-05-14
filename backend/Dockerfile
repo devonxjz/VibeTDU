@@ -18,4 +18,4 @@ EXPOSE 8080
 
 # Spring Boot reads env vars automatically (e.g. SERVER_PORT, SPRING_DATASOURCE_URL)
 # All secrets should be set as environment variables on Render, not baked into the image.
-ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Xmx384m", "-Xms128m", "-XX:+UseSerialGC", "-Dspring.profiles.active=prod", "-jar", "app.jar"]

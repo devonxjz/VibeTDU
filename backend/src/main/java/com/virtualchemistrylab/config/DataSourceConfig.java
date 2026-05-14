@@ -27,13 +27,13 @@ public class DataSourceConfig {
     private static final Logger log = LoggerFactory.getLogger(DataSourceConfig.class);
 
     // ── Supabase Connection (Session Pooler - port 5432) ──────────────────
-    @org.springframework.beans.factory.annotation.Value("${spring.datasource.url:jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require&prepareThreshold=0&tcpKeepAlive=true}")
+    @org.springframework.beans.factory.annotation.Value("${SPRING_DATASOURCE_URL:jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require&prepareThreshold=0&tcpKeepAlive=true}")
     private String jdbcUrl;
     
-    @org.springframework.beans.factory.annotation.Value("${spring.datasource.username:postgres.yesykibnglunqlspikin}")
+    @org.springframework.beans.factory.annotation.Value("${SPRING_DATASOURCE_USERNAME:postgres.yesykibnglunqlspikin}")
     private String dbUser;
     
-    @org.springframework.beans.factory.annotation.Value("${spring.datasource.password:}")
+    @org.springframework.beans.factory.annotation.Value("${SPRING_DATASOURCE_PASSWORD:}")
     private String dbPass;
 
     @Bean
