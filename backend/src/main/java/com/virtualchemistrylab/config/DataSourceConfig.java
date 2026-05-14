@@ -26,31 +26,24 @@ public class DataSourceConfig {
 
     private static final Logger log = LoggerFactory.getLogger(DataSourceConfig.class);
 
-    // ── Supabase Connection Pooler (IPv4 - aws-1) ───────────────────────────
-    @org.springframework.beans.factory.annotation.Value("${SPRING_DATASOURCE_URL:jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require}")
+    // ── Supabase Connection (Session Pooler - port 5432) ──────────────────
+    @org.springframework.beans.factory.annotation.Value("${spring.datasource.url:jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require&prepareThreshold=0&tcpKeepAlive=true}")
     private String jdbcUrl;
     
-    @org.springframework.beans.factory.annotation.Value("${SPRING_DATASOURCE_USERNAME:postgres.yesykibnglunqlspikin}")
+    @org.springframework.beans.factory.annotation.Value("${spring.datasource.username:postgres.yesykibnglunqlspikin}")
     private String dbUser;
     
-    @org.springframework.beans.factory.annotation.Value("${SPRING_DATASOURCE_PASSWORD:MSK&7%BX3FfSjN6}")
+    @org.springframework.beans.factory.annotation.Value("${spring.datasource.password:}")
     private String dbPass;
 
     @Bean
     @Primary
     public DataSource supabaseDataSource() {
-        log.info("Configuring HikariCP -> Supabase PostgreSQL (Transaction Pooler on 6543)...");
+        log.info("Configuring HikariCP -> Supabase PostgreSQL...");
 
         HikariConfig config = new HikariConfig();
         
-        // Final recommended URL for Supabase Transaction Pooler
-        String url = "jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres" +
-                     "?sslmode=require" +
-                     "&prepareThreshold=0" +
-                     "&defaultRowFetchSize=0" +
-                     "&tcpKeepAlive=true";
-        
-        config.setJdbcUrl(url);
+        config.setJdbcUrl(jdbcUrl);
         config.setUsername(dbUser);
         config.setPassword(dbPass);
         config.setDriverClassName("org.postgresql.Driver");
@@ -63,14 +56,14 @@ public class DataSourceConfig {
         config.setIdleTimeout(600000);
         config.setMaxLifetime(1800000);
 
-        // ✅ Critical: Prevent Hikari from calling setTransactionIsolation() by using connectionInitSql
+        // Prevent Hikari from calling setTransactionIsolation()
         config.setConnectionInitSql("SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ COMMITTED");
         
-        // ✅ Explicitly disable prepared statements (required for Transaction Pooler)
+        // Disable prepared statements (required for Supabase Pooler)
         config.addDataSourceProperty("prepareThreshold", "0");
         config.setConnectionTestQuery("SELECT 1");
         
-        log.info("HikariCP bean created successfully. URL: {}", url);
+        log.info("HikariCP bean created successfully. URL: {}", jdbcUrl);
 
         return new HikariDataSource(config);
     }
