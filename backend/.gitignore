@@ -1,4 +1,14 @@
-backend/target/
+# Build output
+target/
 *.class
-backend/.mvn
-backend/src/main/resources/application.properties
+
+# Maven wrapper (regenerable)
+.mvn/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Sensitive config (contains API keys, JWT secrets)
+src/main/resources/application.properties

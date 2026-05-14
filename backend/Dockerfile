@@ -16,5 +16,6 @@ COPY --from=builder /app/target/*.jar app.jar
 # Expose the default Spring Boot port
 EXPOSE 8080
 
-# Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Spring Boot reads env vars automatically (e.g. SERVER_PORT, SPRING_DATASOURCE_URL)
+# All secrets should be set as environment variables on Render, not baked into the image.
+ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-jar", "app.jar"]
