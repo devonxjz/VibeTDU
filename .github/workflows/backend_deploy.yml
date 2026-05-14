@@ -7,11 +7,7 @@ on:
     paths:
       - 'backend/**'
       - '.github/workflows/backend-deploy.yml'
-  pull_request:
-    branches:
-      - main
-    paths:
-      - 'backend/**'
+
 
 jobs:
   # ── Job 1: Build & Test (chạy cả trên PR và push) ─────────────────────────
