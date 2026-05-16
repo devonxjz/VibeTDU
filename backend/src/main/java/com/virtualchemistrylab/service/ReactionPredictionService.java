@@ -58,9 +58,17 @@ public class ReactionPredictionService {
             if (normalizedJson != null && !normalizedJson.isBlank()) {
                 ReactionResultDTO dto = JsonUtil.fromJson(normalizedJson, ReactionResultDTO.class);
                 if (dto != null && dto.getConfidence() != null && dto.getConfidence() >= 0.5) {
-                    log.info("[reaction-predict] ✅ Cache HIT for key: {} (confidence={})", reactionKey, dto.getConfidence());
-                    cacheService.touchReactionCache(hit);
-                    return new PredictResult(dto, true, hit.getSource());
+                    // If cache is missing explanation fields (stale), force re-prediction
+                    if (dto.getBasicExplanation() == null || dto.getBasicExplanation().isBlank()) {
+                        log.info("[reaction-predict] Cache HIT for key: {} but missing explanations – re-predicting.", reactionKey);
+                    // Skip stale no-reaction entries from AI fallback (likely mock fallback when AI was down)
+                    } else if (Boolean.FALSE.equals(dto.getHasReaction()) && "AI_PREDICTION".equals(hit.getSource())) {
+                        log.info("[reaction-predict] Cache HIT for key: {} but is no-reaction from AI fallback – re-predicting.", reactionKey);
+                    } else {
+                        log.info("[reaction-predict] ✅ Cache HIT for key: {} (confidence={})", reactionKey, dto.getConfidence());
+                        cacheService.touchReactionCache(hit);
+                        return new PredictResult(dto, true, hit.getSource());
+                    }
                 }
             }
             log.info("[reaction-predict] Cache entry found but invalid/low-confidence – re-predicting.");
@@ -141,9 +149,12 @@ public class ReactionPredictionService {
         return ReactionResultDTO.builder()
                 .hasReaction(false)
                 .effectType("NONE")
-                .confidence(1.0)
-                .messageVi("Không có phản ứng nào được phát hiện.")
-                .explanationVi("Hệ thống không tìm thấy phản ứng cho cặp chất này trong cơ sở dữ liệu hoặc AI dự đoán không có phản ứng.")
+                .confidence(0.1)  // Low confidence → won't be cached permanently, will re-predict when AI is available
+                .messageVi("Cặp chất này chưa có trong cơ sở dữ liệu mô phỏng. Vui lòng thử lại sau khi hệ thống AI khả dụng.")
+                .explanationVi("Hệ thống AI hiện không khả dụng và cặp chất này chưa có trong dữ liệu mô phỏng sẵn có.")
+                .basicExplanation("Hệ thống chưa có thông tin về phản ứng này. Hãy thử lại sau.")
+                .intermediateExplanation("Cần kết nối AI để dự đoán phản ứng cho cặp chất mới.")
+                .advancedExplanation("Hệ thống đang hoạt động ở chế độ offline với dữ liệu phản ứng có sẵn hạn chế.")
                 .safetyNoteVi(null)
                 .build();
     }

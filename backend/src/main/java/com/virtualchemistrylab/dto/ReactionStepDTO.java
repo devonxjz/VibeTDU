@@ -20,6 +20,11 @@ public class ReactionStepDTO {
     private String productFormula;
     private String effectType;
     private String messageVi;
+    private String explanationVi;
+    private String basicExplanation;
+    private String intermediateExplanation;
+    private String advancedExplanation;
+    private String safetyNoteVi;
     private AutoAppliedConditionsDTO appliedConditions;
 
     /** Formulae consumed by this step */

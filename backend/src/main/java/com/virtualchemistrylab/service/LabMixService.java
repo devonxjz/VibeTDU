@@ -131,6 +131,11 @@ public class LabMixService {
                     .productFormula(firstStep.getProductFormula())
                     .effectType(firstStep.getEffectType())
                     .messageVi(firstStep.getMessageVi())
+                    .explanationVi(firstStep.getExplanationVi())
+                    .basicExplanation(firstStep.getBasicExplanation())
+                    .intermediateExplanation(firstStep.getIntermediateExplanation())
+                    .advancedExplanation(firstStep.getAdvancedExplanation())
+                    .safetyNoteVi(firstStep.getSafetyNoteVi())
                     .build());
         } else {
             response.setResult(com.virtualchemistrylab.dto.ReactionResultDTO.builder()

@@ -48,7 +48,7 @@ export function ExplanationPanel() {
         <div className="thin-scroll max-h-[28vh] min-h-[148px] overflow-y-auto rounded-[var(--clay-rounded-lg)] border border-clay-hairline bg-clay-canvas px-4 py-4">
           <TabsContent value="basic" className="mt-0">
             <p className="clay-body-md text-clay-body">
-              {lastReaction.basicExplanation || "Không có giải thích cơ bản."}
+              {lastReaction.basicExplanation || lastReaction.explanationVi || "Không có giải thích cơ bản."}
             </p>
           </TabsContent>
 
