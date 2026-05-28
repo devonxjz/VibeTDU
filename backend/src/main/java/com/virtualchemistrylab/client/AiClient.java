@@ -75,7 +75,7 @@ public class AiClient {
 
         String prompt = buildReactionPrompt(reactantFormulae, temperature, pressure, catalyst);
 
-        String firstKey = apiKeys.get(0).contains("#") ? apiKeys.get(0).split("#")[0].trim() : apiKeys.get(0).trim();
+        String firstKey = cleanApiKey(apiKeys.get(0));
         String result = null;
 
         if (isGeminiKey(firstKey) || isGeminiUrl(appProperties.getAi().getApiUrl())) {
@@ -109,7 +109,7 @@ public class AiClient {
                 + "Reaction context:\n" + reactionContext
                 + "\n\nQuestion: " + question;
 
-        String firstKey = apiKeys.get(0).contains("#") ? apiKeys.get(0).split("#")[0].trim() : apiKeys.get(0).trim();
+        String firstKey = cleanApiKey(apiKeys.get(0));
         String result = null;
 
         if (isGeminiKey(firstKey) || isGeminiUrl(appProperties.getAi().getApiUrl())) {
@@ -145,7 +145,7 @@ public class AiClient {
                 + "If the question relates to a reaction, base your answer on the reaction context below.\n"
                 + "Reaction context:\n" + (reactionContext == null ? "No reaction context." : reactionContext);
 
-        String firstKey = apiKeys.get(0).contains("#") ? apiKeys.get(0).split("#")[0].trim() : apiKeys.get(0).trim();
+        String firstKey = cleanApiKey(apiKeys.get(0));
 
         String result;
         if (isGeminiKey(firstKey) || isGeminiUrl(appProperties.getAi().getApiUrl())) {
@@ -197,7 +197,7 @@ public class AiClient {
         for (int i = 0; i < totalKeys; i++) {
             int index = Math.abs(currentKeyIndex.getAndIncrement() % totalKeys);
             String rawKey = apiKeys.get(index);
-            String apiKey = rawKey.contains("#") ? rawKey.split("#")[0].trim() : rawKey.trim();
+            String apiKey = cleanApiKey(rawKey);
             String url = GEMINI_BASE_URL + "/" + model + ":generateContent?key=" + apiKey;
 
             try {
@@ -271,7 +271,7 @@ public class AiClient {
         for (int i = 0; i < totalKeys; i++) {
             int index = Math.abs(currentKeyIndex.getAndIncrement() % totalKeys);
             String rawKey = apiKeys.get(index);
-            String apiKey = rawKey.contains("#") ? rawKey.split("#")[0].trim() : rawKey.trim();
+            String apiKey = cleanApiKey(rawKey);
             String url = GEMINI_BASE_URL + "/" + model + ":generateContent?key=" + apiKey;
 
             try {
@@ -332,7 +332,7 @@ public class AiClient {
     private String callOpenAi(String prompt) {
         List<String> apiKeys = appProperties.getAi().getApiKeys();
         String rawKey = apiKeys != null && !apiKeys.isEmpty() ? apiKeys.get(0) : "";
-        String apiKey = rawKey.contains("#") ? rawKey.split("#")[0].trim() : rawKey.trim();
+        String apiKey = cleanApiKey(rawKey);
         String requestBody;
         try {
             Map<String, Object> body = Map.of(
@@ -485,6 +485,11 @@ public class AiClient {
 
     private boolean isGeminiUrl(String url) {
         return url != null && url.contains("generativelanguage.googleapis.com");
+    }
+
+    private String cleanApiKey(String rawKey) {
+        if (rawKey == null) return "";
+        return rawKey.contains("#") ? rawKey.split("#")[0].trim() : rawKey.trim();
     }
 
     private List<ChatMessage> sanitizeHistory(List<ChatMessage> history) {

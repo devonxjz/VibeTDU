@@ -36,6 +36,11 @@ public class VirtualChemistryLabApplication {
                         String[] parts = line.split("=", 2);
                         String key = parts[0].trim();
                         String value = parts[1].trim();
+                        if (value.startsWith("\"") && value.endsWith("\"") && value.length() >= 2) {
+                            value = value.substring(1, value.length() - 1);
+                        } else if (value.startsWith("'") && value.endsWith("'") && value.length() >= 2) {
+                            value = value.substring(1, value.length() - 1);
+                        }
                         // Only set if not already present in environment
                         if (System.getProperty(key) == null && System.getenv(key) == null) {
                             System.setProperty(key, value);

@@ -61,9 +61,6 @@ public class ReactionPredictionService {
                     // If cache is missing explanation fields (stale), force re-prediction
                     if (dto.getBasicExplanation() == null || dto.getBasicExplanation().isBlank()) {
                         log.info("[reaction-predict] Cache HIT for key: {} but missing explanations – re-predicting.", reactionKey);
-                    // Skip stale no-reaction entries from AI fallback (likely mock fallback when AI was down)
-                    } else if (Boolean.FALSE.equals(dto.getHasReaction()) && "AI_PREDICTION".equals(hit.getSource())) {
-                        log.info("[reaction-predict] Cache HIT for key: {} but is no-reaction from AI fallback – re-predicting.", reactionKey);
                     } else {
                         log.info("[reaction-predict] ✅ Cache HIT for key: {} (confidence={})", reactionKey, dto.getConfidence());
                         cacheService.touchReactionCache(hit);

@@ -1,0 +1,9 @@
+{
+  "sessionCode": "test-session-123",
+  "question": "NaOH là chất gì? Nó có nguy hiểm không?",
+  "reactionContext": {
+    "equation": "HCl + NaOH -> NaCl + H2O",
+    "effectType": "HEAT",
+    "messageVi": "Phản ứng tỏa nhiệt."
+  }
+}
