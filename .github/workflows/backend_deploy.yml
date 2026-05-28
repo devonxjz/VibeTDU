@@ -81,10 +81,17 @@ jobs:
 
       - name: Health check
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ vars.BACKEND_URL }}/actuator/health")
-          if [ "$STATUS" = "200" ]; then
-            echo "✅ Health check passed (HTTP $STATUS)"
+          if [ -z "${{ vars.BACKEND_URL }}" ]; then
+            echo "⚠️ BACKEND_URL variable is not configured in GitHub Variables."
+            echo "👉 To enable health checks, go to GitHub: Settings -> Secrets and variables -> Actions -> Variables (tab) and add 'BACKEND_URL' with your Render app URL."
+            echo "Skipping health check for now."
           else
-            echo "❌ Health check failed (HTTP $STATUS)"
-            exit 1
+            echo "Checking health at ${{ vars.BACKEND_URL }}/actuator/health..."
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ vars.BACKEND_URL }}/actuator/health")
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ Health check passed (HTTP $STATUS)"
+            else
+              echo "❌ Health check failed (HTTP $STATUS)"
+              exit 1
+            fi
           fi
