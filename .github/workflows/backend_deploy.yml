@@ -51,7 +51,7 @@ jobs:
         run: |
           echo "Triggering deploy to Render..."
           RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
-            "https://api.render.com/deploy/${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}" \
+            "https://api.render.com/deploy/${{ secrets.RENDER_ID }}?key=${{ secrets.RENDER_API }}" \
             -H "Accept: application/json")
           
           # Extract body and status code
@@ -64,7 +64,7 @@ jobs:
           
           if [ "$STATUS" -ge 400 ]; then
             echo "❌ Deploy trigger failed with HTTP $STATUS."
-            echo "⚠️ Please verify that RENDER_SERVICE_ID and RENDER_API_KEY are configured correctly in your GitHub Secrets."
+            echo "⚠️ Please verify that RENDER_ID and RENDER_API are configured correctly in your GitHub Secrets."
             exit 1
           fi
 
