@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - 'backend/**'
-      - '.github/workflows/backend-deploy.yml'
+      - '.github/workflows/backend_deploy.yml'
 
 
 jobs:
@@ -49,10 +49,24 @@ jobs:
     steps:
       - name: Trigger Render deploy
         run: |
-          curl -s -X POST \
+          echo "Triggering deploy to Render..."
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
             "https://api.render.com/deploy/${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}" \
-            -H "Accept: application/json" \
-            | jq .
+            -H "Accept: application/json")
+          
+          # Extract body and status code
+          BODY=$(echo "$RESPONSE" | sed '/HTTP_STATUS:/d')
+          STATUS=$(echo "$RESPONSE" | grep 'HTTP_STATUS:' | cut -d':' -f2)
+          
+          echo "HTTP Status Code: $STATUS"
+          echo "Response Body:"
+          echo "$BODY"
+          
+          if [ "$STATUS" -ge 400 ]; then
+            echo "❌ Deploy trigger failed with HTTP $STATUS."
+            echo "⚠️ Please verify that RENDER_SERVICE_ID and RENDER_API_KEY are configured correctly in your GitHub Secrets."
+            exit 1
+          fi
 
       - name: Wait for service to start
         run: |
