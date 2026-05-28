@@ -53,9 +53,12 @@ jobs:
           # Automatically strip accidental '/deploys' suffix or trailing slashes from the Render ID
           CLEANED_ID=$(echo "${{ secrets.RENDER_ID }}" | sed 's|/deploys||g' | sed 's|/||g')
           
-          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
-            "https://api.render.com/deploy/${CLEANED_ID}?key=${{ secrets.RENDER_API }}" \
-            -H "Accept: application/json")
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" --request POST \
+            "https://api.render.com/v1/services/${CLEANED_ID}/deploys" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API }}" \
+            -H "Accept: application/json" \
+            -H "Content-Type: application/json" \
+            -d '{"clearCache": "do_not_clear"}')
           
           # Extract body and status code
           BODY=$(echo "$RESPONSE" | sed '/HTTP_STATUS:/d')
