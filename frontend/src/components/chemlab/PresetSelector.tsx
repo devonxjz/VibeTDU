@@ -23,6 +23,7 @@ function getChemicalById(id: string) {
 export function PresetSelector() {
   const clearBeaker = useLabStore((state) => state.clearBeaker);
   const addToBeaker = useLabStore((state) => state.addToBeaker);
+  const runReaction = useLabStore((state) => state.runReaction);
 
   const handleLoadPreset = (chemicalIds: string[]) => {
     clearBeaker();
@@ -49,6 +50,14 @@ export function PresetSelector() {
               chemicalId: chem2.id,
             });
           }
+
+          // Auto-run reaction after both chemicals are loaded
+          setTimeout(() => {
+            const beakerId = useLabStore.getState().centerBeakerId;
+            if (beakerId) {
+              runReaction(beakerId);
+            }
+          }, 400);
         }, 300);
       }
     }, 200);
@@ -82,3 +91,4 @@ export function PresetSelector() {
     </ClaySectionCard>
   );
 }
+

@@ -50,6 +50,14 @@ public class ReactionPredictionService {
         String reactionKey = ReactionKeyUtil.buildKey(formulae);
         log.info("[reaction-predict] Key: {}", reactionKey);
 
+        // Bypass cache for standard quick-reaction presets to ensure 100% correct offline demo behavior
+        if (isPresetReactionKey(reactionKey)) {
+            log.info("[reaction-predict] 🚀 Preset reaction detected: {} - returning mock directly", reactionKey);
+            String rawJson = aiClient.predictReaction(formulae, temperature, pressure, catalyst);
+            ReactionResultDTO dto = validateAndParse(rawJson);
+            return new PredictResult(dto, false, "BUILTIN_PRESET");
+        }
+
         // ── Step 1: Check cache ──
         var cached = cacheService.getReaction(reactionKey);
         if (cached.isPresent()) {
@@ -181,5 +189,19 @@ public class ReactionPredictionService {
         // We could inject AppProperties here, but AiClient already decides.
         // A simple approach: return AI_PREDICTION always at this layer.
         return "AI_PREDICTION";
+    }
+
+    private boolean isPresetReactionKey(String key) {
+        if (key == null) return false;
+        return key.equals("CACO3__HCL") || key.equals("CCAO3__CLH")
+                || key.equals("CUSO4__NAOH") || key.equals("CUSO4__HNAO")
+                || key.equals("HCL__ZN") || key.equals("CLH__ZN")
+                || key.equals("H2SO4__KMNO4") || key.equals("H2OS4__KMNO4")
+                || key.equals("AGNO3__NACL") || key.equals("AGNO3__CLNA")
+                || key.equals("HCL__NAOH") || key.equals("CLH__HNAO")
+                || key.equals("HCL__NA") || key.equals("CLH__NA")
+                || key.equals("H2__N2") || key.equals("N2__H2")
+                || key.equals("O2__SO2") || key.equals("SO2__O2")
+                || key.equals("CU__O2") || key.equals("O2__CU");
     }
 }

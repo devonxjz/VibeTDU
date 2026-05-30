@@ -43,7 +43,7 @@ public class AiInterpretationService {
 
         if (answer == null || answer.isBlank()) {
             log.warn("[ai-interpret] AI returned empty answer");
-            return "Sorry, the AI system cannot answer this question right now. Please try again later.";
+            return "Xin lỗi, trợ lý hóa học hiện không thể trả lời câu hỏi này. Bạn có thể thử hỏi lại hoặc đặt câu hỏi khác nhé!";
         }
 
         return answer;
@@ -59,7 +59,7 @@ public class AiInterpretationService {
 
         if (answer == null || answer.isBlank()) {
             log.warn("[ai-interpret] AI returned empty chat answer");
-            return "Xin lỗi, hệ thống AI không thể trả lời câu hỏi này lúc này. Vui lòng thử lại sau.";
+            return "Xin lỗi, trợ lý hóa học hiện không thể trả lời. Bạn hãy thử đặt câu hỏi cụ thể hơn về phản ứng đang diễn ra nhé!";
         }
 
         return answer;
