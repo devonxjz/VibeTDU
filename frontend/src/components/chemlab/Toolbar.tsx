@@ -2,16 +2,14 @@
 
 import type { ComponentType, ReactNode } from "react";
 import {
-  FlaskConical,
   Trash2,
   Thermometer,
   Gauge,
   Sparkles,
   Bot,
-  UserCircle2,
   BookOpen,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 import { cn } from "@/utils/cn";
 import { useLabStore } from "@/stores/lab-store";
@@ -128,11 +126,12 @@ function SliderControl({
 
 export function Toolbar() {
   const [isJournalOpen, setIsJournalOpen] = useState(false);
-  const [userName, setUserName] = useState<string | null>(null);
-
-  useEffect(() => {
-    setUserName(localStorage.getItem("vibe_user_name"));
-  }, []);
+  const [userName] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("vibe_user_name");
+    }
+    return null;
+  });
   
   const vesselCount = useLabStore((s) => Object.keys(s.vessels).length);
   const temperature = useLabStore((s) => s.temperature);

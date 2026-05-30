@@ -484,14 +484,14 @@ public class AiClient {
     public boolean isPresetReactionKey(String key) {
         if (key == null) return false;
         return key.equals("CACO3__HCL") || key.equals("CCAO3__CLH")
-                || key.equals("CUSO4__NAOH") || key.equals("CUSO4__HNAO")
+                || key.equals("CUSO4__NAOH") || key.equals("CUSO4__HNAO") || key.equals("CUO4S__HNAO")
                 || key.equals("HCL__ZN") || key.equals("CLH__ZN")
                 || key.equals("H2SO4__KMNO4") || key.equals("H2OS4__KMNO4")
                 || key.equals("AGNO3__NACL") || key.equals("AGNO3__CLNA")
                 || key.equals("HCL__NAOH") || key.equals("CLH__HNAO")
                 || key.equals("HCL__NA") || key.equals("CLH__NA")
                 || key.equals("H2__N2") || key.equals("N2__H2")
-                || key.equals("O2__SO2") || key.equals("SO2__O2")
+                || key.equals("O2__SO2") || key.equals("SO2__O2") || key.equals("O2__O2S")
                 || key.equals("CU__O2") || key.equals("O2__CU");
     }
 
@@ -590,7 +590,7 @@ public class AiClient {
             return """
                     {"hasReaction":true,"equation":"2HCl + CaCO3 -> CaCl2 + CO2 + H2O","productFormula":"CaCl2 + CO2 + H2O","effectType":"GAS_BUBBLE","effectColor":"#FFFFFF","gasFormula":"CO2","precipitateFormula":null,"precipitateColor":null,"messageVi":"Khí CO2 thoát ra, sủi bọt khí mạnh.","explanationVi":"Axit HCl tác dụng với muối cacbonat CaCO3 tạo thành muối CaCl2, nước và khí CO2.","basicExplanation":"Axit HCl tác dụng với đá vôi (CaCO3) sinh ra khí CO2 sủi bọt.","intermediateExplanation":"Ion H+ phản ứng với CO3(2-) tạo ra H2CO3 kém bền, phân hủy thành CO2 và H2O.","advancedExplanation":"Phản ứng hòa tan muối rắn nhờ cung cấp H+ làm dịch chuyển cân bằng hòa tan của CaCO3, sinh ra khí CO2.","safetyNoteVi":"Đây là mô phỏng giáo dục; không thực hiện ngoài đời thực khi không có hướng dẫn an toàn.","confidence":0.97,"requiredTemperatureMin":null,"requiredTemperatureLabel":null,"requiredCatalyst":null,"requiredPressureMin":null}""";
         }
-        if (key.equals("CUSO4__NAOH") || key.equals("CUSO4__HNAO")) {
+        if (key.equals("CUSO4__NAOH") || key.equals("CUSO4__HNAO") || key.equals("CUO4S__HNAO")) {
             return """
                     {"hasReaction":true,"equation":"CuSO4 + 2NaOH -> Cu(OH)2 + Na2SO4","productFormula":"Cu(OH)2 + Na2SO4","effectType":"PRECIPITATE","effectColor":"#1E90FF","gasFormula":null,"precipitateFormula":"Cu(OH)2","precipitateColor":"#1565C0","messageVi":"Kết tủa màu xanh lam Cu(OH)2 xuất hiện.","explanationVi":"Ion Cu2+ từ CuSO4 kết hợp với ion OH- từ NaOH tạo thành kết tủa Cu(OH)2 không tan.","basicExplanation":"CuSO4 phản ứng với NaOH tạo ra chất rắn màu xanh lơ là Cu(OH)2.","intermediateExplanation":"Ion đồng (II) Cu2+ phản ứng với ion hydroxit OH- tạo thành kết tủa đồng (II) hydroxit.","advancedExplanation":"Phương trình ion rút gọn: Cu2+(aq) + 2OH-(aq) -> Cu(OH)2(s). Kết tủa này tan trong dung dịch NH3.","safetyNoteVi":"Mô phỏng giáo dục.","confidence":0.98,"requiredTemperatureMin":null,"requiredTemperatureLabel":null,"requiredCatalyst":null,"requiredPressureMin":null}""";
         }
@@ -618,7 +618,7 @@ public class AiClient {
             return """
                     {"hasReaction":true,"equation":"N2 + 3H2 <=> 2NH3","productFormula":"NH3","effectType":"GAS_BUBBLE","effectColor":null,"gasFormula":"NH3","precipitateFormula":null,"precipitateColor":null,"messageVi":"Tạo ra khí Amoniac có mùi khai (Haber-Bosch).","explanationVi":"Nitơ và hiđro phản ứng ở nhiệt độ và áp suất cao với xúc tác sắt để tạo amoniac.","basicExplanation":"Khí nitơ và khí hydro phản ứng tạo thành khí amoniac (NH3) có mùi khai.","intermediateExplanation":"Phản ứng tổng hợp amoniac là phản ứng thuận nghịch tỏa nhiệt, cần xúc tác Fe.","advancedExplanation":"Quá trình Haber-Bosch: N2 + 3H2 <=> 2NH3 (ΔH < 0). Áp suất cao và nhiệt độ tối ưu cùng xúc tác Fe giúp tăng hiệu suất.","safetyNoteVi":"Thực hiện trong thiết bị chịu áp suất cao.","confidence":0.95,"requiredTemperatureMin":400.0,"requiredTemperatureLabel":"400-500°C","requiredCatalyst":"Fe","requiredPressureMin":200.0}""";
         }
-        if (key.equals("O2__SO2") || key.equals("SO2__O2")) {
+        if (key.equals("O2__SO2") || key.equals("SO2__O2") || key.equals("O2__O2S")) {
             return """
                     {"hasReaction":true,"equation":"2SO2 + O2 <=> 2SO3","productFormula":"SO3","effectType":"NONE","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Lưu huỳnh đioxit oxi hóa thành lưu huỳnh trioxit.","explanationVi":"Phản ứng cần xúc tác V2O5 và nhiệt độ cao để đẩy nhanh tốc độ oxi hóa.","basicExplanation":"Khí SO2 phản ứng với oxi tạo thành khí SO3.","intermediateExplanation":"SO2 bị oxi hóa bởi O2 tạo SO3. Phản ứng này là bước trung gian sản xuất axit sunfuric.","advancedExplanation":"Oxi hóa SO2 là quá trình thuận nghịch tỏa nhiệt. Xúc tác V2O5 giúp giảm năng lượng hoạt hóa quá trình chuyển electron.","safetyNoteVi":"SO3 là khí độc.","confidence":0.95,"requiredTemperatureMin":450.0,"requiredTemperatureLabel":"450°C","requiredCatalyst":"V2O5","requiredPressureMin":null}""";
         }

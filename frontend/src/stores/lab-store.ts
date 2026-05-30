@@ -9,6 +9,7 @@ import { resetSession as apiResetSession } from "@/api/client/lab";
 import { CHEMICAL_COLORS, getBottleColor } from "@/constants/chemicals";
 import { getMockReaction } from "@/utils/reaction-mock";
 import { toast } from "sonner";
+import type { ExperimentData } from "@/types/journal";
 
 // ─── Color map by chemical category ─────────────────────────────────
 
@@ -144,7 +145,7 @@ interface LabStore {
   setGuestExperimentDismissed: (dismissed: boolean) => void;
 
   // Load from journal
-  loadExperiment: (data: any) => void;
+  loadExperiment: (data: ExperimentData) => void;
 }
 
 // ─── Effect Duration Map ────────────────────────────────────────────
@@ -244,7 +245,7 @@ export const useLabStore = create<LabStore>((set, get) => ({
   clearGuestExperiment: () => {
     try {
       localStorage.removeItem("guestExperiment");
-    } catch (e) {}
+    } catch {}
   },
 
   setGuestExperimentDismissed: (dismissed: boolean) => {
@@ -254,7 +255,7 @@ export const useLabStore = create<LabStore>((set, get) => ({
       } else {
         localStorage.removeItem("guestExperimentDismissed");
       }
-    } catch (e) {}
+    } catch {}
   },
 
   setCenterBeaker: (id) => set({ centerBeakerId: id }),
@@ -477,7 +478,8 @@ export const useLabStore = create<LabStore>((set, get) => ({
 
   removeVessel: (id) => {
     set((state) => {
-      const { [id]: _, ...rest } = state.vessels;
+      const rest = { ...state.vessels };
+      delete rest[id];
       return {
         vessels: rest,
         selectedVesselId: state.selectedVesselId === id ? null : state.selectedVesselId,
@@ -589,7 +591,7 @@ export const useLabStore = create<LabStore>((set, get) => ({
           get().clearEffect();
         }, duration);
       }
-    } catch (err) {
+    } catch {
       // Offline fallback
       const formulas = [...target.contents.map(c => c.formula), chemical.formula].filter(Boolean);
       const mockResult = getMockReaction(formulas);
@@ -705,7 +707,8 @@ export const useLabStore = create<LabStore>((set, get) => ({
       };
 
       // Remove source vessel (it was "poured" into target)
-      const { [sourceId]: _, ...remainingVessels } = state.vessels;
+      const remainingVessels = { ...state.vessels };
+      delete remainingVessels[sourceId];
 
       set({
         vessels: { ...remainingVessels, [targetId]: updatedTarget },
@@ -736,7 +739,7 @@ export const useLabStore = create<LabStore>((set, get) => ({
           get().clearEffect();
         }, duration);
       }
-    } catch (err) {
+    } catch {
       // Offline fallback
       const formulas = [...target.contents.map(c => c.formula), ...source.contents.map(c => c.formula)].filter(Boolean);
       const mockResult = getMockReaction(formulas);
@@ -758,7 +761,8 @@ export const useLabStore = create<LabStore>((set, get) => ({
         newLabel = [...new Set(allFormulas)].join(" + ");
       }
 
-      const { [sourceId]: _, ...remainingVessels } = state.vessels;
+      const remainingVessels = { ...state.vessels };
+      delete remainingVessels[sourceId];
 
       set({
         vessels: {
@@ -890,9 +894,6 @@ export const useLabStore = create<LabStore>((set, get) => ({
     // No dupes — skip if formula already exists
     if (vessel.contents.some(c => c.formula === chemical.formula)) return;
 
-    // Count existing real chemicals BEFORE adding
-    const existingCount = vessel.contents.filter(c => c.formula).length;
-
     // Add the chemical via existing addChemicalToVessel
     get().addChemicalToVessel(
       {
@@ -996,7 +997,7 @@ export const useLabStore = create<LabStore>((set, get) => ({
     });
   },
 
-  loadExperiment: (data: any) => {
+  loadExperiment: (data: ExperimentData) => {
     const state = get();
     let beakerId = state.centerBeakerId;
     if (!beakerId) {
@@ -1014,7 +1015,7 @@ export const useLabStore = create<LabStore>((set, get) => ({
       if (!v) return s;
 
       const newContents = data.contents || [];
-      const realContents = newContents.filter((c: any) => c.formula);
+      const realContents = newContents.filter((c: VesselContent) => c.formula);
 
       let newColor = "rgba(200,230,255,0.0)";
       if (data.reaction?.effectColor) {
@@ -1030,7 +1031,7 @@ export const useLabStore = create<LabStore>((set, get) => ({
       if (data.reaction?.hasReaction && data.reaction.productFormula) {
         newLabel = data.reaction.productFormula;
       } else if (realContents.length > 0) {
-        newLabel = [...new Set(realContents.map((c: any) => c.formula).filter(Boolean))].join(" + ");
+        newLabel = [...new Set(realContents.map((c: VesselContent) => c.formula).filter(Boolean))].join(" + ");
       }
 
       const effectType = data.reaction?.effectType || "NONE";

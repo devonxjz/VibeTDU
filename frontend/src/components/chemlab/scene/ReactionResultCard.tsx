@@ -29,8 +29,10 @@ export function ReactionResultCard() {
   const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
-    setIsSaved(false);
-    setIsSaving(false);
+    setTimeout(() => {
+      setIsSaved(false);
+      setIsSaving(false);
+    }, 0);
   }, [reaction]);
 
   const reactionTypeName: Record<string, string> = {

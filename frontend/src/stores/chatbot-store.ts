@@ -2,11 +2,9 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { AiChatRequest, ChatMessage, ReactionResult } from "@/types/api";
+import type { AiChatRequest, ChatMessage } from "@/types/api";
 import { chatAi } from "@/api/client/ai";
 import { useLabStore } from "@/stores/lab-store";
-
-const MAX_PERSISTED_MESSAGES = 50;
 
 export type ChatbotPosition = { x: number; y: number } | null;
 

@@ -8,11 +8,12 @@ import { ClayPanelShell, ClayActionButton } from "@/components/ui/clay-primitive
 const STORAGE_KEY = "vibe_user_name";
 
 export function useUserName() {
-  const [userName, setUserName] = useState<string | null>(null);
-
-  useEffect(() => {
-    setUserName(localStorage.getItem(STORAGE_KEY));
-  }, []);
+  const [userName, setUserName] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem(STORAGE_KEY);
+    }
+    return null;
+  });
 
   const save = (name: string) => {
     localStorage.setItem(STORAGE_KEY, name);
@@ -33,7 +34,10 @@ export function WelcomeModal() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const timer = setTimeout(() => {
+      setMounted(true);
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   // Don't render anything until client-side hydration is done

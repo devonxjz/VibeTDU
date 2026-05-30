@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, BookOpen, Lock, Play, User } from "lucide-react";
+import { X, BookOpen, Play, User } from "lucide-react";
 import { useLabStore } from "@/stores/lab-store";
 import { ClayPanelShell, ClayActionButton, ClayPill } from "@/components/ui/clay-primitives";
 import { cn } from "@/utils/cn";
@@ -33,13 +33,18 @@ export function LabJournalModal({ isOpen, onClose }: LabJournalModalProps) {
   const [userName, setUserName] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    setUserName(localStorage.getItem("vibe_user_name"));
+    const stored = localStorage.getItem("vibe_user_name");
+    setTimeout(() => {
+      setUserName(stored);
+    }, 0);
   }, [isOpen]);
 
   React.useEffect(() => {
     if (isOpen) {
-      setIsLoading(true);
-      setError(null);
+      setTimeout(() => {
+        setIsLoading(true);
+        setError(null);
+      }, 0);
       getJournals().then(res => {
         if (res.success) {
           const parsedJournals = res.data.map(j => {

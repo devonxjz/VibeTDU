@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import type { JournalSummary, JournalEntry } from "@/types/journal";
+import type { JournalSummary } from "@/types/journal";
 
 export type ApiResult<T> =
   | { success: true; data: T }
@@ -22,7 +22,7 @@ export async function saveJournal(
     journals.unshift(newEntry);
     localStorage.setItem("vibetdu_journals", JSON.stringify(journals));
     return { success: true, data: newEntry };
-  } catch (error) {
+  } catch {
     return { success: false, error: "Lỗi lưu dữ liệu cục bộ" };
   }
 }
@@ -32,7 +32,7 @@ export async function getJournals(): Promise<ApiResult<JournalSummary[]>> {
     const stored = localStorage.getItem("vibetdu_journals");
     const journals = stored ? JSON.parse(stored) : [];
     return { success: true, data: journals };
-  } catch (error) {
+  } catch {
     return { success: false, error: "Lỗi tải dữ liệu cục bộ" };
   }
 }

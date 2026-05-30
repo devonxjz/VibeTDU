@@ -39,7 +39,7 @@ describe("lab-store", () => {
       
       const store = useLabStore.getState();
       expect(localStorage.getItem("guestExperiment")).toBeNull();
-        // @ts-ignore
+        // @ts-expect-error - saveGuestExperiment is internal and not in the store state interface directly
         store.saveGuestExperiment();
         
         // After save, it should be in localStorage
@@ -57,13 +57,13 @@ describe("lab-store", () => {
       
       const store = useLabStore.getState();
       if ("clearGuestExperiment" in store) {
-        // @ts-ignore
+        // @ts-expect-error - clearGuestExperiment is internal and not in the store state interface directly
         store.clearGuestExperiment();
         expect(localStorage.getItem("guestExperiment")).toBeNull();
       }
 
       if ("setGuestExperimentDismissed" in store) {
-        // @ts-ignore
+        // @ts-expect-error - setGuestExperimentDismissed is internal and not in the store state interface directly
         store.setGuestExperimentDismissed(true);
         expect(localStorage.getItem("guestExperimentDismissed")).toBe("true");
       }
