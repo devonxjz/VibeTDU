@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { ComponentType, ReactNode } from "react";
 import {
   Trash2,
@@ -162,7 +163,14 @@ export function Toolbar() {
         >
           <div className="flex items-center gap-3">
             <div className="relative flex h-14 w-16 -ml-2 items-center justify-center shrink-0">
-              <img src="/logo.png" alt="VibeTDU Logo" className="absolute h-full w-full object-contain scale-[1.7] drop-shadow-sm" />
+              <Image
+                src="/logo.png"
+                alt="VibeTDU Logo"
+                width={96}
+                height={96}
+                className="absolute h-full w-full object-contain scale-[1.7] drop-shadow-sm"
+                priority
+              />
             </div>
             <div>
               <div className="clay-title-md text-clay-ink">VibeTDU</div>

@@ -46,14 +46,17 @@ public class AiClient {
     private final WebClient webClient;
     private final AppProperties appProperties;
     private final ApiErrorLogRepository apiErrorLogRepository;
+    private final AiFallbackCatalog fallbackCatalog;
     private final AtomicInteger currentKeyIndex = new AtomicInteger(0);
 
     public AiClient(WebClient webClient,
                     AppProperties appProperties,
-                    ApiErrorLogRepository apiErrorLogRepository) {
+                    ApiErrorLogRepository apiErrorLogRepository,
+                    AiFallbackCatalog fallbackCatalog) {
         this.webClient = webClient;
         this.appProperties = appProperties;
         this.apiErrorLogRepository = apiErrorLogRepository;
+        this.fallbackCatalog = fallbackCatalog;
     }
 
     // ─── Public interface ────────────────────────────────────────────────────────
@@ -68,13 +71,13 @@ public class AiClient {
 
         if (isPresetReactionKey(key) || appProperties.getAi().isMockMode()) {
             log.info("[AI] Preset or Mock mode – returning built-in response for: {}", reactantFormulae);
-            return getMockReaction(reactantFormulae);
+            return fallbackCatalog.reactionJsonFor(reactantFormulae);
         }
 
         List<String> apiKeys = appProperties.getAi().getApiKeys();
         if (apiKeys == null || apiKeys.isEmpty()) {
             log.warn("[AI] No API keys – falling back to mock");
-            return getMockReaction(reactantFormulae);
+            return fallbackCatalog.reactionJsonFor(reactantFormulae);
         }
 
         String prompt = buildReactionPrompt(reactantFormulae, temperature, pressure, catalyst);
@@ -90,7 +93,7 @@ public class AiClient {
         
         if (result == null) {
             log.warn("[AI] AI call failed or all keys exhausted. Falling back to mock.");
-            return getMockReaction(reactantFormulae);
+            return fallbackCatalog.reactionJsonFor(reactantFormulae);
         }
         return result;
     }
@@ -100,12 +103,12 @@ public class AiClient {
      */
     public String askQuestion(String question, String reactionContext) {
         if (appProperties.getAi().isMockMode()) {
-            return getMockChatResponse(question, reactionContext);
+            return fallbackCatalog.chatResponseFor(question, reactionContext);
         }
 
         List<String> apiKeys = appProperties.getAi().getApiKeys();
         if (apiKeys == null || apiKeys.isEmpty() || cleanApiKey(apiKeys.get(0)).isBlank()) {
-            return getMockChatResponse(question, reactionContext);
+            return fallbackCatalog.chatResponseFor(question, reactionContext);
         }
 
         String prompt = "You are an educational chemistry assistant. Answer concisely and accurately in Vietnamese.\n"
@@ -123,7 +126,7 @@ public class AiClient {
         
         if (result == null) {
             log.warn("[AI] AI call failed or all keys exhausted. Falling back to mock chat.");
-            return getMockChatResponse(question, reactionContext);
+            return fallbackCatalog.chatResponseFor(question, reactionContext);
         }
         return result;
     }
@@ -134,12 +137,12 @@ public class AiClient {
      */
     public String chat(List<ChatMessage> history, String reactionContext) {
         if (appProperties.getAi().isMockMode()) {
-            return getMockChatResponse(getLatestUserQuestion(history), reactionContext);
+            return fallbackCatalog.chatResponseFor(getLatestUserQuestion(history), reactionContext);
         }
 
         List<String> apiKeys = appProperties.getAi().getApiKeys();
         if (apiKeys == null || apiKeys.isEmpty() || cleanApiKey(apiKeys.get(0)).isBlank()) {
-            return getMockChatResponse(getLatestUserQuestion(history), reactionContext);
+            return fallbackCatalog.chatResponseFor(getLatestUserQuestion(history), reactionContext);
         }
 
         List<ChatMessage> cleaned = sanitizeHistory(history);
@@ -159,7 +162,7 @@ public class AiClient {
         
         if (result == null) {
             log.warn("[AI] Chat call failed or all keys exhausted. Falling back to mock chat.");
-            return getMockChatResponse(getLatestUserQuestion(history), reactionContext);
+            return fallbackCatalog.chatResponseFor(getLatestUserQuestion(history), reactionContext);
         }
         
         return result;
@@ -482,17 +485,7 @@ public class AiClient {
     // ─── Helpers ─────────────────────────────────────────────────────────────────
 
     public boolean isPresetReactionKey(String key) {
-        if (key == null) return false;
-        return key.equals("CACO3__HCL") || key.equals("CCAO3__CLH")
-                || key.equals("CUSO4__NAOH") || key.equals("CUSO4__HNAO") || key.equals("CUO4S__HNAO")
-                || key.equals("HCL__ZN") || key.equals("CLH__ZN")
-                || key.equals("H2SO4__KMNO4") || key.equals("H2OS4__KMNO4")
-                || key.equals("AGNO3__NACL") || key.equals("AGNO3__CLNA")
-                || key.equals("HCL__NAOH") || key.equals("CLH__HNAO")
-                || key.equals("HCL__NA") || key.equals("CLH__NA")
-                || key.equals("H2__N2") || key.equals("N2__H2")
-                || key.equals("O2__SO2") || key.equals("SO2__O2") || key.equals("O2__O2S")
-                || key.equals("CU__O2") || key.equals("O2__CU");
+        return fallbackCatalog.isPresetReactionKey(key);
     }
 
     /** Gemini API keys start with "AIzaSy" */
@@ -579,58 +572,6 @@ public class AiClient {
         } catch (Exception ignored) {}
     }
 
-    // ─── Mock responses ──────────────────────────────────────────────────────────
-
-    private String getMockReaction(List<String> formulae) {
-        String key = formulae.stream()
-                .map(String::trim).map(String::toUpperCase)
-                .sorted().reduce("", (a, b) -> a.isBlank() ? b : a + "__" + b);
-
-        if (key.equals("CACO3__HCL") || key.equals("CCAO3__CLH")) {
-            return """
-                    {"hasReaction":true,"equation":"2HCl + CaCO3 -> CaCl2 + CO2 + H2O","productFormula":"CaCl2 + CO2 + H2O","effectType":"GAS_BUBBLE","effectColor":"#FFFFFF","gasFormula":"CO2","precipitateFormula":null,"precipitateColor":null,"messageVi":"Khí CO2 thoát ra, sủi bọt khí mạnh.","explanationVi":"Axit HCl tác dụng với muối cacbonat CaCO3 tạo thành muối CaCl2, nước và khí CO2.","basicExplanation":"Axit HCl tác dụng với đá vôi (CaCO3) sinh ra khí CO2 sủi bọt.","intermediateExplanation":"Ion H+ phản ứng với CO3(2-) tạo ra H2CO3 kém bền, phân hủy thành CO2 và H2O.","advancedExplanation":"Phản ứng hòa tan muối rắn nhờ cung cấp H+ làm dịch chuyển cân bằng hòa tan của CaCO3, sinh ra khí CO2.","safetyNoteVi":"Đây là mô phỏng giáo dục; không thực hiện ngoài đời thực khi không có hướng dẫn an toàn.","confidence":0.97,"requiredTemperatureMin":null,"requiredTemperatureLabel":null,"requiredCatalyst":null,"requiredPressureMin":null}""";
-        }
-        if (key.equals("CUSO4__NAOH") || key.equals("CUSO4__HNAO") || key.equals("CUO4S__HNAO")) {
-            return """
-                    {"hasReaction":true,"equation":"CuSO4 + 2NaOH -> Cu(OH)2 + Na2SO4","productFormula":"Cu(OH)2 + Na2SO4","effectType":"PRECIPITATE","effectColor":"#1E90FF","gasFormula":null,"precipitateFormula":"Cu(OH)2","precipitateColor":"#1565C0","messageVi":"Kết tủa màu xanh lam Cu(OH)2 xuất hiện.","explanationVi":"Ion Cu2+ từ CuSO4 kết hợp với ion OH- từ NaOH tạo thành kết tủa Cu(OH)2 không tan.","basicExplanation":"CuSO4 phản ứng với NaOH tạo ra chất rắn màu xanh lơ là Cu(OH)2.","intermediateExplanation":"Ion đồng (II) Cu2+ phản ứng với ion hydroxit OH- tạo thành kết tủa đồng (II) hydroxit.","advancedExplanation":"Phương trình ion rút gọn: Cu2+(aq) + 2OH-(aq) -> Cu(OH)2(s). Kết tủa này tan trong dung dịch NH3.","safetyNoteVi":"Mô phỏng giáo dục.","confidence":0.98,"requiredTemperatureMin":null,"requiredTemperatureLabel":null,"requiredCatalyst":null,"requiredPressureMin":null}""";
-        }
-        if (key.equals("HCL__ZN") || key.equals("CLH__ZN")) {
-            return """
-                    {"hasReaction":true,"equation":"Zn + 2HCl -> ZnCl2 + H2","productFormula":"ZnCl2 + H2","effectType":"GAS_BUBBLE","effectColor":"#FFFFFF","gasFormula":"H2","precipitateFormula":null,"precipitateColor":null,"messageVi":"Mảnh kẽm tan dần, có nhiều bọt khí không màu thoát ra.","explanationVi":"Kẽm (kim loại đứng trước H) đẩy hydro ra khỏi dung dịch axit, tạo muối kẽm clorua và giải phóng khí H2.","basicExplanation":"Kẽm phản ứng với axit HCl tạo ra khí hydro H2 bay lên và dung dịch muối kẽm. Đây là phản ứng thế.","intermediateExplanation":"Kẽm (Zn) là kim loại hoạt động mạnh hơn hydro nên đẩy được H+ ra khỏi dung dịch axit. Quá trình này kèm theo sự chuyển electron từ Zn sang H+.","advancedExplanation":"Phản ứng oxi hóa - khử: Zn(s) -> Zn2+(aq) + 2e- (oxi hóa), 2H+(aq) + 2e- -> H2(g) (khử). Phương trình ion rút gọn: Zn(s) + 2H+(aq) -> Zn2+(aq) + H2(g).","safetyNoteVi":"Khí H2 dễ cháy nổ, tránh xa nguồn lửa hở.","confidence":0.98,"requiredTemperatureMin":null,"requiredTemperatureLabel":null,"requiredCatalyst":null,"requiredPressureMin":null}""";
-        }
-        if (key.equals("H2SO4__KMNO4") || key.equals("H2OS4__KMNO4")) {
-            return """
-                    {"hasReaction":true,"equation":"2KMnO4 + H2SO4 -> K2SO4 + 2MnO4(-) (môi trường)","productFormula":"K2SO4 + MnO4(-)","effectType":"COLOR_CHANGE","effectColor":"#E040FB","gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Dung dịch có màu tím hồng rất đậm đặc trưng.","explanationVi":"Kali pemanganat khi hòa tan trong môi trường axit mạnh tạo thành dung dịch có tính oxy hóa cực mạnh và giữ nguyên màu tím của ion MnO4-.","basicExplanation":"KMnO4 hòa tan trong H2SO4 tạo dung dịch màu tím đặc trưng. Môi trường axit giúp dung dịch này có tính tẩy rửa cực mạnh.","intermediateExplanation":"H2SO4 đóng vai trò cung cấp môi trường axit (ion H+) cần thiết để ion pemanganat (MnO4-) có thể thể hiện tính oxi hóa tối đa trong các phản ứng tiếp theo.","advancedExplanation":"Sự hiện diện của H+ làm tăng thế điện cực chuẩn của bán phản ứng: MnO4- + 8H+ + 5e- -> Mn2+ + 4H2O (E0 = +1.51V). Hỗn hợp này chưa có chất khử nên màu tím Mn(VII) vẫn giữ nguyên.","safetyNoteVi":"Hỗn hợp có tính oxy hóa rất mạnh, tuyệt đối không thêm chất dễ cháy vào hỗn hợp này.","confidence":0.98,"requiredTemperatureMin":null,"requiredTemperatureLabel":null,"requiredCatalyst":null,"requiredPressureMin":null}""";
-        }
-        if (key.equals("AGNO3__NACL") || key.equals("AGNO3__CLNA")) {
-            return """
-                    {"hasReaction":true,"equation":"AgNO3 + NaCl -> AgCl + NaNO3","productFormula":"AgCl + NaNO3","effectType":"PRECIPITATE","effectColor":"#F5F5F5","gasFormula":null,"precipitateFormula":"AgCl","precipitateColor":"#EEEEEE","messageVi":"Kết tủa trắng AgCl xuất hiện.","explanationVi":"Ion Ag+ kết hợp với ion Cl- tạo thành kết tủa trắng AgCl không tan trong nước.","basicExplanation":"AgNO3 phản ứng với NaCl tạo ra chất rắn màu trắng là AgCl.","intermediateExplanation":"Ion Ag+ từ AgNO3 kết hợp với ion Cl- từ NaCl tạo thành tinh thể AgCl không tan trong nước.","advancedExplanation":"Phương trình ion rút gọn: Ag+(aq) + Cl-(aq) -> AgCl(s). Kết tủa này nhạy sáng.","safetyNoteVi":"Mô phỏng giáo dục.","confidence":0.98,"requiredTemperatureMin":null,"requiredTemperatureLabel":null,"requiredCatalyst":null,"requiredPressureMin":null}""";
-        }
-        if (key.equals("HCL__NAOH") || key.equals("CLH__HNAO")) {
-            return """
-                    {"hasReaction":true,"equation":"HCl + NaOH -> NaCl + H2O","productFormula":"NaCl + H2O","effectType":"HEAT","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Phản ứng trung hòa tỏa nhiệt, dung dịch trở nên trung tính.","explanationVi":"Axit mạnh HCl phản ứng với bazơ mạnh NaOH tạo ra muối NaCl và nước, có tỏa nhiệt.","basicExplanation":"Axit HCl và bazơ NaOH tác dụng với nhau tạo thành muối NaCl và nước.","intermediateExplanation":"Ion H+ từ HCl kết hợp với ion OH- từ NaOH tạo thành H2O. Na+ và Cl- là ion khán giả.","advancedExplanation":"Phương trình ion rút gọn: H+(aq) + OH-(aq) -> H2O(l). ΔG < 0, phản ứng tự phát tỏa nhiệt mạnh.","safetyNoteVi":"Mô phỏng giáo dục.","confidence":0.96,"requiredTemperatureMin":null,"requiredTemperatureLabel":null,"requiredCatalyst":null,"requiredPressureMin":null}""";
-        }
-        if (key.equals("HCL__NA") || key.equals("CLH__NA")) {
-            return """
-                    {"hasReaction":true,"equation":"2Na + 2HCl -> 2NaCl + H2","productFormula":"NaCl + H2","effectType":"EXPLOSION","effectColor":null,"gasFormula":"H2","precipitateFormula":null,"precipitateColor":null,"messageVi":"Phản ứng mãnh liệt, khí H2 thoát ra có thể gây nổ nhỏ.","explanationVi":"Kim loại kiềm Na phản ứng rất mạnh với axit HCl tạo ra muối NaCl và khí Hydro.","basicExplanation":"Natri phản ứng mãnh liệt với axit HCl giải phóng khí hydro H2.","intermediateExplanation":"Natri nhường electron cho ion H+ sinh ra khí hydro. Phản ứng sinh nhiều nhiệt gây cháy nổ.","advancedExplanation":"Na(s) + H+(aq) -> Na+(aq) + 1/2H2(g). Tính khử cực mạnh của kim loại kiềm gây ra phản ứng mãnh liệt.","safetyNoteVi":"CẢNH BÁO: Phản ứng cực kỳ nguy hiểm, không thực hiện ngoài đời thực.","confidence":0.99,"requiredTemperatureMin":null,"requiredTemperatureLabel":null,"requiredCatalyst":null,"requiredPressureMin":null}""";
-        }
-        if (key.equals("H2__N2") || key.equals("N2__H2")) {
-            return """
-                    {"hasReaction":true,"equation":"N2 + 3H2 <=> 2NH3","productFormula":"NH3","effectType":"GAS_BUBBLE","effectColor":null,"gasFormula":"NH3","precipitateFormula":null,"precipitateColor":null,"messageVi":"Tạo ra khí Amoniac có mùi khai (Haber-Bosch).","explanationVi":"Nitơ và hiđro phản ứng ở nhiệt độ và áp suất cao với xúc tác sắt để tạo amoniac.","basicExplanation":"Khí nitơ và khí hydro phản ứng tạo thành khí amoniac (NH3) có mùi khai.","intermediateExplanation":"Phản ứng tổng hợp amoniac là phản ứng thuận nghịch tỏa nhiệt, cần xúc tác Fe.","advancedExplanation":"Quá trình Haber-Bosch: N2 + 3H2 <=> 2NH3 (ΔH < 0). Áp suất cao và nhiệt độ tối ưu cùng xúc tác Fe giúp tăng hiệu suất.","safetyNoteVi":"Thực hiện trong thiết bị chịu áp suất cao.","confidence":0.95,"requiredTemperatureMin":400.0,"requiredTemperatureLabel":"400-500°C","requiredCatalyst":"Fe","requiredPressureMin":200.0}""";
-        }
-        if (key.equals("O2__SO2") || key.equals("SO2__O2") || key.equals("O2__O2S")) {
-            return """
-                    {"hasReaction":true,"equation":"2SO2 + O2 <=> 2SO3","productFormula":"SO3","effectType":"NONE","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Lưu huỳnh đioxit oxi hóa thành lưu huỳnh trioxit.","explanationVi":"Phản ứng cần xúc tác V2O5 và nhiệt độ cao để đẩy nhanh tốc độ oxi hóa.","basicExplanation":"Khí SO2 phản ứng với oxi tạo thành khí SO3.","intermediateExplanation":"SO2 bị oxi hóa bởi O2 tạo SO3. Phản ứng này là bước trung gian sản xuất axit sunfuric.","advancedExplanation":"Oxi hóa SO2 là quá trình thuận nghịch tỏa nhiệt. Xúc tác V2O5 giúp giảm năng lượng hoạt hóa quá trình chuyển electron.","safetyNoteVi":"SO3 là khí độc.","confidence":0.95,"requiredTemperatureMin":450.0,"requiredTemperatureLabel":"450°C","requiredCatalyst":"V2O5","requiredPressureMin":null}""";
-        }
-        if (key.equals("CU__O2") || key.equals("O2__CU")) {
-            return """
-                    {"hasReaction":true,"equation":"2Cu + O2 -> 2CuO","productFormula":"CuO","effectType":"COLOR_CHANGE","effectColor":"#2C2C2C","gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Đồng (Cu) bị oxi hóa thành đồng(II) oxit (CuO) có màu đen.","explanationVi":"Phản ứng giữa đồng và oxi ở nhiệt độ cao tạo ra lớp oxit đen bao phủ bề mặt kim loại.","basicExplanation":"Khi nung nóng trong không khí, đồng phản ứng với oxi tạo thành lớp màu đen là CuO.","intermediateExplanation":"Đồng kim loại nhường electron cho oxi phân tử tạo ra hợp chất ion CuO.","advancedExplanation":"Quá trình oxi hóa bề mặt kim loại Cu(s) + 1/2O2(g) -> CuO(s) làm thay đổi trạng thái oxi hóa của Cu từ 0 lên +2.","safetyNoteVi":"Cần nung nóng trong môi trường có oxi.","confidence":0.96,"requiredTemperatureMin":300.0,"requiredTemperatureLabel":"300-400°C","requiredCatalyst":null,"requiredPressureMin":null}""";
-        }
-        // Unknown pair – low confidence so cache won't store permanently
-        return """
-                {"hasReaction":false,"equation":null,"productFormula":null,"effectType":"NONE","effectColor":null,"gasFormula":null,"precipitateFormula":null,"precipitateColor":null,"messageVi":"Cặp chất này chưa có trong cơ sở dữ liệu mô phỏng. Vui lòng thử cặp hóa chất khác hoặc thử lại sau khi hệ thống AI khả dụng.","explanationVi":"Hệ thống AI hiện không khả dụng và cặp chất này chưa có trong dữ liệu mô phỏng sẵn có.","basicExplanation":"Hệ thống chưa có thông tin về phản ứng này.","intermediateExplanation":"Cần kết nối AI để dự đoán phản ứng cho cặp chất mới.","advancedExplanation":"Hệ thống đang hoạt động ở chế độ offline với dữ liệu phản ứng có sẵn hạn chế.","safetyNoteVi":null,"confidence":0.1,"requiredTemperatureMin":null,"requiredTemperatureLabel":null,"requiredCatalyst":null,"requiredPressureMin":null}""";
-    }
-
     private String getLatestUserQuestion(List<ChatMessage> history) {
         if (history == null || history.isEmpty()) return "";
         for (int i = history.size() - 1; i >= 0; i--) {
@@ -642,66 +583,5 @@ public class AiClient {
         return "";
     }
 
-    private String getMockChatResponse(String question, String reactionContext) {
-        if (question == null) question = "";
-        String q = question.toLowerCase();
-        String ctx = reactionContext == null ? "" : reactionContext.toLowerCase();
 
-        // 1. Check for specific reaction: CuSO4 + NaOH
-        if (ctx.contains("cu(oh)2") || ctx.contains("cuso4") || ctx.contains("naoh")) {
-            if (q.contains("kết tủa") || q.contains("xanh") || q.contains("màu") || q.contains("precipitate") || q.contains("blue")) {
-                return "Kết tủa màu xanh lơ xuất hiện là Đồng(II) hydroxit [Cu(OH)₂]. Đây là bazơ không tan được tạo thành từ phản ứng trao đổi ion giữa muối CuSO₄ và bazơ NaOH. Phương trình ion rút gọn: Cu²⁺ + 2OH⁻ → Cu(OH)₂↓.";
-            }
-            if (q.contains("nguy hiểm") || q.contains("an toàn") || q.contains("độc") || q.contains("danger") || q.contains("safety")) {
-                return "Phản ứng tạo kết tủa Cu(OH)₂ không quá độc hại, nhưng dung dịch kiềm NaOH có tính ăn mòn da và mắt cực kỳ mạnh. Cần đeo kính bảo hộ và găng tay khi làm thí nghiệm thực tế.";
-            }
-            if (q.contains("phương trình") || q.contains("equation") || q.contains("giải thích") || q.contains("phản ứng")) {
-                return "Phản ứng CuSO₄ + 2NaOH → Cu(OH)₂↓ + Na₂SO₄ là phản ứng trao đổi ion đặc trưng để nhận biết ion Cu²⁺. Khi đổ NaOH vào CuSO₄, liên kết ion giữa Cu²⁺ và SO₄²⁻ bị đứt ra để tạo thành kết tủa Cu(OH)₂ màu xanh lơ không tan.";
-            }
-        }
-
-        // 2. Check for specific reaction: Zn + HCl / HCl + Zn
-        if (ctx.contains("h2") || ctx.contains("zn") || ctx.contains("hcl") || ctx.contains("kẽm")) {
-            if (q.contains("khí") || q.contains("bọt") || q.contains("sủi") || q.contains("gas") || q.contains("bubble")) {
-                return "Bọt khí sủi mạnh và thoát ra chính là khí Hiđro (H₂). Kẽm (Zn) là kim loại hoạt động đứng trước hiđro trong dãy hoạt động hóa học, đã oxi hóa thành Zn²⁺ và khử các ion H⁺ trong axit HCl thành khí H₂ bay lên.";
-            }
-            if (q.contains("nguy hiểm") || q.contains("an toàn") || q.contains("độc") || q.contains("danger") || q.contains("safety")) {
-                return "Khí H₂ sinh ra rất dễ bắt lửa và tạo hỗn hợp nổ mạnh với oxi trong không khí. Khi làm thí nghiệm thực tế, cần tránh xa lửa hở và tắt mọi nguồn điện có nguy cơ đánh lửa.";
-            }
-            if (q.contains("phương trình") || q.contains("equation") || q.contains("giải thích") || q.contains("phản ứng")) {
-                return "Phản ứng: Zn + 2HCl → ZnCl₂ + H₂↑ là phản ứng thế (và cũng là phản ứng oxi hóa - khử) điển hình. Kẽm nhường 2 electron để khử ion H⁺ trong dung dịch axit thành hiđro đơn chất dạng khí.";
-            }
-        }
-
-        // 3. Check for specific reaction: KMnO4 + H2SO4
-        if (ctx.contains("kmno4") || ctx.contains("h2so4") || ctx.contains("tím") || ctx.contains("màu") || ctx.contains("purple")) {
-            if (q.contains("tím") || q.contains("màu") || q.contains("color") || q.contains("purple")) {
-                return "Dung dịch có màu tím hồng rất đậm đặc trưng của ion pemanganat (MnO₄⁻) từ KMnO₄. Khi hòa tan trong môi trường axit mạnh H₂SO₄, ion MnO₄⁻ có tính oxi hóa cực kỳ mạnh nhưng do chưa có chất khử nên màu tím Mn(VII) vẫn giữ nguyên.";
-            }
-            if (q.contains("nguy hiểm") || q.contains("an toàn") || q.contains("độc") || q.contains("danger") || q.contains("safety")) {
-                return "CẢNH BÁO: Hỗn hợp KMnO₄ và H₂SO₄ đậm đặc có tính oxi hóa cực mạnh và tạo ra chất không bền mangan heptoxit (Mn₂O₇) cực kỳ nguy hiểm, có thể gây nổ hoặc bốc cháy tức thì khi tiếp xúc với các chất hữu cơ.";
-            }
-            if (q.contains("phương trình") || q.contains("equation") || q.contains("giải thích") || q.contains("phản ứng")) {
-                return "Hỗn hợp KMnO₄ trong môi trường axit H₂SO₄ đóng vai trò là một chất oxi hóa mạnh vạn năng (thế khử chuẩn E° = 1.51V). Phản ứng tạo môi trường axit giúp kích hoạt tính oxi hóa mạnh nhất của ion MnO₄⁻ cho các phản ứng oxi hóa khử sau đó.";
-            }
-        }
-
-        // 4. General conversation responses
-        if (q.contains("chào") || q.contains("hello") || q.contains("hi")) {
-            return "Xin chào! Tôi là Trợ lý hóa học ảo của VibeTDU. Tôi có thể giúp gì cho bạn về các phản ứng hóa học hoặc các thí nghiệm trong phòng lab này?";
-        }
-        if (q.contains("cảm ơn") || q.contains("thank")) {
-            return "Rất sẵn lòng! Chúc bạn có những trải nghiệm học tập và nghiên cứu hóa học thú vị và an toàn tại phòng thí nghiệm ảo của VibeTDU.";
-        }
-        if (q.contains("tên") || q.contains("là ai")) {
-            return "Tôi là Trợ lý Hóa học ảo, hoạt động dưới dạng mô hình ngôn ngữ lớn để trả lời các câu hỏi về hiện tượng, phương trình và an toàn hóa học.";
-        }
-
-        // 5. Default fallback responses based on reactionContext presence
-        if (reactionContext != null && !reactionContext.isBlank() && !reactionContext.contains("no reaction context")) {
-            return "Chào bạn! Đây là phản hồi từ Trợ lý Hóa học (chế độ mô phỏng offline). Về phản ứng hiện tại trong cốc thí nghiệm của bạn, các chất đang ở điều kiện nhiệt độ phòng và áp suất thường. Hãy cho tôi biết nếu bạn muốn hỏi cụ thể về chất kết tủa, khí thoát ra hoặc mức độ an toàn của chúng nhé!";
-        }
-
-        return "Chào bạn! Tôi đang hoạt động ở chế độ mô phỏng offline. Bạn có thể hỏi tôi về bất kỳ phản ứng nào có trong preset hoặc kiến thức hóa học trung học cơ sở và trung học phổ thông. Rất vui được đồng hành cùng bạn học hóa!";
-    }
 }

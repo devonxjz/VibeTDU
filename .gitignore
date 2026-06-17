@@ -1,0 +1,7 @@
+.vercel
+.env*
+/script_test
+/frontend/node_modules
+/planing
+.codegraph/
+docs/

@@ -1,0 +1,71 @@
+{
+  "reactionResponses": [
+    {
+      "contextKeywords": ["cu(oh)2", "cuso4", "naoh"],
+      "responses": [
+        {
+          "questionKeywords": ["kết tủa", "xanh", "màu", "precipitate", "blue"],
+          "response": "Kết tủa màu xanh lơ xuất hiện là Đồng(II) hydroxit [Cu(OH)₂]. Đây là bazơ không tan được tạo thành từ phản ứng trao đổi ion giữa muối CuSO₄ và bazơ NaOH. Phương trình ion rút gọn: Cu²⁺ + 2OH⁻ → Cu(OH)₂↓."
+        },
+        {
+          "questionKeywords": ["nguy hiểm", "an toàn", "độc", "danger", "safety"],
+          "response": "Phản ứng tạo kết tủa Cu(OH)₂ không quá độc hại, nhưng dung dịch kiềm NaOH có tính ăn mòn da và mắt cực kỳ mạnh. Cần đeo kính bảo hộ và găng tay khi làm thí nghiệm thực tế."
+        },
+        {
+          "questionKeywords": ["phương trình", "equation", "giải thích", "phản ứng"],
+          "response": "Phản ứng CuSO₄ + 2NaOH → Cu(OH)₂↓ + Na₂SO₄ là phản ứng trao đổi ion đặc trưng để nhận biết ion Cu²⁺. Khi đổ NaOH vào CuSO₄, liên kết ion giữa Cu²⁺ và SO₄²⁻ bị đứt ra để tạo thành kết tủa Cu(OH)₂ màu xanh lơ không tan."
+        }
+      ]
+    },
+    {
+      "contextKeywords": ["h2", "zn", "hcl", "kẽm"],
+      "responses": [
+        {
+          "questionKeywords": ["khí", "bọt", "sủi", "gas", "bubble"],
+          "response": "Bọt khí sủi mạnh và thoát ra chính là khí Hiđro (H₂). Kẽm (Zn) là kim loại hoạt động đứng trước hiđro trong dãy hoạt động hóa học, đã oxi hóa thành Zn²⁺ và khử các ion H⁺ trong axit HCl thành khí H₂ bay lên."
+        },
+        {
+          "questionKeywords": ["nguy hiểm", "an toàn", "độc", "danger", "safety"],
+          "response": "Khí H₂ sinh ra rất dễ bắt lửa và tạo hỗn hợp nổ mạnh với oxi trong không khí. Khi làm thí nghiệm thực tế, cần tránh xa lửa hở và tắt mọi nguồn điện có nguy cơ đánh lửa."
+        },
+        {
+          "questionKeywords": ["phương trình", "equation", "giải thích", "phản ứng"],
+          "response": "Phản ứng: Zn + 2HCl → ZnCl₂ + H₂↑ là phản ứng thế (và cũng là phản ứng oxi hóa - khử) điển hình. Kẽm nhường 2 electron để khử ion H⁺ trong dung dịch axit thành hiđro đơn chất dạng khí."
+        }
+      ]
+    },
+    {
+      "contextKeywords": ["kmno4", "h2so4", "tím", "màu", "purple"],
+      "responses": [
+        {
+          "questionKeywords": ["tím", "màu", "color", "purple"],
+          "response": "Dung dịch có màu tím hồng rất đậm đặc trưng của ion pemanganat (MnO₄⁻) từ KMnO₄. Khi hòa tan trong môi trường axit mạnh H₂SO₄, ion MnO₄⁻ có tính oxi hóa cực kỳ mạnh nhưng do chưa có chất khử nên màu tím Mn(VII) vẫn giữ nguyên."
+        },
+        {
+          "questionKeywords": ["nguy hiểm", "an toàn", "độc", "danger", "safety"],
+          "response": "CẢNH BÁO: Hỗn hợp KMnO₄ và H₂SO₄ đậm đặc có tính oxi hóa cực mạnh và tạo ra chất không bền mangan heptoxit (Mn₂O₇) cực kỳ nguy hiểm, có thể gây nổ hoặc bốc cháy tức thì khi tiếp xúc với các chất hữu cơ."
+        },
+        {
+          "questionKeywords": ["phương trình", "equation", "giải thích", "phản ứng"],
+          "response": "Hỗn hợp KMnO₄ trong môi trường axit H₂SO₄ đóng vai trò là một chất oxi hóa mạnh vạn năng (thế khử chuẩn E° = 1.51V). Phản ứng tạo môi trường axit giúp kích hoạt tính oxi hóa mạnh nhất của ion MnO₄⁻ cho các phản ứng oxi hóa khử sau đó."
+        }
+      ]
+    }
+  ],
+  "generalResponses": [
+    {
+      "questionKeywords": ["chào", "hello", "hi"],
+      "response": "Xin chào! Tôi là Trợ lý hóa học ảo của VibeTDU. Tôi có thể giúp gì cho bạn về các phản ứng hóa học hoặc các thí nghiệm trong phòng lab này?"
+    },
+    {
+      "questionKeywords": ["cảm ơn", "thank"],
+      "response": "Rất sẵn lòng! Chúc bạn có những trải nghiệm học tập và nghiên cứu hóa học thú vị và an toàn tại phòng thí nghiệm ảo của VibeTDU."
+    },
+    {
+      "questionKeywords": ["tên", "là ai"],
+      "response": "Tôi là Trợ lý Hóa học ảo, hoạt động dưới dạng mô hình ngôn ngữ lớn để trả lời các câu hỏi về hiện tượng, phương trình và an toàn hóa học."
+    }
+  ],
+  "defaultWithContext": "Chào bạn! Đây là phản hồi từ Trợ lý Hóa học (chế độ mô phỏng offline). Về phản ứng hiện tại trong cốc thí nghiệm của bạn, các chất đang ở điều kiện nhiệt độ phòng và áp suất thường. Hãy cho tôi biết nếu bạn muốn hỏi cụ thể về chất kết tủa, khí thoát ra hoặc mức độ an toàn của chúng nhé!",
+  "defaultResponse": "Chào bạn! Tôi đang hoạt động ở chế độ mô phỏng offline. Bạn có thể hỏi tôi về bất kỳ phản ứng nào có trong preset hoặc kiến thức hóa học trung học cơ sở và trung học phổ thông. Rất vui được đồng hành cùng bạn học hóa!"
+}

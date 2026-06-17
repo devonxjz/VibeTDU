@@ -80,8 +80,9 @@ class ReactionPredictionServiceTest {
         assertEquals("2H2 + O2 → 2H2O", result.result().getEquation());
         assertEquals("AI_PREDICTION", result.source());
 
+        verify(aiClient).isPresetReactionKey(reactionKey);
         verify(cacheService).touchReactionCache(hit);
-        verifyNoInteractions(aiClient);
+        verifyNoMoreInteractions(aiClient);
     }
 
     @Test
@@ -105,8 +106,9 @@ class ReactionPredictionServiceTest {
         assertEquals("Không có phản ứng xảy ra.", result.result().getMessageVi());
         assertEquals("AI_PREDICTION", result.source());
 
+        verify(aiClient).isPresetReactionKey(reactionKey);
         verify(cacheService).touchReactionCache(hit);
-        verifyNoInteractions(aiClient);
+        verifyNoMoreInteractions(aiClient);
     }
 
     @Test
@@ -137,7 +139,26 @@ class ReactionPredictionServiceTest {
         assertFalse(result.result().getHasReaction());
         assertEquals("Không có phản ứng xảy ra.", result.result().getMessageVi());
 
+        verify(aiClient).isPresetReactionKey(reactionKey);
         verify(cacheService, never()).touchReactionCache(any());
         verify(aiClient).predictReaction(anyList(), anyDouble(), anyDouble(), anyString());
+    }
+
+    @Test
+    void shouldUseAiClientPresetCatalogBeforeCheckingCache() {
+        String reactionKey = "CUSO4__NAOH";
+        when(aiClient.isPresetReactionKey(reactionKey)).thenReturn(true);
+        when(aiClient.predictReaction(anyList(), anyDouble(), anyDouble(), anyString()))
+                .thenReturn(JsonUtil.toJson(validReactionDto));
+
+        var result = service.predict(List.of("CuSO4", "NaOH"), 25.0, 1.0, "Khong");
+
+        assertNotNull(result);
+        assertFalse(result.cached());
+        assertEquals("BUILTIN_PRESET", result.source());
+
+        verify(aiClient).isPresetReactionKey(reactionKey);
+        verify(aiClient).predictReaction(anyList(), anyDouble(), anyDouble(), anyString());
+        verifyNoInteractions(cacheService);
     }
 }
