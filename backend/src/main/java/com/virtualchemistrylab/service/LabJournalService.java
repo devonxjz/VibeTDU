@@ -1,6 +1,7 @@
 package com.virtualchemistrylab.service;
 
 import com.virtualchemistrylab.entity.LabJournal;
+import com.virtualchemistrylab.entity.User;
 import com.virtualchemistrylab.repository.LabJournalRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,20 +28,21 @@ public class LabJournalService {
     public record JournalSummary(UUID id, String title, String createdAt, String experimentData) {}
 
     @Transactional
-    public LabJournal save(SaveRequest req) {
+    public LabJournal save(SaveRequest req, User user) {
         LabJournal journal = LabJournal.builder()
                 .title(req.title() != null ? req.title() : "Untitled Experiment")
                 .experimentData(req.experimentData())
+                .user(user)
                 .build();
 
         LabJournal saved = journalRepository.save(journal);
-        log.info("[journal] saved entry id={}", saved.getId());
+        log.info("[journal] saved entry id={} user={}", saved.getId(), user.getId());
         return saved;
     }
 
     @Transactional(readOnly = true)
-    public List<JournalSummary> listAll() {
-        return journalRepository.findAllByOrderByCreatedAtDesc()
+    public List<JournalSummary> listAll(User user) {
+        return journalRepository.findAllByUser_IdOrderByCreatedAtDesc(user.getId())
                 .stream()
                 .map(j -> new JournalSummary(
                         j.getId(),

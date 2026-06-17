@@ -12,4 +12,7 @@ public interface LabJournalRepository extends JpaRepository<LabJournal, UUID> {
 
     /** Returns all journals, newest first. */
     List<LabJournal> findAllByOrderByCreatedAtDesc();
+
+    /** Returns journals for a single user, newest first. */
+    List<LabJournal> findAllByUser_IdOrderByCreatedAtDesc(UUID userId);
 }

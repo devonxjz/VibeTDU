@@ -96,3 +96,19 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE INDEX IF NOT EXISTS idx_users_google_sub ON users(google_sub);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
+-- ──────────────────────────────────────────────────────────────
+-- 7. lab_journals
+-- ──────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS lab_journals (
+    id              UUID PRIMARY KEY,
+    user_id         UUID,
+    title           VARCHAR(255),
+    experiment_data TEXT NOT NULL,
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE IF EXISTS lab_journals
+    ADD COLUMN IF NOT EXISTS user_id UUID;
+
+CREATE INDEX IF NOT EXISTS idx_lab_journals_user_created_at ON lab_journals(user_id, created_at DESC);

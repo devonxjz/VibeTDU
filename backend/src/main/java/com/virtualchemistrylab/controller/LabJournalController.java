@@ -1,7 +1,10 @@
 package com.virtualchemistrylab.controller;
 
+import com.virtualchemistrylab.config.AuthUser;
 import com.virtualchemistrylab.entity.LabJournal;
+import com.virtualchemistrylab.entity.User;
 import com.virtualchemistrylab.service.LabJournalService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -32,9 +35,11 @@ public class LabJournalController {
     ) {}
 
     @PostMapping
-    public ResponseEntity<?> save(@Valid @RequestBody SaveJournalRequest req) {
+    public ResponseEntity<?> save(@Valid @RequestBody SaveJournalRequest req, HttpServletRequest request) {
+        User user = AuthUser.require(request);
         LabJournal saved = journalService.save(
-                new LabJournalService.SaveRequest(req.title(), req.experimentData()));
+                new LabJournalService.SaveRequest(req.title(), req.experimentData()),
+                user);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                 "id", saved.getId().toString(),
@@ -44,7 +49,8 @@ public class LabJournalController {
     }
 
     @GetMapping
-    public ResponseEntity<List<LabJournalService.JournalSummary>> list() {
-        return ResponseEntity.ok(journalService.listAll());
+    public ResponseEntity<List<LabJournalService.JournalSummary>> list(HttpServletRequest request) {
+        User user = AuthUser.require(request);
+        return ResponseEntity.ok(journalService.listAll(user));
     }
 }

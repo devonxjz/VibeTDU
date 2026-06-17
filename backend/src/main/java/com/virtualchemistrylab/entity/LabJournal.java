@@ -24,6 +24,10 @@ public class LabJournal {
     @Column(length = 255)
     private String title;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     /**
      * JSON snapshot of the Vessel state sent by the frontend.
      * Stored as TEXT — compatible with H2 (tests) and PostgreSQL (production).
