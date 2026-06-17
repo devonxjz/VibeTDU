@@ -24,6 +24,7 @@ public class AppProperties {
     private Cactus cactus = new Cactus();
     private Opsin opsin = new Opsin();
     private Supabase supabase = new Supabase();
+    private Auth auth = new Auth();
 
     @Getter @Setter
     public static class Ai {
@@ -77,5 +78,21 @@ public class AppProperties {
         private String url = "";
         private String anonKey = "";
         private String publishableKey = "";
+    }
+
+    @Getter @Setter
+    public static class Auth {
+        private Google google = new Google();
+        private Jwt jwt = new Jwt();
+
+        @Getter @Setter
+        public static class Google {
+            private String clientId = "";
+        }
+
+        @Getter @Setter
+        public static class Jwt {
+            private String secret = "";
+        }
     }
 }

@@ -86,6 +86,7 @@ CREATE TABLE IF NOT EXISTS users (
     google_sub         VARCHAR(255),
     name               VARCHAR(255),
     picture_url        TEXT,
+    password_hash      VARCHAR(255),
     ai_quota_remaining INT          DEFAULT 20,
     last_reset_date    DATE         NOT NULL,
     created_at         TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
