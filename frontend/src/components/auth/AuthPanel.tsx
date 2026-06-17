@@ -66,7 +66,7 @@ export function AuthPanel() {
   return (
     <main className="relative min-h-[100dvh] overflow-hidden bg-[#f8f1e4] text-[#14201d]">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_18%,rgba(223,170,86,0.22),transparent_30%),radial-gradient(circle_at_88%_82%,rgba(49,103,94,0.18),transparent_28%),linear-gradient(135deg,#fbf7ef_0%,#efe3cf_100%)]" />
-      <div className="relative mx-auto grid min-h-[100dvh] max-w-7xl grid-cols-1 gap-8 px-4 py-8 md:grid-cols-[1.05fr_0.95fr] md:px-8 lg:px-12">
+      <div className="relative mx-auto grid min-h-[100dvh] max-w-7xl min-w-0 grid-cols-1 gap-8 px-4 py-8 md:grid-cols-[1.05fr_0.95fr] md:px-8 lg:px-12">
         <motion.section
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -91,7 +91,7 @@ export function AuthPanel() {
           <div className="absolute bottom-32 left-[48%] h-24 w-20 rounded-full bg-[#e7ad57]/55 blur-[1px]" />
           <div className="absolute bottom-40 right-[16%] h-44 w-28 rounded-b-[4rem] rounded-t-[1.5rem] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(39,91,84,0.18))] shadow-[inset_0_1px_0_rgba(255,255,255,0.82),0_22px_50px_rgba(31,73,69,0.16)]" />
 
-          <div className="absolute bottom-8 left-8 max-w-md">
+          <div className="absolute left-8 top-36 max-w-md">
             <p className="text-[clamp(2.2rem,4vw,4.4rem)] font-semibold leading-[0.95] tracking-[0] text-[#14201d]">
               Vào lab bằng danh tính thật.
             </p>
@@ -101,14 +101,15 @@ export function AuthPanel() {
           </div>
         </motion.section>
 
-        <section className="flex min-h-[calc(100dvh-4rem)] items-center justify-center md:min-h-0">
+        <section className="flex min-h-[calc(100dvh-4rem)] min-w-0 items-center justify-center md:min-h-0">
           <motion.div
             initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.85, ease: [0.32, 0.72, 0, 1], delay: 0.08 }}
-            className="w-full max-w-[460px] rounded-[2rem] border border-[#cbb58d]/70 bg-[#f3e6cf]/80 p-2 shadow-[0_30px_90px_rgba(72,50,22,0.14)]"
+            style={{ width: "78vw", maxWidth: "460px" }}
+            className="rounded-[2rem] border border-[#cbb58d]/70 bg-[#f3e6cf]/80 p-2 shadow-[0_30px_90px_rgba(72,50,22,0.14)]"
           >
-            <div className="rounded-[calc(2rem-0.5rem)] border border-[#eadbc2] bg-[#fffaf2] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] sm:p-8">
+            <div className="rounded-[calc(2rem-0.5rem)] border border-[#eadbc2] bg-[#fffaf2] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] sm:p-8">
               <div>
                 <p className="text-sm font-medium text-[#806f5b]">VibeTDU ChemLab</p>
                 <h1 className="mt-3 text-[clamp(2.25rem,6vw,4.4rem)] font-semibold leading-[0.95] tracking-[0] text-[#14201d]">
@@ -122,13 +123,13 @@ export function AuthPanel() {
               <div className="mt-8">
                 {googleClientId ? (
                   <GoogleOAuthProvider clientId={googleClientId}>
-                    <div className="overflow-hidden rounded-full border border-[#e1d1b7] bg-white px-4 py-3 shadow-[0_10px_28px_rgba(40,32,22,0.06)]">
+                    <div className="flex justify-center overflow-hidden rounded-full border border-[#e1d1b7] bg-white px-3 py-3 shadow-[0_10px_28px_rgba(40,32,22,0.06)] sm:px-4">
                       <GoogleLogin
                         onSuccess={(response) => void submitGoogle(response.credential)}
                         onError={() => setError("Không thể đăng nhập bằng Google")}
                         text="continue_with"
                         shape="pill"
-                        width="360"
+                        width="240"
                       />
                     </div>
                   </GoogleOAuthProvider>
