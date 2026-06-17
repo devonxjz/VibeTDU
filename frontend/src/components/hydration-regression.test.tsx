@@ -3,7 +3,7 @@ import { act, cleanup, render } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { WelcomeModal } from "@/components/WelcomeModal";
+import { AuthGate } from "@/components/auth/AuthGate";
 import { ReactionResultCard } from "@/components/chemlab/scene/ReactionResultCard";
 import { Toolbar } from "@/components/chemlab/Toolbar";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
@@ -35,9 +35,9 @@ describe("hydration regressions", () => {
     localStorage.clear();
   });
 
-  it("server-renders WelcomeModal without reading browser-only globals", () => {
+  it("server-renders AuthGate without reading browser-only globals", () => {
     withoutWindow(() => {
-      expect(renderToString(<WelcomeModal />)).toBe("");
+      expect(renderToString(<AuthGate>Lab Ready</AuthGate>)).toContain("Đang tải đăng nhập");
     });
   });
 

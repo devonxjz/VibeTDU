@@ -1,13 +1,12 @@
 "use client";
 
 import { ChemLabShell } from "@/components/chemlab/ChemLabShell";
-import { WelcomeModal } from "@/components/WelcomeModal";
+import { AuthGate } from "@/components/auth/AuthGate";
 
 export default function ChemLabPage() {
   return (
-    <>
-      <WelcomeModal />
+    <AuthGate>
       <ChemLabShell />
-    </>
+    </AuthGate>
   );
 }
