@@ -2,7 +2,8 @@
 
 import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import { motion } from "framer-motion";
-import { useState, type FormEvent } from "react";
+import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail, User } from "lucide-react";
+import { useEffect, useState, type FormEvent } from "react";
 import {
   loginWithGoogle,
   loginWithPassword,
@@ -20,8 +21,25 @@ export function AuthPanel() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [googleButtonWidth, setGoogleButtonWidth] = useState("270");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const updateGoogleWidth = () => {
+      const isCompact =
+        typeof window.matchMedia === "function"
+          ? window.matchMedia("(max-width: 640px)").matches
+          : window.innerWidth <= 640;
+      setGoogleButtonWidth(isCompact ? "270" : "420");
+    };
+
+    updateGoogleWidth();
+    window.addEventListener("resize", updateGoogleWidth);
+
+    return () => window.removeEventListener("resize", updateGoogleWidth);
+  }, []);
 
   const handleSession = (session: AuthSession) => {
     saveSession(session);
@@ -64,72 +82,47 @@ export function AuthPanel() {
   };
 
   return (
-    <main className="relative min-h-[100dvh] overflow-hidden bg-[#f8f1e4] text-[#14201d]">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_20%_18%,rgba(223,170,86,0.22),transparent_30%),radial-gradient(circle_at_88%_82%,rgba(49,103,94,0.18),transparent_28%),linear-gradient(135deg,#fbf7ef_0%,#efe3cf_100%)]" />
-      <div className="relative mx-auto grid min-h-[100dvh] max-w-7xl min-w-0 grid-cols-1 gap-8 px-4 py-8 md:grid-cols-[1.05fr_0.95fr] md:px-8 lg:px-12">
+    <main className="relative min-h-[100dvh] overflow-x-hidden bg-[#fbf5e8] text-[#14201d]">
+      <div className="grid min-h-[100dvh] min-w-0 grid-cols-1 lg:grid-cols-[52%_48%]">
         <motion.section
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.32, 0.72, 0, 1] }}
-          className="relative hidden min-h-[520px] overflow-hidden rounded-[2rem] border border-[#dcc9aa]/70 bg-[#efe2cc] shadow-[0_28px_90px_rgba(80,56,26,0.14)] md:block"
-        >
-          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.75),rgba(255,255,255,0.12)),radial-gradient(circle_at_40%_10%,rgba(255,255,255,0.92),transparent_32%)]" />
-          <div className="absolute left-8 top-8 flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[#173f3a] text-lg font-semibold text-[#f8f1e4] shadow-[0_14px_30px_rgba(23,63,58,0.22)]">
-              V
-            </div>
-            <div>
-              <p className="text-xl font-semibold tracking-[0] text-[#14201d]">VibeTDU</p>
-              <p className="text-sm text-[#6f6252]">ChemLab Studio</p>
-            </div>
-          </div>
+          aria-label="Không gian phòng thí nghiệm VibeTDU"
+          style={{ backgroundImage: "url('/auth-lab-reference.png')" }}
+          className="relative hidden min-h-[100dvh] overflow-hidden bg-[#f0e1c9] bg-cover bg-center lg:block"
+        />
 
-          <div className="absolute inset-x-10 bottom-16 h-28 rounded-[2rem] bg-[#8b6a44] shadow-[inset_0_3px_0_rgba(255,255,255,0.18),0_24px_70px_rgba(71,45,20,0.24)]" />
-          <div className="absolute bottom-36 left-[15%] h-52 w-36 rounded-b-[4rem] rounded-t-[1.6rem] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(131,193,184,0.22))] shadow-[inset_0_1px_0_rgba(255,255,255,0.85),0_22px_50px_rgba(31,73,69,0.16)]" />
-          <div className="absolute bottom-36 left-[22%] h-20 w-24 rounded-full bg-[#78b8ad]/55 blur-[1px]" />
-          <div className="absolute bottom-32 left-[43%] h-64 w-32 rounded-b-[4.5rem] rounded-t-[1.2rem] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.78),rgba(232,174,85,0.28))] shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_24px_60px_rgba(86,61,26,0.18)]" />
-          <div className="absolute bottom-32 left-[48%] h-24 w-20 rounded-full bg-[#e7ad57]/55 blur-[1px]" />
-          <div className="absolute bottom-40 right-[16%] h-44 w-28 rounded-b-[4rem] rounded-t-[1.5rem] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(39,91,84,0.18))] shadow-[inset_0_1px_0_rgba(255,255,255,0.82),0_22px_50px_rgba(31,73,69,0.16)]" />
-
-          <div className="absolute left-8 top-36 max-w-md">
-            <p className="text-[clamp(2.2rem,4vw,4.4rem)] font-semibold leading-[0.95] tracking-[0] text-[#14201d]">
-              Vào lab bằng danh tính thật.
-            </p>
-            <p className="mt-5 max-w-sm text-base leading-7 text-[#675b4d]">
-              Sổ tay, quota AI và lịch sử thí nghiệm đi theo tài khoản của bạn.
-            </p>
-          </div>
-        </motion.section>
-
-        <section className="flex min-h-[calc(100dvh-4rem)] min-w-0 items-center justify-center md:min-h-0">
+        <section className="relative flex min-h-[100dvh] min-w-0 items-center justify-center overflow-hidden px-4 py-8 sm:px-6 lg:px-10">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(255,255,255,0.72),transparent_30%),radial-gradient(circle_at_78%_84%,rgba(33,79,73,0.14),transparent_34%),linear-gradient(135deg,#fffaf0_0%,#f2e5d0_100%)]" />
           <motion.div
             initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.85, ease: [0.32, 0.72, 0, 1], delay: 0.08 }}
-            style={{ width: "78vw", maxWidth: "460px" }}
-            className="rounded-[2rem] border border-[#cbb58d]/70 bg-[#f3e6cf]/80 p-2 shadow-[0_30px_90px_rgba(72,50,22,0.14)]"
+            className="relative min-w-0 w-[calc(100vw-2rem)] max-w-[358px] rounded-[22px] border-[3px] border-[#0d5154] bg-[#fff5e7]/75 p-2 shadow-[0_28px_80px_rgba(65,45,23,0.15)] sm:w-full sm:max-w-[560px]"
           >
-            <div className="rounded-[calc(2rem-0.5rem)] border border-[#eadbc2] bg-[#fffaf2] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.92)] sm:p-8">
-              <div>
-                <p className="text-sm font-medium text-[#806f5b]">VibeTDU ChemLab</p>
-                <h1 className="mt-3 text-[clamp(2.25rem,6vw,4.4rem)] font-semibold leading-[0.95] tracking-[0] text-[#14201d]">
-                  Đăng nhập
+            <div className="min-w-0 rounded-[16px] border-2 border-[#df9e2f] bg-[#fffaf2]/95 px-5 py-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.95)] sm:px-12 sm:py-11">
+              <div className="text-center">
+                <p className="text-base font-medium text-[#2d2923]">Chào mừng trở lại</p>
+                <h1 className="mt-2 text-[clamp(3rem,7vw,4.7rem)] font-semibold leading-none tracking-[0] text-[#0e5257]">
+                  VibeTDU
                 </h1>
-                <p className="mt-4 text-base leading-7 text-[#6d6255]">
-                  Tên trong tài khoản sẽ hiển thị trong phòng thí nghiệm.
+                <p className="mt-3 text-base leading-7 text-[#5f5548]">
+                  Tên tài khoản sẽ hiển thị trong phòng thí nghiệm.
                 </p>
               </div>
 
-              <div className="mt-8">
+              <div className="mt-8 sm:mt-10">
                 {googleClientId ? (
                   <GoogleOAuthProvider clientId={googleClientId}>
-                    <div className="flex justify-center overflow-hidden rounded-full border border-[#e1d1b7] bg-white px-3 py-3 shadow-[0_10px_28px_rgba(40,32,22,0.06)] sm:px-4">
+                    <div className="flex h-14 w-full min-w-0 items-center justify-center overflow-hidden rounded-md border border-[#cfc6b9] bg-white shadow-[0_12px_26px_rgba(42,34,24,0.08)]">
                       <GoogleLogin
+                        key={googleButtonWidth}
                         onSuccess={(response) => void submitGoogle(response.credential)}
                         onError={() => setError("Không thể đăng nhập bằng Google")}
                         text="continue_with"
-                        shape="pill"
-                        width="240"
+                        shape="rectangular"
+                        width={googleButtonWidth}
                       />
                     </div>
                   </GoogleOAuthProvider>
@@ -138,85 +131,92 @@ export function AuthPanel() {
                     type="button"
                     aria-label="Tiếp tục với Google"
                     onClick={() => setError("Google login chưa được cấu hình")}
-                    className="group flex h-12 w-full items-center justify-between rounded-full border border-[#e1d1b7] bg-white px-5 text-sm font-semibold text-[#14201d] shadow-[0_10px_28px_rgba(40,32,22,0.06)] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.98]"
+                    className="group flex h-14 w-full items-center justify-center gap-4 rounded-md border border-[#cfc6b9] bg-white px-5 text-base font-medium text-[#2f2a23] shadow-[0_12px_26px_rgba(42,34,24,0.08)] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.98]"
                   >
-                    <span>Tiếp tục với Google</span>
-                    <span className="grid h-8 w-8 place-items-center rounded-full bg-[#f2eadc] text-sm transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-1">
+                    <span className="grid h-8 w-8 place-items-center rounded-full bg-[#f2eadc] text-sm font-semibold text-[#d64b35] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:-translate-y-0.5">
                       G
                     </span>
+                    <span>Tiếp tục với Google</span>
                   </button>
                 )}
               </div>
 
-              <div className="my-7 flex items-center gap-4 text-xs font-medium uppercase text-[#93836d]">
-                <span className="h-px flex-1 bg-[#eadbc2]" />
+              <div className="my-8 flex items-center gap-4 text-sm font-medium text-[#6f665a]">
+                <span className="h-px flex-1 bg-[#cfc6b9]" />
                 <span>hoặc</span>
-                <span className="h-px flex-1 bg-[#eadbc2]" />
+                <span className="h-px flex-1 bg-[#cfc6b9]" />
               </div>
 
-              <div className="grid grid-cols-2 rounded-full bg-[#f2eadc] p-1">
-                <button
-                  type="button"
-                  aria-label="Chọn chế độ đăng nhập"
-                  onClick={() => setMode("login")}
-                  className={`h-10 rounded-full text-sm font-semibold transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
-                    mode === "login" ? "bg-[#173f3a] text-[#fffaf2]" : "text-[#766854]"
-                  }`}
-                >
-                  Đăng nhập
-                </button>
-                <button
-                  type="button"
-                  aria-label="Chọn chế độ tạo tài khoản"
-                  onClick={() => setMode("register")}
-                  className={`h-10 rounded-full text-sm font-semibold transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
-                    mode === "register" ? "bg-[#173f3a] text-[#fffaf2]" : "text-[#766854]"
-                  }`}
-                >
-                  Tạo tài khoản
-                </button>
-              </div>
-
-              <form className="mt-6 space-y-4" onSubmit={submit}>
+              <form className="space-y-5" onSubmit={submit}>
                 {mode === "register" && (
-                  <label className="block text-sm font-semibold text-[#514739]">
+                  <label className="block text-sm font-medium text-[#2f2a23]">
                     Tên của bạn
-                    <input
-                      value={name}
-                      onChange={(event) => setName(event.target.value)}
-                      required={mode === "register"}
-                      className="mt-2 h-12 w-full rounded-2xl border border-[#e1d1b7] bg-[#fffdf8] px-4 text-base font-medium text-[#14201d] outline-none transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] placeholder:text-[#a99a82] focus:border-[#2c665d] focus:shadow-[0_0_0_4px_rgba(44,102,93,0.12)]"
-                      placeholder="Ví dụ: Tran Le Thai"
-                    />
+                    <span className="relative mt-2 block">
+                      <User
+                        aria-hidden="true"
+                        className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#665c50]"
+                      />
+                      <input
+                        value={name}
+                        onChange={(event) => setName(event.target.value)}
+                        required={mode === "register"}
+                        className="h-14 w-full rounded-md border border-[#cfc6b9] bg-[#fffdf8] px-12 text-base font-medium text-[#14201d] outline-none transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] placeholder:text-[#9e9282] focus:border-[#0e5257] focus:shadow-[0_0_0_4px_rgba(14,82,87,0.12)]"
+                        placeholder="Ví dụ: Tran Le Thai"
+                      />
+                    </span>
                   </label>
                 )}
 
-                <label className="block text-sm font-semibold text-[#514739]">
+                <label className="block text-sm font-medium text-[#2f2a23]">
                   Email
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    required
-                    className="mt-2 h-12 w-full rounded-2xl border border-[#e1d1b7] bg-[#fffdf8] px-4 text-base font-medium text-[#14201d] outline-none transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] placeholder:text-[#a99a82] focus:border-[#2c665d] focus:shadow-[0_0_0_4px_rgba(44,102,93,0.12)]"
-                    placeholder="student@example.com"
-                  />
+                  <span className="relative mt-2 block">
+                    <Mail
+                      aria-hidden="true"
+                      className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#665c50]"
+                    />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      required
+                      className="h-14 w-full rounded-md border border-[#cfc6b9] bg-[#fffdf8] px-12 text-base font-medium text-[#14201d] outline-none transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] placeholder:text-[#9e9282] focus:border-[#0e5257] focus:shadow-[0_0_0_4px_rgba(14,82,87,0.12)]"
+                      placeholder="student@example.com"
+                    />
+                  </span>
                 </label>
 
-                <label className="block text-sm font-semibold text-[#514739]">
+                <label className="block text-sm font-medium text-[#2f2a23]">
                   Mật khẩu
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    required
-                    className="mt-2 h-12 w-full rounded-2xl border border-[#e1d1b7] bg-[#fffdf8] px-4 text-base font-medium text-[#14201d] outline-none transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] placeholder:text-[#a99a82] focus:border-[#2c665d] focus:shadow-[0_0_0_4px_rgba(44,102,93,0.12)]"
-                    placeholder="Tối thiểu 6 ký tự"
-                  />
+                  <span className="relative mt-2 block">
+                    <LockKeyhole
+                      aria-hidden="true"
+                      className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#665c50]"
+                    />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      required
+                      className="h-14 w-full rounded-md border border-[#cfc6b9] bg-[#fffdf8] px-12 pr-14 text-base font-medium text-[#14201d] outline-none transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] placeholder:text-[#9e9282] focus:border-[#0e5257] focus:shadow-[0_0_0_4px_rgba(14,82,87,0.12)]"
+                      placeholder="Tối thiểu 6 ký tự"
+                    />
+                    <button
+                      type="button"
+                      aria-label={showPassword ? "Ẩn password" : "Hiện password"}
+                      onClick={() => setShowPassword((value) => !value)}
+                      className="absolute right-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full text-[#665c50] transition-colors duration-300 hover:bg-[#f2eadc] hover:text-[#0e5257]"
+                    >
+                      {showPassword ? (
+                        <EyeOff aria-hidden="true" className="h-5 w-5" />
+                      ) : (
+                        <Eye aria-hidden="true" className="h-5 w-5" />
+                      )}
+                    </button>
+                  </span>
                 </label>
 
                 {error && (
-                  <p className="rounded-2xl border border-[#edc7b2] bg-[#fff2ea] px-4 py-3 text-sm font-medium text-[#9a4825]">
+                  <p className="rounded-md border border-[#edc7b2] bg-[#fff2ea] px-4 py-3 text-sm font-medium text-[#9a4825]">
                     {error}
                   </p>
                 )}
@@ -225,17 +225,29 @@ export function AuthPanel() {
                   type="submit"
                   aria-label={mode === "login" ? "Đăng nhập" : "Tạo tài khoản"}
                   disabled={isSubmitting}
-                  className="group flex h-12 w-full items-center justify-between rounded-full bg-[#173f3a] px-5 text-sm font-semibold text-[#fffaf2] shadow-[0_16px_36px_rgba(23,63,58,0.22)] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-[#22554e] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="group flex h-14 w-full items-center justify-center gap-3 rounded-md bg-[#0d5154] px-5 text-base font-semibold text-[#fffaf2] shadow-[0_16px_36px_rgba(13,81,84,0.22)] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-[#174f4a] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <span>{mode === "login" ? "Đăng nhập" : "Tạo tài khoản"}</span>
-                  <span
+                  <ArrowRight
                     aria-hidden="true"
-                    className="grid h-8 w-8 place-items-center rounded-full bg-[#f2bd69] text-[#173f3a] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-1"
-                  >
-                    →
-                  </span>
+                    className="h-5 w-5 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-1"
+                  />
                 </button>
               </form>
+
+              <p className="mt-7 text-center text-base text-[#2f2a23]">
+                {mode === "login" ? "Chưa có tài khoản? " : "Đã có tài khoản? "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setError(null);
+                    setMode(mode === "login" ? "register" : "login");
+                  }}
+                  className="font-semibold text-[#c57518] transition-colors duration-300 hover:text-[#0e5257]"
+                >
+                  {mode === "login" ? "Tạo tài khoản" : "Đăng nhập"}
+                </button>
+              </p>
             </div>
           </motion.div>
         </section>
