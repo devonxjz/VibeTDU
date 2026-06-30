@@ -168,11 +168,6 @@ cd backend
 
 # Khởi chạy Spring Boot thông qua Maven wrapper
 ./mvnw spring-boot:run
-```
-👉 Cổng API mặc định: **`http://localhost:8080`**  
-👉 Tra cứu tài liệu Swagger UI tại: **`http://localhost:8080/swagger-ui.html`**
-
----
 
 <div align="center" style="margin-top: 30px; padding: 20px; background-color: #181715; border-radius: 12px; color: #faf9f5;">
   <span style="color: #cc785c; font-size: 1.4em; font-weight: bold; display: block; margin-bottom: 8px;">🌟 ChemLab — VibeTDU 🌟</span>
