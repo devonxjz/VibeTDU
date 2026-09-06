@@ -1,4 +1,6 @@
 import { nanoid } from "nanoid";
+import { get, post } from "@/api/client/http";
+import { getAuthToken } from "@/stores/auth-store";
 import type { JournalSummary } from "@/types/journal";
 
 export type ApiResult<T> =
@@ -9,6 +11,21 @@ export async function saveJournal(
   title: string,
   experimentData: string
 ): Promise<ApiResult<{ id: string; title: string; createdAt: string }>> {
+  if (getAuthToken()) {
+    try {
+      const data = await post<{ id: string; title: string; createdAt: string }>("/api/journal", {
+        title,
+        experimentData,
+      });
+      return { success: true, data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Lỗi lưu dữ liệu",
+      };
+    }
+  }
+
   try {
     const newEntry = {
       id: nanoid(),
@@ -28,6 +45,18 @@ export async function saveJournal(
 }
 
 export async function getJournals(): Promise<ApiResult<JournalSummary[]>> {
+  if (getAuthToken()) {
+    try {
+      const data = await get<JournalSummary[]>("/api/journal");
+      return { success: true, data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Lỗi tải dữ liệu",
+      };
+    }
+  }
+
   try {
     const stored = localStorage.getItem("vibetdu_journals");
     const journals = stored ? JSON.parse(stored) : [];

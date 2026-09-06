@@ -3,6 +3,8 @@
  * Uses fetch API with proper error handling and typings.
  */
 
+import { getAuthToken } from "@/stores/auth-store";
+
 const BASE_URL =
   (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080").replace(/\/$/, "");
 
@@ -27,7 +29,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
 export async function get<T>(path: string): Promise<T> {
   const response = await fetch(`${BASE_URL}${path}`, {
     method: "GET",
-    headers: { "Content-Type": "application/json" },
+    headers: buildHeaders(),
   });
   return handleResponse<T>(response);
 }
@@ -35,10 +37,19 @@ export async function get<T>(path: string): Promise<T> {
 export async function post<T>(path: string, body: unknown): Promise<T> {
   const response = await fetch(`${BASE_URL}${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: buildHeaders(),
     body: JSON.stringify(body),
   });
   return handleResponse<T>(response);
+}
+
+function buildHeaders(): Record<string, string> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const token = getAuthToken();
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  return headers;
 }
 
 export { HttpError };
